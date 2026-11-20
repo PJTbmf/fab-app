@@ -799,6 +799,36 @@ footer{ text-align:center; color:var(--ink-soft); font-size:.85rem; padding:20px
 .pw-card-step{ font-family:var(--disp); font-weight:700; }
 .pw-card-status, .pw-card-stats{ font-family:var(--body); font-size:.92rem; color:var(--ink-soft); }
 .pw-card-btns{ display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
+/* Flightpath F3: stages, tap-an-answer, groups, step guide */
+.pw-stages{ display:flex; flex-direction:column; gap:8px; }
+.pw-stage{ border:2px solid var(--cream-deep); border-radius:16px; background:var(--white); overflow:hidden; }
+.pw-stage.mine{ border-color:var(--amber); }
+.pw-stage-head{ width:100%; display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 12px; background:var(--cream); font-family:var(--disp); font-weight:700; color:var(--ink); text-align:left; }
+.pw-stage-head:hover{ background:var(--sunshine); }
+.pw-stage-count{ font-family:var(--body); font-size:.8rem; color:var(--ink-soft); white-space:nowrap; }
+.pw-stage .pw-ladder{ padding:8px; }
+.pw-choices{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:8px 0 4px; }
+.pw-choice{ min-width:110px; min-height:64px; padding:8px 18px; border-radius:18px; background:var(--cream); border:3px solid var(--cream-deep); font-family:var(--disp); font-weight:700; font-size:1.7rem; color:var(--ink); }
+.pw-choice:hover, .pw-choice:focus-visible{ border-color:var(--amber); background:var(--sunshine); }
+.pw-keys.rem{ grid-template-columns:repeat(3, 64px); }
+.pw-keys.rem .pw-key.go{ grid-column:1 / -1; }
+.pw-modes{ min-height:8px; margin-top:6px; }
+.pw-gap{ display:inline-block; min-width:56px; border-bottom:4px dashed var(--amber); color:var(--ink-soft); }
+.pw-groups{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin:6px 0 10px; }
+.pw-group{ display:grid; grid-template-columns:repeat(5, 18px); gap:5px; padding:10px; border:3px solid var(--sky); border-radius:50%; min-width:60px; min-height:60px; align-content:center; justify-content:center; background:var(--cream); }
+.pw-group i{ width:18px; height:18px; border-radius:50%; background:var(--flame); display:block; }
+.pw-fb.reveal{ color:var(--ink); }
+.pw-card-hint{ font-family:var(--body); font-size:.92rem; color:var(--flame-dark); }
+.pw-guide-toggle{ margin:0 0 12px; }
+.pw-guide{ overflow-x:auto; }
+.pw-guide table{ width:100%; border-collapse:collapse; font-family:var(--body); font-size:.9rem; background:var(--white); }
+.pw-guide th, .pw-guide td{ border:1px solid var(--cream-deep); padding:8px 10px; vertical-align:top; text-align:left; }
+.pw-guide th{ background:var(--cream); font-family:var(--disp); }
+.pw-guide ul{ margin:4px 0 0; padding-left:18px; }
+.pw-guide li{ margin-bottom:6px; }
+.pw-guide-child{ color:var(--leaf-dark); }
+.pw-attrib{ font-family:var(--body); font-size:.8rem; color:var(--ink-soft); margin-top:12px; }
+
 </style>
 </head>
 <body>
@@ -6327,10 +6357,10 @@ document.addEventListener('keydown', e => {
      3. later (option A), packs fetched from PACK_SOURCE_URL once the app
         is on public hosting. Left empty for now, so nothing is fetched. */
 const PACK_SOURCE_URL = '';
-const BUILT_IN_PACKS = [{"format": "bmf-lesson-pack", "version": 1, "id": "eng-y34-christmas-carol-l1", "title": "Meet Scrooge", "subject": "English", "years": "Year 3/4", "unit": "A Christmas Carol", "lesson": 1, "emoji": "🎩", "minutes": 30, "objective": "Drawing inferences such as inferring characters' feelings, thoughts and motives from their actions, and justifying inferences with evidence.", "childAim": "I can be a detective and find clues about what Scrooge is like.", "status": "draft", "screens": [{"type": "intro", "title": "Meet Scrooge", "text": "Today we are story detectives! We are going to meet a very grumpy man called Ebenezer Scrooge and look for clues about what he is like.", "teacher": "Start after Today's Hello. Read the aim aloud and ask: has anyone heard of Scrooge before?", "lowEnergy": "Just read the aim together. No answers needed."}, {"type": "sort", "title": "Cold or cosy?", "prompt": "Tap a word, then tap the box where you think it belongs. There are no wrong answers!", "bins": [{"label": "Cold", "emoji": "❄️"}, {"label": "Cosy", "emoji": "🔥"}], "items": [{"text": "frosty"}, {"text": "warm hug"}, {"text": "icy"}, {"text": "smile"}, {"text": "alone"}, {"text": "party"}], "teacher": "Ask 'why did you put it there?' for one or two words. 'Alone' is a good one to talk about.", "lowEnergy": "The pupil points or says the word; you tap it into the box."}, {"type": "read", "title": "Scrooge in the cold", "intro": "Listen to the story. Then tap the blue clue words to find out what they tell us.", "versions": [{"label": "Simple story", "paras": ["Scrooge was a mean old man who loved money more than people. He was cold inside, like ice. His office was freezing, even at Christmas.", "Nobody ever stopped to say hello to him. When his nephew said, \"Merry Christmas!\", Scrooge just grumbled, \"Bah! Humbug!\""]}, {"label": "Dickens' words", "paras": ["Oh! But he was a tight-fisted hand at the grindstone, Scrooge! A squeezing, wrenching, grasping, scraping, clutching old sinner! Hard and sharp as flint, secret, and self-contained, and solitary as an oyster.", "The cold within him froze his old features, nipped his pointed nose, and stiffened his walk. He carried his own low temperature always about with him; he iced his office in the summer, and didn't thaw it one degree at Christmas.", "Nobody ever stopped him in the street to say, with gladsome looks, \"My dear Scrooge, how are you? When will you come to see me?\"", "\"A merry Christmas, uncle!\" cried a cheerful voice. It was the voice of Scrooge's nephew.", "\"Bah!\" said Scrooge. \"Humbug!\""]}], "clues": [{"text": "cold inside", "note": "Scrooge isn't just chilly. His feelings are cold and unkind."}, {"text": "freezing, even at Christmas", "note": "Even at the happiest time of year, Scrooge doesn't warm up."}, {"text": "Nobody ever stopped", "note": "People keep away from Scrooge. He might be lonely."}, {"text": "tight-fisted", "note": "He holds on to his money and won't share it."}, {"text": "solitary as an oyster", "note": "An oyster is shut tight in its shell. Scrooge keeps himself shut away too."}, {"text": "cold within him", "note": "The cold is inside him. Dickens means his heart, not the weather."}, {"text": "iced his office", "note": "Scrooge won't pay to heat his office, even when it's cold."}, {"text": "Humbug", "note": "Humbug means nonsense. Scrooge thinks Christmas is silly."}], "teacher": "Read the simple story first. Model one clue: 'I think Scrooge is unkind because the text says he iced his office.' Pupils working at Levels 2 and 3 can switch to Dickens' words.", "lowEnergy": "Read the simple story aloud; the pupil just listens."}, {"type": "poll", "title": "Which word fits Scrooge best?", "question": "Tap your choice. Everyone's vote counts!", "options": ["mean", "lonely", "grumpy", "all three!"], "teacher": "Ask one pupil to explain their vote, using a clue from the story.", "lowEnergy": "Voting is enough. That's their contribution today."}, {"type": "stop", "title": "Brilliant detective work!", "text": "You've met Scrooge, found clues and voted. If you're feeling tired, this is a great place to finish.", "teacher": "Natural stopping point. If energy is low, tap 'Finish here' to go straight to the last question."}, {"type": "vocab", "title": "Scrooge words", "intro": "Tap a card to find out what the word means.", "words": [{"word": "miser", "meaning": "someone who keeps all their money and won't share it", "example": "Scrooge was a miser who counted every penny."}, {"word": "tight-fisted", "meaning": "not wanting to spend or give anything", "example": "He was too tight-fisted to buy coal for the fire."}, {"word": "solitary", "meaning": "on your own, with no one else", "example": "Scrooge lived a solitary life."}, {"word": "grasping", "meaning": "always wanting more for yourself", "example": "His grasping hands held on to his gold."}, {"word": "flint", "meaning": "a very hard, sharp stone", "example": "His heart was as hard as flint."}, {"word": "humbug", "meaning": "nonsense; something silly or fake", "example": "\"Christmas is humbug!\" grumbled Scrooge."}], "teacher": "Use these words in the next task. Add one new word each lesson.", "lowEnergy": "Flip one card together."}, {"type": "levels", "title": "Your turn, detective!", "intro": "Choose your level. You can always change your mind.", "wordBank": ["icy", "frosty", "lonely", "grumpy", "unhappy", "mean", "selfish", "unkind", "miserable"], "levels": [{"name": "Starting out", "emoji": "🌱", "task": "Pick three words that describe Scrooge. Tap a gap, then tap a word.", "stems": ["Scrooge is ___.", "Scrooge is ___.", "Scrooge is ___."]}, {"name": "Getting there", "emoji": "🌿", "task": "Finish the sentences. Use a clue from the story.", "stems": ["I think Scrooge is ___ because the text says ___.", "The word ___ makes me think Scrooge is ___."]}, {"name": "Stretch", "emoji": "🌳", "task": "Write two clues with evidence, then make a prediction.", "stems": ["Dickens describes Scrooge as ___, which suggests ___.", "I think Scrooge is ___ because ___.", "I predict Scrooge might change if ___."]}], "teacher": "Pupils choose; you can suggest a level. Praise noticing, not neatness.", "lowEnergy": "Starting out only, with you scribing."}, {"type": "quiz", "title": "Quick quiz", "intro": "Have a go together. No timer, no scores!", "questions": [{"q": "What does Scrooge say about Christmas?", "options": ["Bah! Humbug!", "Hooray!", "Merry Christmas!"], "answer": 0}, {"q": "Scrooge's office is…", "options": ["warm and cosy", "freezing cold", "full of friends"], "answer": 1}, {"q": "\"Solitary\" means…", "options": ["very rich", "on your own", "very cold"], "answer": 1}], "teacher": "Optional. Also works as catch-up.", "lowEnergy": "Do one question only."}, {"type": "plenary", "title": "One last question", "question": "If Scrooge knocked on your door, how would you feel?", "emojis": ["😨", "😠", "😢", "🤔", "😂", "🤗"], "nextTime": "Next time, a very spooky visitor knocks on Scrooge's door…", "teacher": "Then head to the Goodbye Circle.", "lowEnergy": "The pupil picks an emoji."}]}, {"format": "bmf-lesson-pack", "version": 1, "id": "maths-flightpath-multiplication-division", "title": "Times tables flightpath", "subject": "Maths", "years": "Years 1–5", "unit": "Multiplication and division", "lesson": 1, "emoji": "🚀", "minutes": 25, "objective": "Recall multiplication and division facts for the 6 and 7 times tables, and use formal written methods, starting from wherever each pupil is ready.", "childAim": "I can work on my own step, and choose when I'm ready to climb.", "status": "draft", "screens": [{"type": "intro", "title": "Our flightpaths", "text": "Today everyone is on a maths flightpath. We each start on the step that feels right, and climb when we're ready. There's no rush and no racing. Your teacher can see how you're doing and can help any time.", "teacher": "Children choose a starting step; move anyone with ◀ Easier / Harder ▶ on your grid. A child who has missed a lot of school might start with Which way round?; a confident Year 4 might start at 3-digit × 1-digit.", "lowEnergy": "Choose a step together and do just one question."}, {"type": "pathway", "title": "My flightpath", "intro": "Choose a step to start. Your teacher might suggest one too.", "steps": [{"name": "Which way round?", "year": "Y1", "kind": "orient", "params": {"digits": [6, 9, 2, 3, 5, 7]}}, {"name": "Count on in 6s", "year": "Y4", "kind": "countOn", "params": {"by": [6]}}, {"name": "6 times table", "year": "Y4", "kind": "facts", "params": {"tables": [6]}}, {"name": "7 times table", "year": "Y4", "kind": "facts", "params": {"tables": [7]}}, {"name": "3-digit × 1-digit", "year": "Y4", "kind": "mulWritten", "params": {"by": [6, 7]}}, {"name": "Short division", "year": "Y5", "kind": "shortDiv", "params": {"by": [6, 7], "maxQuotient": 99}}], "teacher": "Your grid shows each child's step, stars today and any help or break requests. Move a child with ◀ Easier / Harder ▶. Children are offered the next step after 3 in a row, and they decide.", "lowEnergy": "Stay on a secure step; a few correct answers is a win."}, {"type": "plenary", "title": "How did it feel?", "question": "How did your flightpath feel today?", "emojis": ["🚀", "😊", "🤔", "😴", "💪", "🌟"], "nextTime": "Next time, we'll start from where you finished today.", "teacher": "Ask one child to share something they're proud of. Then the Goodbye Circle."}]}];
+const BUILT_IN_PACKS = [{"format": "bmf-lesson-pack", "version": 1, "id": "eng-y34-christmas-carol-l1", "title": "Meet Scrooge", "subject": "English", "years": "Year 3/4", "unit": "A Christmas Carol", "lesson": 1, "emoji": "🎩", "minutes": 30, "objective": "Drawing inferences such as inferring characters' feelings, thoughts and motives from their actions, and justifying inferences with evidence.", "childAim": "I can be a detective and find clues about what Scrooge is like.", "status": "draft", "screens": [{"type": "intro", "title": "Meet Scrooge", "text": "Today we are story detectives! We are going to meet a very grumpy man called Ebenezer Scrooge and look for clues about what he is like.", "teacher": "Start after Today's Hello. Read the aim aloud and ask: has anyone heard of Scrooge before?", "lowEnergy": "Just read the aim together. No answers needed."}, {"type": "sort", "title": "Cold or cosy?", "prompt": "Tap a word, then tap the box where you think it belongs. There are no wrong answers!", "bins": [{"label": "Cold", "emoji": "❄️"}, {"label": "Cosy", "emoji": "🔥"}], "items": [{"text": "frosty"}, {"text": "warm hug"}, {"text": "icy"}, {"text": "smile"}, {"text": "alone"}, {"text": "party"}], "teacher": "Ask 'why did you put it there?' for one or two words. 'Alone' is a good one to talk about.", "lowEnergy": "The pupil points or says the word; you tap it into the box."}, {"type": "read", "title": "Scrooge in the cold", "intro": "Listen to the story. Then tap the blue clue words to find out what they tell us.", "versions": [{"label": "Simple story", "paras": ["Scrooge was a mean old man who loved money more than people. He was cold inside, like ice. His office was freezing, even at Christmas.", "Nobody ever stopped to say hello to him. When his nephew said, \"Merry Christmas!\", Scrooge just grumbled, \"Bah! Humbug!\""]}, {"label": "Dickens' words", "paras": ["Oh! But he was a tight-fisted hand at the grindstone, Scrooge! A squeezing, wrenching, grasping, scraping, clutching old sinner! Hard and sharp as flint, secret, and self-contained, and solitary as an oyster.", "The cold within him froze his old features, nipped his pointed nose, and stiffened his walk. He carried his own low temperature always about with him; he iced his office in the summer, and didn't thaw it one degree at Christmas.", "Nobody ever stopped him in the street to say, with gladsome looks, \"My dear Scrooge, how are you? When will you come to see me?\"", "\"A merry Christmas, uncle!\" cried a cheerful voice. It was the voice of Scrooge's nephew.", "\"Bah!\" said Scrooge. \"Humbug!\""]}], "clues": [{"text": "cold inside", "note": "Scrooge isn't just chilly. His feelings are cold and unkind."}, {"text": "freezing, even at Christmas", "note": "Even at the happiest time of year, Scrooge doesn't warm up."}, {"text": "Nobody ever stopped", "note": "People keep away from Scrooge. He might be lonely."}, {"text": "tight-fisted", "note": "He holds on to his money and won't share it."}, {"text": "solitary as an oyster", "note": "An oyster is shut tight in its shell. Scrooge keeps himself shut away too."}, {"text": "cold within him", "note": "The cold is inside him. Dickens means his heart, not the weather."}, {"text": "iced his office", "note": "Scrooge won't pay to heat his office, even when it's cold."}, {"text": "Humbug", "note": "Humbug means nonsense. Scrooge thinks Christmas is silly."}], "teacher": "Read the simple story first. Model one clue: 'I think Scrooge is unkind because the text says he iced his office.' Pupils working at Levels 2 and 3 can switch to Dickens' words.", "lowEnergy": "Read the simple story aloud; the pupil just listens."}, {"type": "poll", "title": "Which word fits Scrooge best?", "question": "Tap your choice. Everyone's vote counts!", "options": ["mean", "lonely", "grumpy", "all three!"], "teacher": "Ask one pupil to explain their vote, using a clue from the story.", "lowEnergy": "Voting is enough. That's their contribution today."}, {"type": "stop", "title": "Brilliant detective work!", "text": "You've met Scrooge, found clues and voted. If you're feeling tired, this is a great place to finish.", "teacher": "Natural stopping point. If energy is low, tap 'Finish here' to go straight to the last question."}, {"type": "vocab", "title": "Scrooge words", "intro": "Tap a card to find out what the word means.", "words": [{"word": "miser", "meaning": "someone who keeps all their money and won't share it", "example": "Scrooge was a miser who counted every penny."}, {"word": "tight-fisted", "meaning": "not wanting to spend or give anything", "example": "He was too tight-fisted to buy coal for the fire."}, {"word": "solitary", "meaning": "on your own, with no one else", "example": "Scrooge lived a solitary life."}, {"word": "grasping", "meaning": "always wanting more for yourself", "example": "His grasping hands held on to his gold."}, {"word": "flint", "meaning": "a very hard, sharp stone", "example": "His heart was as hard as flint."}, {"word": "humbug", "meaning": "nonsense; something silly or fake", "example": "\"Christmas is humbug!\" grumbled Scrooge."}], "teacher": "Use these words in the next task. Add one new word each lesson.", "lowEnergy": "Flip one card together."}, {"type": "levels", "title": "Your turn, detective!", "intro": "Choose your level. You can always change your mind.", "wordBank": ["icy", "frosty", "lonely", "grumpy", "unhappy", "mean", "selfish", "unkind", "miserable"], "levels": [{"name": "Starting out", "emoji": "🌱", "task": "Pick three words that describe Scrooge. Tap a gap, then tap a word.", "stems": ["Scrooge is ___.", "Scrooge is ___.", "Scrooge is ___."]}, {"name": "Getting there", "emoji": "🌿", "task": "Finish the sentences. Use a clue from the story.", "stems": ["I think Scrooge is ___ because the text says ___.", "The word ___ makes me think Scrooge is ___."]}, {"name": "Stretch", "emoji": "🌳", "task": "Write two clues with evidence, then make a prediction.", "stems": ["Dickens describes Scrooge as ___, which suggests ___.", "I think Scrooge is ___ because ___.", "I predict Scrooge might change if ___."]}], "teacher": "Pupils choose; you can suggest a level. Praise noticing, not neatness.", "lowEnergy": "Starting out only, with you scribing."}, {"type": "quiz", "title": "Quick quiz", "intro": "Have a go together. No timer, no scores!", "questions": [{"q": "What does Scrooge say about Christmas?", "options": ["Bah! Humbug!", "Hooray!", "Merry Christmas!"], "answer": 0}, {"q": "Scrooge's office is…", "options": ["warm and cosy", "freezing cold", "full of friends"], "answer": 1}, {"q": "\"Solitary\" means…", "options": ["very rich", "on your own", "very cold"], "answer": 1}], "teacher": "Optional. Also works as catch-up.", "lowEnergy": "Do one question only."}, {"type": "plenary", "title": "One last question", "question": "If Scrooge knocked on your door, how would you feel?", "emojis": ["😨", "😠", "😢", "🤔", "😂", "🤗"], "nextTime": "Next time, a very spooky visitor knocks on Scrooge's door…", "teacher": "Then head to the Goodbye Circle.", "lowEnergy": "The pupil picks an emoji."}]}, {"format": "bmf-lesson-pack", "version": 1, "rev": 2, "id": "maths-flightpath-multiplication-division", "title": "Multiplication and division flightpath", "subject": "Maths", "years": "Years 1–6", "unit": "Multiplication and division", "lesson": 1, "emoji": "🚀", "minutes": 25, "objective": "Recall and use multiplication and division facts and methods from Year 1 to Year 6, starting from wherever each pupil is ready (National Curriculum for England, following Oak National Academy’s sequence).", "childAim": "I can work on my own step, and choose when I'm ready to climb.", "status": "draft", "screens": [{"type": "intro", "title": "Our flightpaths", "text": "Today everyone is on a maths flightpath. We each start on the step that feels right, and climb when we're ready. There's no rush and no racing. Use paper or the whiteboard for your workings. Your teacher can see how you're doing and can help any time.", "teacher": "Children choose a starting step. Move anyone with ◀ Easier / Harder ▶ on your grid. The Step guide shows each step’s National Curriculum objective, Oak lessons and the slips Oak says to look out for.", "lowEnergy": "Choose a secure step together and do just one question."}, {"type": "pathway", "title": "My flightpath", "intro": "Choose a step to start. Your teacher might suggest one too.", "steps": [{"name": "Count in 2s, 5s and 10s", "year": "Y1", "stage": "Counting in groups", "stageEmoji": "🧺", "kind": "countOn", "params": {"by": [2, 5, 10]}, "nc": {"year": 1, "objective": "Count, read and write numbers to 100 in numerals; count in multiples of 2s, 5s and 10s."}, "oak": {"year": 1, "unit": "unitising-and-coin-recognitions-counting-in-2s-5s-and-10s", "unitTitle": "Unitising and coin recognition - counting in 2s, 5s and 10s", "lessons": [{"slug": "skip-count-in-twos-forwards-and-backwards", "title": "Skip count in twos forwards and backwards"}, {"slug": "skip-count-in-fives-forwards-and-backwards", "title": "Skip count in fives forwards and backwards"}]}, "hints": {"skip12": {"child": "After 10 comes 12. Count it on your fingers: 10, 11, 12.", "label": "Missed out 12 when counting in 2s", "oak": {"lesson": "skip-count-in-twos-forwards-and-backwards", "misconception": "Children often miss out 12 when reciting the multiples of two due to the irregularity and not hearing the 'two' in twelve.", "response": "Make deliberate errors around this and use practical objects to show the effect of adding two to ten. Orally rehearse counting in twos, both through and from 10."}}, "tens": {"child": "Counting in 5s goes 5, 10, 15, 20… The ones digit goes 5, 0, 5, 0.", "label": "Slipped into counting in 10s", "oak": {"lesson": "skip-count-in-fives-forwards-and-backwards", "misconception": "When counting in fives, children may revert to the pattern of counting in tens after reciting a decade number.", "response": "Use practical equipment such as ten frames and base ten number boards to highlight why the next number in our count could not be a decade number. Explore the pattern in the digits and display these in the environment to promote further discussion."}}, "ones": {"child": "Each jump adds {n}, not 1. What is {last} + {n}?", "label": "Counted on in ones"}, "any": {"child": "Each jump adds {n}. What is {last} + {n}?", "label": "Hint shown"}}}, {"name": "Equal groups", "year": "Y1", "stage": "Counting in groups", "stageEmoji": "🧺", "kind": "groups", "params": {"maxGroups": 5, "size": [2, 5, 10]}, "nc": {"year": 1, "objective": "Solve one-step problems involving multiplication and division, by calculating the answer using concrete objects, pictorial representations and arrays with the support of the teacher."}, "oak": {"year": 1, "unit": "unitising-and-coin-recognitions-counting-in-2s-5s-and-10s", "unitTitle": "Unitising and coin recognition - counting in 2s, 5s and 10s", "lessons": [{"slug": "count-efficiently-in-groups-of-two", "title": "Count efficiently in groups of two"}, {"slug": "count-efficiently-in-groups-of-5", "title": "Count efficiently in groups of five"}, {"slug": "count-efficiently-in-groups-of-two-five-and-ten", "title": "Count efficiently in groups of two, five and ten"}]}, "hints": {"groups": {"child": "That is how many groups there are. How many dots altogether? Count in {n}s: {start}… and keep going.", "label": "Counted the groups, not the total", "oak": {"lesson": "count-efficiently-in-groups-of-5", "misconception": "Children may confuse the number of groups with the total, so 3 groups of 5 may be counted as 3 and not 15", "response": "Provide opportunities for children to identify both the number of groups as well as the total throughout. Encourage the use of the stem sentences to support their articulation of this."}}, "size": {"child": "That is how many are in one group. Count every group in {n}s.", "label": "Gave the group size, not the total", "oak": {"lesson": "count-efficiently-in-groups-of-two-five-and-ten", "misconception": "Children may not be sure which unit to count in. They may confuse the size of the group with the number of groups, for example saying 5 groups of 2 instead of 2 groups of 5.", "response": "Encourage children to draw a ring around each group as they count the groups and display and use the stem sentence to help them describe this."}}, "any": {"child": "Count in {n}s, one jump for each group.", "label": "Hint shown"}}}, {"name": "2, 5 and 10 times tables", "year": "Y2", "stage": "First times tables", "stageEmoji": "🌱", "kind": "facts", "params": {"tables": [2, 5, 10], "range": [1, 12]}, "nc": {"year": 2, "objective": "Recall and use multiplication and division facts for the 2, 5 and 10 multiplication tables, including recognising odd and even numbers."}, "oak": {"year": 2, "unit": "representing-counting-in-2s-and-10s-as-the-2-and-10-times-tables", "unitTitle": "Representing counting in 2s, 5s and 10s as the 2, 5 and 10 times tables", "lessons": [{"slug": "represent-the-2-times-table-in-different-ways", "title": "Represent the 2 times table in different ways"}, {"slug": "represent-counting-in-fives-as-the-5-times-table", "title": "Represent counting in fives as the 5 times table"}, {"slug": "explain-that-factor-pairs-can-be-written-in-any-order", "title": "Explain that factor pairs can be written in any order"}]}, "hints": {"neighbour": {"child": "So close! That is one {n} away. Count in {n}s, {a} jumps.", "label": "Next-door multiple", "oak": {"lesson": "represent-the-2-times-table-in-different-ways", "misconception": "Children may struggle to count in multiples of 2 and want to count in steps of 1", "response": "Use of concrete resources: counters can support children to practise skip counting in 2s"}}, "added": {"child": "{a} × {n} means {a} lots of {n}, not {a} add {n}. Count in {n}s, {a} times.", "label": "Added instead of multiplied", "oak": {"lesson": "represent-equal-groups-as-repeated-addition-and-multiplication", "misconception": "Pupils may not understand how to represent the repeated addition expression and a multiplication expression.", "response": "Encourage pupils to identify exactly how the equation relates to the image: with the questions ‘What does the 3 represent?’ ‘What does the 2 represent?’ ‘What does the 6 represent?’"}}, "any": {"child": "{a} × {n} is {a} lots of {n}. Count in {n}s.", "label": "Hint shown", "oak": {"lesson": "explain-that-factor-pairs-can-be-written-in-any-order", "misconception": "Pupils may confuse identifying the number of groups and group size.", "response": "Use sentence stems to support children's thinking and model writing the equation, e.g. for 2 groups of 5  we can say 2 × 5 For 5, two times we can say 5 × 2"}}}}, {"name": "Times 0 and times 1", "year": "Y2/Y4", "stage": "First times tables", "stageEmoji": "🌱", "kind": "zeroOne", "params": {"tables": [2, 5, 10]}, "nc": {"year": 4, "objective": "Use place value, known and derived facts to multiply and divide mentally, including: multiplying by 0 and 1; dividing by 1; multiplying together 3 numbers."}, "oak": {"year": 2, "unit": "representing-counting-in-5s-as-the-5-times-table-and-link-to-the-10-times-tables", "unitTitle": "Representing counting in 5s as the 5 times table and link to the 10 times tables", "lessons": [{"slug": "explain-how-a-factor-of-zero-or-one-affects-the-product", "title": "Explain how a factor of zero or one affects the product"}, {"slug": "explain-how-a-divisor-of-one-affects-the-quotient", "title": "Explain how a divisor of one affects the quotient"}, {"slug": "explain-how-a-dividend-of-zero-affects-the-quotient", "title": "Explain how a dividend of zero affects the quotient"}]}, "hints": {"zero": {"child": "Picture {n} empty plates. 0 + 0 + 0… is still 0.", "label": "Thought multiplying always makes it bigger", "oak": {"lesson": "explain-how-a-factor-of-zero-or-one-affects-the-product", "misconception": "Children may have the misconception that multiplying always makes the number bigger and therefore 0 cannot be a product.", "response": "Remind children that 0 groups of something is equal to zero. You can show this practically using groups of zero. When a factor is 1 the product is the other factor."}}, "one": {"child": "One lot of {n} is just {n}.", "label": "Times 1 slip", "oak": {"lesson": "explain-how-a-factor-of-zero-or-one-affects-the-product", "misconception": "Children may have the misconception that multiplying always makes the number bigger and therefore 0 cannot be a product.", "response": "Remind children that 0 groups of something is equal to zero. You can show this practically using groups of zero. When a factor is 1 the product is the other factor."}}, "divOne": {"child": "Share {n} with just one person. They get all {n}.", "label": "Divide by 1 slip", "oak": {"lesson": "explain-how-a-divisor-of-one-affects-the-quotient", "misconception": "Children are unsure as to why, when the divisor is equal to 1, the quotient is equal to the dividend.", "response": "Use physical resources e.g. counters or children to represent both sharing and grouping contexts to help children to visualise the idea before applying to abstract equations."}}, "same": {"child": "How many {n}s fit into {n}? Just one.", "label": "Number divided by itself", "oak": {"lesson": "explain-how-the-quotient-is-affected-when-the-divisor-is-equal-to-the-dividend", "misconception": "Children are unsure as to why, when the dividend and divisor are equal, the quotient is equal to 1", "response": "Use physical resources  e.g. counters or children to represent both sharing and grouping contexts to help children to visualise the idea before applying to abstract equations."}}, "zeroDiv": {"child": "If there is nothing to share, everyone gets nothing.", "label": "Zero divided by a number", "oak": {"lesson": "explain-how-a-dividend-of-zero-affects-the-quotient", "misconception": "Children assume that the answer to all questions posed is 0 because that is the focus.", "response": "Always encourage children to read an equation aloud and describe the role of each number within it. Relating each to a context can help children to visualise the mathematics when 0 feels abstract."}}}}, {"name": "Divide by 2, 5 and 10", "year": "Y2", "stage": "First times tables", "stageEmoji": "🌱", "kind": "facts", "params": {"tables": [2, 5, 10], "range": [1, 12], "divide": 1}, "nc": {"year": 2, "objective": "Recall and use multiplication and division facts for the 2, 5 and 10 multiplication tables, including recognising odd and even numbers."}, "oak": {"year": 2, "unit": "doubling-halving-quotative-and-partitive-division", "unitTitle": "Doubling, halving, quotative and partitive division", "lessons": [{"slug": "explain-how-times-table-facts-can-help-to-find-the-quotient-5-times-table", "title": "Explain how times table facts can help to find the quotient (5 times table)"}, {"slug": "skip-count-using-the-group-size-to-find-the-number-of-groups", "title": "Skip count using the group size to find the number of groups"}, {"slug": "skip-count-to-find-the-group-size-in-a-sharing-problem", "title": "Skip count to find the group size in a sharing problem"}]}, "hints": {"divisor": {"child": "{n} is the number we are dividing by. How many {n}s make {d}?", "label": "Gave the divisor as the answer", "oak": {"lesson": "skip-count-using-the-group-size-to-find-the-number-of-groups", "misconception": "Pupils may think that the 'divisor' (the number we are dividing by) always represents the number of groups.", "response": "Avoid generalising the divisor as the 'number of group' for every division problem, explaining that this only works in contexts in which grouping takes place. For sharing problems later in the unit, the divisor is the 'size of each group'."}}, "divNeighbour": {"child": "Count in {n}s and stop at {d}. How many jumps did you make?", "label": "Lost count of the groups", "oak": {"lesson": "skip-count-to-find-the-group-size-in-a-sharing-problem", "misconception": "Pupils may forget to stop their count when giving an answer to a sharing problem.", "response": "Emphasise the whole when writing equations and discussing problems. We count in 2s, 5s or 10s until we reach that whole. Stress that if we go further, we share more than we have to begin with."}}, "divAny": {"child": "Which {n} times fact makes {d}?", "label": "Hint shown", "oak": {"lesson": "explain-how-times-table-facts-can-help-to-find-the-quotient-5-times-table", "misconception": "Children misunderstanding the difference between partitive and quotative division when discussing the problems.", "response": "Although they will result in the correct answers, the calculation itself will not accurately reflect the problem. Ensure children initially describe each problem and represent it visually so that they can see whether they are grouping or sharing."}}}}, {"name": "4 and 8 times tables", "year": "Y3", "stage": "Doubling up", "stageEmoji": "🌿", "kind": "facts", "params": {"tables": [4, 8], "range": [2, 12]}, "nc": {"year": 3, "objective": "Recall and use multiplication and division facts for the 3, 4 and 8 multiplication tables."}, "oak": {"year": 3, "unit": "2-4-and-8-times-tables-using-times-tables-to-solve-problems", "unitTitle": "2, 4 and 8 times tables: using times tables to solve problems", "lessons": [{"slug": "represent-counting-in-fours-as-the-4-times-table", "title": "Represent counting in fours as the 4 times table"}, {"slug": "represent-counting-in-eights-as-the-8-times-table", "title": "Represent counting in eights as the 8 times table"}, {"slug": "explain-the-relationship-between-multiples-of-4-and-multiples-of-8", "title": "Explain the relationship between multiples of 4 and multiples of 8"}]}, "hints": {"neighbour": {"child": "Use doubling: {a} × 2 = {x2}. Double it for × 4. Double again for × 8.", "label": "Next-door multiple", "oak": {"lesson": "explain-the-relationship-between-the-multiples-of-2-4-and-8", "misconception": "Lack of fluency in 2s, 4s, or 8s times tables can mean that pupils struggle to generalise rules of and relationships within multiples of 2, 4 and 8", "response": "Take time to practically model grouping a set of objects in different ways. For example, take 24 straws and clearly show how groups of 2, 4 and 8 can be made. Discuss the relationships focusing on doubling and halving."}}, "added": {"child": "{a} × {n} means {a} lots of {n}, not {a} add {n}. Count in {n}s, {a} times.", "label": "Added instead of multiplied", "oak": {"lesson": "represent-equal-groups-as-repeated-addition-and-multiplication", "misconception": "Pupils may not understand how to represent the repeated addition expression and a multiplication expression.", "response": "Encourage pupils to identify exactly how the equation relates to the image: with the questions ‘What does the 3 represent?’ ‘What does the 2 represent?’ ‘What does the 6 represent?’"}}, "any": {"child": "Use doubling: {a} × 2 = {x2}. Double it for × 4. Double again for × 8.", "label": "Hint shown", "oak": {"lesson": "explain-the-relationship-between-multiples-of-4-and-multiples-of-8", "misconception": "Lack of fluency in the 4s and 8s times tables and generalisation of the rule.", "response": "Encourage children to test generalisation - model this clearly using key words and identifying why the rule applies."}}}}, {"name": "Divide by 4 and 8", "year": "Y3", "stage": "Doubling up", "stageEmoji": "🌿", "kind": "facts", "params": {"tables": [4, 8], "range": [2, 12], "divide": 1}, "nc": {"year": 3, "objective": "Recall and use multiplication and division facts for the 3, 4 and 8 multiplication tables."}, "oak": {"year": 3, "unit": "2-4-and-8-times-tables-using-times-tables-to-solve-problems", "unitTitle": "2, 4 and 8 times tables: using times tables to solve problems", "lessons": [{"slug": "use-knowledge-of-the-divisibility-rules-for-divisors-of-2-and-4-to-solve-problems", "title": "Use knowledge of the divisibility rules for divisors of 2 and 4 to solve problems"}, {"slug": "use-knowledge-of-the-divisibility-rules-for-divisors-8-to-solve-problems", "title": "Use knowledge of the divisibility rules for divisors 8 to solve problems"}]}, "hints": {"divisor": {"child": "{n} is the number we are dividing by. How many {n}s make {d}?", "label": "Gave the divisor as the answer", "oak": {"lesson": "skip-count-using-the-group-size-to-find-the-number-of-groups", "misconception": "Pupils may think that the 'divisor' (the number we are dividing by) always represents the number of groups.", "response": "Avoid generalising the divisor as the 'number of group' for every division problem, explaining that this only works in contexts in which grouping takes place. For sharing problems later in the unit, the divisor is the 'size of each group'."}}, "divNeighbour": {"child": "Count in {n}s and stop at {d}. How many jumps did you make?", "label": "Lost count of the groups", "oak": {"lesson": "skip-count-to-find-the-group-size-in-a-sharing-problem", "misconception": "Pupils may forget to stop their count when giving an answer to a sharing problem.", "response": "Emphasise the whole when writing equations and discussing problems. We count in 2s, 5s or 10s until we reach that whole. Stress that if we go further, we share more than we have to begin with."}}, "divAny": {"child": "Which {n} times fact makes {d}? Halve {d}, then halve again.", "label": "Hint shown", "oak": {"lesson": "use-knowledge-of-the-divisibility-rules-for-divisors-of-2-and-4-to-solve-problems", "misconception": "Lack of fluency in 2s and 4s times tables and not understanding the divisibility rules or the problems.", "response": "To clearly model highlighting key words of worded problems to understand the problem and the operation required for the calculation. Continue to use language stems such as 'If I know...' 'Then I know...,' to support mathematical thinking."}}}}, {"name": "Times tables × 10", "year": "Y3", "stage": "Doubling up", "stageEmoji": "🌿", "kind": "scale10", "params": {"tables": [2, 3, 4, 8]}, "nc": {"year": 3, "objective": "Write and calculate mathematical statements for multiplication and division using the multiplication tables that they know, including for two-digit numbers times one-digit numbers, using mental and progressing to formal written methods."}, "oak": {"year": 3, "unit": "2-4-and-8-times-tables-using-times-tables-to-solve-problems", "unitTitle": "2, 4 and 8 times tables: using times tables to solve problems", "lessons": [{"slug": "scale-known-multiplication-facts-by-10", "title": "Scale known multiplication facts by 10"}, {"slug": "scale-divisions-derived-from-multiplication-facts-by-10", "title": "Scale divisions derived from multiplication facts by 10"}]}, "hints": {"forgot10": {"child": "{a} × {n} = {base}. One number is 10 times the size, so the answer is 10 times the size too.", "label": "Forgot to scale by 10", "oak": {"lesson": "scale-known-multiplication-facts-by-10", "misconception": "Lack of fluency in multiplication facts and / or understanding of word problems. 'Adding a 0' at the end.", "response": "Use language of unitisation to support pupils mathematical thinking. Clear modelling of steps in how to find the operation for the calculation. Use gattegno chart or place value chart to highlight scaling by 10."}}, "twoZeros": {"child": "Only one number is 10 times the size, so the answer is 10 times the size, not 100 times.", "label": "Scaled by 100 instead of 10", "oak": {"lesson": "scale-known-multiplication-facts-by-10", "misconception": "Lack of fluency in multiplication facts and / or understanding of word problems. 'Adding a 0' at the end.", "response": "Use language of unitisation to support pupils mathematical thinking. Clear modelling of steps in how to find the operation for the calculation. Use gattegno chart or place value chart to highlight scaling by 10."}}, "any": {"child": "Start from {a} × {n} = {base}. How many tens is that?", "label": "Hint shown", "oak": {"lesson": "scale-divisions-derived-from-multiplication-facts-by-10", "misconception": "Lack of fluency in 2s, 4s and 8s times tables and not understanding the divisibility rules or the problems.", "response": "To clearly model use of gattegno chart or place value chart to highlight scaling up and down by 10. Highlight key words of worded problems to understand the problem and the operation required for the calculation."}}}}, {"name": "3 and 6 times tables", "year": "Y3/Y4", "stage": "All the tables", "stageEmoji": "🌳", "kind": "facts", "params": {"tables": [3, 6], "range": [2, 12]}, "nc": {"year": 4, "objective": "Recall multiplication and division facts for multiplication tables up to 12 × 12."}, "oak": {"year": 4, "unit": "represent-counting-in-threes-and-sixes-as-the-3-and-6-times-tables", "unitTitle": "Represent counting in threes and sixes as the 3 and 6 times tables", "lessons": [{"slug": "represent-counting-in-threes-as-the-3-times-table", "title": "Represent counting in threes as the 3 times table"}, {"slug": "represent-counting-in-sixes-as-the-6-times-table", "title": "Represent counting in sixes as the 6 times table"}, {"slug": "explain-the-relationship-between-multiples-of-three-and-six", "title": "Explain the relationship between multiples of three and six"}]}, "hints": {"neighbour@6": {"child": "Use the 3s: {a} × 3 = {x3}. Double it for × 6.", "label": "Next-door multiple", "oak": {"lesson": "explain-the-relationship-between-multiples-of-three-and-six", "misconception": "Lack of fluency in the 3s and 6s times tables can lead to pupils being slower to grasp the generalisation about the relationship between the 3 and 6 times tables.", "response": "Use arrays and other representations to draw clear comparisons. Multiplication grids could also be provided while pupils become more fluent in recall."}}, "any@6": {"child": "Use the 3s: {a} × 3 = {x3}. Double it for × 6.", "label": "Hint shown", "oak": {"lesson": "explain-the-relationship-between-multiples-of-three-and-six", "misconception": "Lack of fluency in the 3s and 6s times tables can lead to pupils being slower to grasp the generalisation about the relationship between the 3 and 6 times tables.", "response": "Use arrays and other representations to draw clear comparisons. Multiplication grids could also be provided while pupils become more fluent in recall."}}, "neighbour": {"child": "So close! That is one {n} away. Count in {n}s, {a} jumps.", "label": "Next-door multiple", "oak": {"lesson": "represent-counting-in-threes-as-the-3-times-table", "misconception": "Pupils often confuse the keywords of this lesson and use them interchangeably or incorrectly.", "response": "Model correct usage in a range of contexts including labelling abstract equations and using the terms to identify the known elements in worded problems. Choral response can also support pupils using these words correctly."}}, "added": {"child": "{a} × {n} means {a} lots of {n}, not {a} add {n}. Count in {n}s, {a} times.", "label": "Added instead of multiplied", "oak": {"lesson": "represent-equal-groups-as-repeated-addition-and-multiplication", "misconception": "Pupils may not understand how to represent the repeated addition expression and a multiplication expression.", "response": "Encourage pupils to identify exactly how the equation relates to the image: with the questions ‘What does the 3 represent?’ ‘What does the 2 represent?’ ‘What does the 6 represent?’"}}, "any": {"child": "Count in {n}s, {a} times. Or start from 5 × {n} = {x5n}.", "label": "Hint shown", "oak": {"lesson": "represent-counting-in-threes-as-the-3-times-table", "misconception": "Pupils often confuse the keywords of this lesson and use them interchangeably or incorrectly.", "response": "Model correct usage in a range of contexts including labelling abstract equations and using the terms to identify the known elements in worded problems. Choral response can also support pupils using these words correctly."}}}}, {"name": "9 times table", "year": "Y4", "stage": "All the tables", "stageEmoji": "🌳", "kind": "facts", "params": {"tables": [9], "range": [2, 12]}, "nc": {"year": 4, "objective": "Recall multiplication and division facts for multiplication tables up to 12 × 12."}, "oak": {"year": 4, "unit": "represent-counting-in-nines-as-the-9-times-table", "unitTitle": "Represent counting in nines as the 9 times table", "lessons": [{"slug": "represent-counting-in-nines-as-the-9-times-table", "title": "Represent counting in nines as the 9 times table"}, {"slug": "use-known-facts-from-the-10-times-table-to-solve-problems-involving-the-9-times-table", "title": "Use known facts from the 10 times table to solve problems involving the 9 times table"}]}, "hints": {"any": {"child": "Use the 10s: {a} × 10 = {x10}. Then take away one {a}.", "label": "Using 10s to find 9s", "oak": {"lesson": "use-known-facts-from-the-10-times-table-to-solve-problems-involving-the-9-times-table", "misconception": "Lack of fluency in 9 times tables and not understanding the problems.", "response": "To clearly model highlighting key words of worded problems to understand the problem and the operation required for the calculation. Continue to use language stems such as 'If I know...' 'Then I know...,' to support mathematical thinking."}}, "added": {"child": "{a} × {n} means {a} lots of {n}, not {a} add {n}. Count in {n}s, {a} times.", "label": "Added instead of multiplied", "oak": {"lesson": "represent-equal-groups-as-repeated-addition-and-multiplication", "misconception": "Pupils may not understand how to represent the repeated addition expression and a multiplication expression.", "response": "Encourage pupils to identify exactly how the equation relates to the image: with the questions ‘What does the 3 represent?’ ‘What does the 2 represent?’ ‘What does the 6 represent?’"}}}}, {"name": "7 times table", "year": "Y4", "stage": "All the tables", "stageEmoji": "🌳", "kind": "facts", "params": {"tables": [7], "range": [2, 12]}, "nc": {"year": 4, "objective": "Recall multiplication and division facts for multiplication tables up to 12 × 12."}, "oak": {"year": 4, "unit": "7-times-table-odd-and-even-patterns-square-numbers-and-tests-of-divisibility", "unitTitle": "7 times table: odd and even patterns, square numbers and tests of divisibility", "lessons": [{"slug": "represent-counting-in-sevens-as-the-7-times-table", "title": "Represent counting in sevens as the 7 times table"}, {"slug": "explain-the-relationship-between-adjacent-multiples-of-seven", "title": "Explain the relationship between adjacent multiples of seven"}, {"slug": "use-known-facts-from-the-2-5-and-6-times-tables-to-solve-problems-involving-the-7-times-table", "title": "Use known facts from the 2, 5 and 6 times tables to solve problems involving the 7 times table"}]}, "hints": {"neighbour": {"child": "Next-door multiples of 7 are 7 apart. Try 5 × {a} = {x5}, add 2 × {a} = {x2}.", "label": "Next-door multiple", "oak": {"lesson": "explain-the-relationship-between-adjacent-multiples-of-seven", "misconception": "Pupils may not see that adjacent multiples of seven differ by exactly seven.", "response": "Show that each step in the 7 times table is adding seven to the previous multiple, reinforcing the concept with number lines or skip counting, use visual aids such as a number line."}}, "added": {"child": "{a} × {n} means {a} lots of {n}, not {a} add {n}. Count in {n}s, {a} times.", "label": "Added instead of multiplied", "oak": {"lesson": "represent-equal-groups-as-repeated-addition-and-multiplication", "misconception": "Pupils may not understand how to represent the repeated addition expression and a multiplication expression.", "response": "Encourage pupils to identify exactly how the equation relates to the image: with the questions ‘What does the 3 represent?’ ‘What does the 2 represent?’ ‘What does the 6 represent?’"}}, "any": {"child": "Split the 7 into 5 and 2: 5 × {a} = {x5} and 2 × {a} = {x2}. Add them.", "label": "Building 7s from 5s and 2s", "oak": {"lesson": "use-known-facts-from-the-2-5-and-6-times-tables-to-solve-problems-involving-the-7-times-table", "misconception": "Pupils may not realise they can use simpler multiplication facts to build up to the 7 times table or may not know their times tables facts.", "response": "You can provide multiplication charts. Continue to encourage pupils to break down problems involving 7 into smaller, known facts (e.g., 7 × 6 = 5 × 6 + 2 × 6)."}}}}, {"name": "11 and 12 times tables", "year": "Y4", "stage": "All the tables", "stageEmoji": "🌳", "kind": "facts", "params": {"tables": [11, 12], "range": [2, 12]}, "nc": {"year": 4, "objective": "Recall multiplication and division facts for multiplication tables up to 12 × 12."}, "oak": {"year": 4, "unit": "apply-the-distributive-law-to-multiplication", "unitTitle": "Apply the distributive law to multiplication", "lessons": [{"slug": "use-knowledge-of-the-distributive-law-to-calculate-products-using-known-times-tables", "title": "Use knowledge of the distributive law to calculate products using known times tables"}]}, "hints": {"any": {"child": "Split it into 10 and {rest}: 10 × {a} = {x10} and {rest} × {a} = {restProd}. Add them.", "label": "Splitting into 10 and the rest", "oak": {"lesson": "use-knowledge-of-the-distributive-law-to-calculate-products-using-known-times-tables", "misconception": "Pupils may think that there is only one strategy for finding a solution and struggle to see that there is more than one way of partitioning a factor.", "response": "Spend some time discussing how many combinations of partitioned factor you could use with the distributive law and evaluate each combination for efficiency. This would be a worthwhile guided group task."}}, "added": {"child": "{a} × {n} means {a} lots of {n}, not {a} add {n}. Count in {n}s, {a} times.", "label": "Added instead of multiplied", "oak": {"lesson": "represent-equal-groups-as-repeated-addition-and-multiplication", "misconception": "Pupils may not understand how to represent the repeated addition expression and a multiplication expression.", "response": "Encourage pupils to identify exactly how the equation relates to the image: with the questions ‘What does the 3 represent?’ ‘What does the 2 represent?’ ‘What does the 6 represent?’"}}}}, {"name": "All facts to 12 × 12", "year": "Y4", "stage": "All the tables", "stageEmoji": "🌳", "kind": "facts", "params": {"tables": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "range": [2, 12], "divide": 0.4}, "nc": {"year": 4, "objective": "Recall multiplication and division facts for multiplication tables up to 12 × 12."}, "oak": {"year": 4, "unit": "understand-and-represent-multiplicative-structures", "unitTitle": "Understand and represent multiplicative structures", "lessons": [{"slug": "explain-what-each-factor-represents-in-a-multiplication-equation", "title": "Explain what each factor represents in a multiplication equation"}, {"slug": "explain-where-zero-can-be-part-of-a-multiplication-or-division-expression-and-the-impact-it-has", "title": "Explain where zero can be part of a multiplication or division expression and the impact it has"}]}, "hints": {"neighbour": {"child": "So close! That is one {n} away. Start from 10 × {n} = {x10n} and count on or back in {n}s.", "label": "Next-door multiple", "oak": {"lesson": "explain-what-each-factor-represents-in-a-multiplication-equation", "misconception": "Pupils may struggle to identify whether a factor is representing the group size or the number of groups, particularly when their position in the equation is swapped to show commutativity.", "response": "Give children concrete examples to look at, such as jars of marbles, boxes of erasers or pots of pencils and write corresponding multiplication equations, identifying the factor that represents group size and the one that represents number of groups."}}, "added": {"child": "{a} × {n} means {a} lots of {n}, not {a} add {n}. Count in {n}s, {a} times.", "label": "Added instead of multiplied", "oak": {"lesson": "represent-equal-groups-as-repeated-addition-and-multiplication", "misconception": "Pupils may not understand how to represent the repeated addition expression and a multiplication expression.", "response": "Encourage pupils to identify exactly how the equation relates to the image: with the questions ‘What does the 3 represent?’ ‘What does the 2 represent?’ ‘What does the 6 represent?’"}}, "divisor": {"child": "{n} is the number we are dividing by. How many {n}s make {d}?", "label": "Gave the divisor as the answer", "oak": {"lesson": "skip-count-using-the-group-size-to-find-the-number-of-groups", "misconception": "Pupils may think that the 'divisor' (the number we are dividing by) always represents the number of groups.", "response": "Avoid generalising the divisor as the 'number of group' for every division problem, explaining that this only works in contexts in which grouping takes place. For sharing problems later in the unit, the divisor is the 'size of each group'."}}, "divNeighbour": {"child": "Count in {n}s and stop at {d}. How many jumps did you make?", "label": "Lost count of the groups", "oak": {"lesson": "skip-count-to-find-the-group-size-in-a-sharing-problem", "misconception": "Pupils may forget to stop their count when giving an answer to a sharing problem.", "response": "Emphasise the whole when writing equations and discussing problems. We count in 2s, 5s or 10s until we reach that whole. Stress that if we go further, we share more than we have to begin with."}}, "divAny": {"child": "Which {n} times fact makes {d}?", "label": "Hint shown"}, "any": {"child": "Use a fact you know nearby, like 10 × {n} = {x10n}.", "label": "Hint shown"}}}, {"name": "Remainders", "year": "Y5", "stage": "All the tables", "stageEmoji": "🌳", "kind": "remainder", "params": {"by": [3, 4, 5, 6, 7, 8, 9], "maxQ": 12}, "nc": {"year": 5, "objective": "Divide numbers up to 4 digits by a one-digit number using the formal written method of short division and interpret remainders appropriately for the context."}, "oak": {"year": 4, "unit": "division-with-remainders", "unitTitle": "Division with remainders", "lessons": [{"slug": "use-multiplication-facts-to-answer-division-questions", "title": "Use multiplication facts to answer division questions"}, {"slug": "explain-how-the-remainder-relates-to-the-divisor-in-a-division-equation", "title": "Explain how the remainder relates to the divisor in a division equation"}, {"slug": "use-knowledge-of-division-equations-and-remainders-to-solve-problems", "title": "Use knowledge of division equations and remainders to solve problems"}]}, "hints": {"tooHigh": {"child": "{qn1} is more than {d}. Find the biggest {n}s fact that is not more than {d}.", "label": "Chose a multiple bigger than the number", "oak": {"lesson": "use-multiplication-facts-to-answer-division-questions", "misconception": "Children may choose the multiple that is higher than or closest to the dividend, for example to solve 47 divided by 6, they may choose 8 x 6 = 48 instead of 7 x 6 = 42", "response": "Choose smaller numbers to demonstrate the concept, using practical equipment and number lines to demonstrate why the number must be equal to or less than the dividend."}}, "bigRem": {"child": "The remainder must be smaller than {n}. Could one more {n} fit in?", "label": "Remainder bigger than the divisor", "oak": {"lesson": "explain-how-the-remainder-relates-to-the-divisor-in-a-division-equation", "misconception": "Rather than using the largest multiple less than or equal to the dividend, children may identify the closest multiple (one that is too high) or one that is less than the dividend but is too low.", "response": "Add further examples using counters to explore patterns where one more is added to draw attention to the size of the remainder compared to the divisor. Draw number lines alongside these so children begin to also visualise in a more abstract way."}}, "any": {"child": "Find the biggest {n}s fact that is not more than {d}. What is left over?", "label": "Hint shown", "oak": {"lesson": "use-knowledge-of-division-equations-and-remainders-to-solve-problems", "misconception": "Children may either choose to use a multiple higher than the dividend, e.g. 53 ÷ 9 = , or choose a multiple that is too low, e.g. 57 ÷ 8 = , which results in a remainder greater than the divisor.", "response": "When solving equations, refer back to the largest multiple that is less than or equal to the dividend and use number lines to allow children to visualise this."}}}}, {"name": "2-digit × 1-digit", "year": "Y3", "stage": "Written methods", "stageEmoji": "✏️", "kind": "partition", "params": {"by": [2, 3, 4, 5, 6]}, "nc": {"year": 3, "objective": "Write and calculate mathematical statements for multiplication and division using the multiplication tables that they know, including for two-digit numbers times one-digit numbers, using mental and progressing to formal written methods."}, "oak": {"year": 5, "unit": "multiplication-by-partitioning-leading-to-short-multiplication-2-by-1-digit", "unitTitle": "Multiplication by partitioning leading to short multiplication (2 by 1-digit)", "lessons": [{"slug": "multiply-a-2-digit-number-by-a-1-digit-number-using-partitioning", "title": "Multiply a 2-digit number by a 1-digit number using partitioning"}, {"slug": "multiply-a-2-digit-number-by-a-1-digit-number-using-partitioning-and-representations-one-regroup", "title": "Multiply a 2-digit number by a 1-digit number using partitioning and representations (one regroup)"}]}, "hints": {"tensAsOnes": {"child": "The {t} in {a} is {t} tens, worth {tens}. {tens} × {n} = {tp}.", "label": "Treated tens as ones", "oak": {"lesson": "multiply-a-2-digit-number-by-a-1-digit-number-using-partitioning", "misconception": "Pupils may not record partitioned factors as tens and ones leading to incorrect calculation.", "response": "Encourage pupils to use the stem sentences to support their thinking. Use the language of ___ tens to support place value."}}, "forgotOnes": {"child": "Don’t forget the ones: {o} × {n} = {op}. Add it to {tp}.", "label": "Forgot to multiply the ones", "oak": {"lesson": "multiply-a-2-digit-number-by-a-1-digit-number-using-partitioning-and-representations-one-regroup", "misconception": "Pupils may not regroup correctly if they do not understand the place value of digits in a factor.", "response": "Encourage pupils to use the stem sentences / array to identify when they may need to regroup."}}, "any": {"child": "Split {a} into {tens} and {o}. Multiply each part by {n}, then add.", "label": "Hint shown", "oak": {"lesson": "multiply-a-2-digit-number-by-a-1-digit-number-using-partitioning", "misconception": "Pupils may not record partitioned factors as tens and ones leading to incorrect calculation.", "response": "Encourage pupils to use the stem sentences to support their thinking. Use the language of ___ tens to support place value."}}}}, {"name": "Short multiplication", "year": "Y4", "stage": "Written methods", "stageEmoji": "✏️", "kind": "mulWritten", "params": {"digits": 3, "by": [3, 4, 5, 6, 7, 8, 9]}, "nc": {"year": 4, "objective": "Multiply two-digit and three-digit numbers by a one-digit number using formal written layout."}, "oak": {"year": 5, "unit": "multiplication-by-partitioning-leading-to-short-multiplication-3-by-1-digit", "unitTitle": "Multiplication by partitioning leading to short multiplication (3 by 1-digit)", "lessons": [{"slug": "multiply-a-3-digit-by-a-1-digit-number-with-one-or-two-regroups", "title": "Multiply a 3-digit by a 1-digit number with one or two regroups"}, {"slug": "multiply-a-3-digit-by-a-1-digit-number-with-multiple-regroups", "title": "Multiply a 3-digit by a 1-digit number with multiple regroups"}]}, "hints": {"noCarry": {"child": "Did you add the regrouped tens? {o} × {n} = {op}: write {opOnes}, carry {opTens}.", "label": "Forgot a regrouped amount", "oak": {"lesson": "multiply-a-3-digit-by-a-1-digit-number-with-multiple-regroups", "misconception": "Incorrectly regrouping or forgetting to record a regrouped amount.", "response": "Clear teacher modelling. 'What does this digit represent?' 'Where do we place the regrouped amount?'"}}, "any": {"child": "Start with the ones: {o} × {n} = {op}. Carry any tens across.", "label": "Hint shown", "oak": {"lesson": "multiply-a-3-digit-by-a-1-digit-number-with-one-or-two-regroups", "misconception": "Children may misalign digits when arranging into the short multiplication layout.", "response": "Children should use unitising language to help them understand and apply this to formal written methods."}}}}, {"name": "Short division", "year": "Y5", "stage": "Written methods", "stageEmoji": "✏️", "kind": "shortDiv", "params": {"by": [3, 4, 5, 6, 7, 8, 9], "maxQuotient": 199, "maxDividend": 999}, "nc": {"year": 5, "objective": "Divide numbers up to 4 digits by a one-digit number using the formal written method of short division and interpret remainders appropriately for the context."}, "oak": {"year": 5, "unit": "division-by-partitioning-leading-to-short-division-2-and-3-digits-by-1-digit", "unitTitle": "Division by partitioning leading to short division (2 and 3-digits by 1-digit)", "lessons": [{"slug": "divide-a-3-digit-by-a-1-digit-number-using-short-division", "title": "Divide a 3-digit by a 1-digit number using short division"}, {"slug": "use-short-division-when-the-hundreds-digit-is-smaller-than-the-divisor", "title": "Use short division when the hundreds digit is smaller than the divisor"}]}, "hints": {"regroup": {"child": "Check the regrouping: {first} ÷ {n} = {firstQ} with {firstR} left over. Carry it into the next digit.", "label": "Regrouping slip", "oak": {"lesson": "use-short-division-when-the-hundreds-digit-is-smaller-than-the-divisor", "misconception": "Pupils may confuse the terminology of dividend and divisor. Pupils may regroup the incorrect amount.", "response": "Ensure pupils can identify the dividend and the divisor. Use language of unitisation to correct any place value misconceptions."}}, "any": {"child": "How many {n}s go into {first}? Carry what is left over.", "label": "Hint shown", "oak": {"lesson": "divide-a-3-digit-by-a-1-digit-number-using-short-division", "misconception": "Pupils may not be able to arrange digits within the division frame correctly and work procedurally.", "response": "Clear teacher modelling of arrangement of digits using the division frame. Continue to use stem sentences."}}}}, {"name": "Multiply three numbers", "year": "Y4", "stage": "Written methods", "stageEmoji": "✏️", "kind": "three", "params": {}, "nc": {"year": 4, "objective": "Use place value, known and derived facts to multiply and divide mentally, including: multiplying by 0 and 1; dividing by 1; multiplying together 3 numbers."}, "oak": {"year": 5, "unit": "multiply-3-or-more-numbers-commutative-and-associative-laws", "unitTitle": "Multiply 3 or more numbers (commutative and associative laws)", "lessons": [{"slug": "explain-the-use-of-the-commutative-and-associative-laws-when-multiplying-three-or-more-numbers", "title": "Explain the use of the commutative and associative laws when multiplying three or more numbers"}, {"slug": "apply-commutative-and-associative-laws-to-simplify-multiplications", "title": "Apply commutative and associative laws to simplify multiplications"}]}, "hints": {"added": {"child": "These are all multiplied. Find an easy pair first: {pairExpr} = {pair}.", "label": "Added instead of multiplied"}, "any": {"child": "You don’t have to go left to right. Find an easy pair first: {pairExpr} = {pair}.", "label": "Worked left to right only", "oak": {"lesson": "explain-the-use-of-the-commutative-and-associative-laws-when-multiplying-three-or-more-numbers", "misconception": "Pupils only ever calculate an equation from left to right.", "response": "Ensure pupils are given time to explore where the commutative law might be best used and where the associative law might be better used. Pupils should be expected to reason why they have chosen to adopt a strategy."}}}}, {"name": "Factor pairs", "year": "Y5", "stage": "Written methods", "stageEmoji": "✏️", "kind": "factorPair", "params": {}, "nc": {"year": 5, "objective": "Identify multiples and factors, including finding all factor pairs of a number, and common factors of 2 numbers."}, "oak": {"year": 5, "unit": "understand-and-use-the-concept-of-factorisation-square-and-prime-numbers", "unitTitle": "Understand and use the concept of factorisation (square and prime numbers)", "lessons": [{"slug": "explain-what-a-factor-is-and-use-arrays-and-multiplication-and-division-facts-to-find-them", "title": "Explain what a factor is and use arrays and multiplication and division facts to find them"}, {"slug": "explain-how-to-identify-a-common-multiple-of-two-or-more-numbers", "title": "Explain how to identify a common multiple of two or more numbers"}]}, "hints": {"multiple": {"child": "{m} is a multiple of {x}. It is bigger than {x}. A factor fits into {x} exactly.", "label": "Mixed up factors and multiples", "oak": {"lesson": "explain-how-to-identify-a-common-multiple-of-two-or-more-numbers", "misconception": "Pupils confuse the terminology of factors and multiples and mistake them for one another.", "response": "Spend time encouraging pupils to identify the factors in an array and within both multiplication and division equations. Make explicit that the product and dividend represent the multiple in each equation."}}, "notFactor": {"child": "Does {nf} fit into {x} exactly? Try counting in {nf}s.", "label": "Picked a number that is not a factor", "oak": {"lesson": "explain-what-a-factor-is-and-use-arrays-and-multiplication-and-division-facts-to-find-them", "misconception": "Pupils try to represent numbers as an array with an unequal amount in rows and columns.", "response": "Ensure pupils are given time to explore representing numbers as arrays and identifying where the numbers in a multiplication equation come from within their array."}}, "neighbour": {"child": "Which number times {n} makes exactly {x}? Count in {n}s.", "label": "Next-door number"}, "any": {"child": "A factor fits into {x} exactly, with nothing left over.", "label": "Hint shown", "oak": {"lesson": "explain-what-a-factor-is-and-use-arrays-and-multiplication-and-division-facts-to-find-them", "misconception": "Pupils try to represent numbers as an array with an unequal amount in rows and columns.", "response": "Ensure pupils are given time to explore representing numbers as arrays and identifying where the numbers in a multiplication equation come from within their array."}}}}, {"name": "Prime or not?", "year": "Y5", "stage": "Written methods", "stageEmoji": "✏️", "kind": "prime", "params": {"max": 50}, "nc": {"year": 5, "objective": "Know and use the vocabulary of prime numbers, prime factors and composite (non-prime) numbers."}, "oak": {"year": 5, "unit": "understand-and-use-the-concept-of-factorisation-square-and-prime-numbers", "unitTitle": "Understand and use the concept of factorisation (square and prime numbers)", "lessons": [{"slug": "explain-how-to-identify-a-prime-number-or-a-composite-number", "title": "Explain how to identify a prime number or a composite number"}]}, "hints": {"allPrime": {"child": "{x} = {f1} × {f2}, so it has more factors than 1 and itself. It is not prime.", "label": "Thought every number is prime", "oak": {"lesson": "explain-how-to-identify-a-prime-number-or-a-composite-number", "misconception": "Every number has one and itself as a factor, so every number is a prime number.", "response": "Ensure pupils explore the different arrangements that numbers can make with tiles in arrays. Point out that the numbers which cannot be arranged in any way except for one row or column are prime numbers."}}, "notPrime": {"child": "Only 1 and {x} fit into {x} exactly. That makes it prime.", "label": "Missed a prime", "oak": {"lesson": "explain-how-to-identify-a-prime-number-or-a-composite-number", "misconception": "Every number has one and itself as a factor, so every number is a prime number.", "response": "Ensure pupils explore the different arrangements that numbers can make with tiles in arrays. Point out that the numbers which cannot be arranged in any way except for one row or column are prime numbers."}}}}, {"name": "Long multiplication", "year": "Y5/Y6", "stage": "Big calculations", "stageEmoji": "🚀", "kind": "longMul", "params": {}, "nc": {"year": 5, "objective": "Multiply numbers up to 4 digits by a one- or two-digit number using a formal written method, including long multiplication for two-digit numbers."}, "oak": {"year": 6, "unit": "multiplying-and-dividing-by-2-digit-numbers", "unitTitle": "Multiplying and dividing by 2-digit numbers", "lessons": [{"slug": "explain-how-to-use-long-multiplication-to-multiply-two-2-digit-numbers-regrouping-ones-to-tens", "title": "Explain how to use long multiplication to multiply two 2-digit numbers regrouping ones to tens"}, {"slug": "explain-how-to-use-long-multiplication-to-multiply-two-2-digit-numbers-with-regrouping", "title": "Explain how to use long multiplication to multiply two 2-digit numbers with regrouping"}]}, "hints": {"placeholder": {"child": "The second row is {a} × {bt0}, not {a} × {bt}. That row starts with a 0.", "label": "Multiplied by the tens digit as ones"}, "any": {"child": "{a} × {bo} = {r1} and {a} × {bt0} = {r2}. Add the two rows, and add any regrouped digits.", "label": "Hint shown", "oak": {"lesson": "explain-how-to-use-long-multiplication-to-multiply-two-2-digit-numbers-with-regrouping", "misconception": "Pupils forget to include regrouped values when multiplying.", "response": "Decide on a place and structure for regrouped values - they are included at the top of the algorithm in these lessons to avoid confusion with addition regrouping when partial products are summed. Ensure this is clearly modelled."}}}}, {"name": "Long division", "year": "Y6", "stage": "Big calculations", "stageEmoji": "🚀", "kind": "longDiv", "params": {"by": [11, 25], "maxQuotient": 99}, "nc": {"year": 6, "objective": "Divide numbers up to 4 digits by a two-digit whole number using the formal written method of long division, and interpret remainders as whole number remainders, fractions, or by rounding, as appropriate for the context."}, "oak": {"year": 6, "unit": "multiplying-and-dividing-by-2-digit-numbers", "unitTitle": "Multiplying and dividing by 2-digit numbers", "lessons": [{"slug": "dividing-by-a-2-digit-divisor-including-using-long-division", "title": "Dividing by a 2-digit divisor including using long division"}, {"slug": "dividing-by-a-2-digit-divisor-with-a-remainder", "title": "Dividing by a 2-digit divisor with a remainder"}]}, "hints": {"any": {"child": "Write some facts first: 10 × {n} = {n10}, 20 × {n} = {n20}. How many {n}s fit into {d}?", "label": "Not using 10 × the divisor", "oak": {"lesson": "dividing-by-a-2-digit-divisor-with-a-remainder", "misconception": "Pupils may not make efficient use of multiplication facts when answering long division problems, especially 10 or 100 times the divisor.", "response": "Encourage pupils to make estimations using multiplication facts. Once the multiplication facts are completed, they could be used to ask quick-fire questions (e.g. what is 20 × 18? 50 × 18? 200 × 18?)"}}}}, {"name": "Order of operations", "year": "Y6", "stage": "Big calculations", "stageEmoji": "🚀", "kind": "orderOps", "params": {}, "nc": {"year": 6, "objective": "Use their knowledge of the order of operations to carry out calculations involving the 4 operations."}, "oak": {"year": 6, "unit": "order-of-operations", "unitTitle": "Order of operations", "lessons": [{"slug": "combine-multiplication-with-addition-and-subtraction", "title": "Combine multiplication with addition and subtraction"}, {"slug": "use-knowledge-of-the-order-of-operations-to-solve-equations", "title": "Use knowledge of the order of operations to solve equations"}]}, "hints": {"leftRight": {"child": "Multiply or divide before you add or subtract: {firstExpr} = {first} first.", "label": "Worked left to right", "oak": {"lesson": "combine-multiplication-with-addition-and-subtraction", "misconception": "Children will solve an equation by working from left to right and forget that multiplication needs to be completed before addition or subtraction.", "response": "Allow plenty of opportunities for children to practise solving equations that cannot be solved working from left to right. You could highlight the operation symbols to draw children's attention to these before they begin to solve them."}}, "brackets": {"child": "Brackets first: {firstExpr} = {first}.", "label": "Skipped the brackets", "oak": {"lesson": "use-knowledge-of-the-order-of-operations-to-solve-equations", "misconception": "Children may forget to use the order of operations and revert back to working from left to right.", "response": "Encourage them to identify all the operations in an equation before they begin to solve it so that they can apply their knowledge of the order of operations."}}, "any": {"child": "Do {firstExpr} first.", "label": "Hint shown", "oak": {"lesson": "use-knowledge-of-the-order-of-operations-to-solve-equations", "misconception": "Children may forget to use the order of operations and revert back to working from left to right.", "response": "Encourage them to identify all the operations in an equation before they begin to solve it so that they can apply their knowledge of the order of operations."}}}}], "attribution": "Steps follow the sequence and misconceptions of Oak National Academy’s maths curriculum. Contains public sector information licensed under the Open Government Licence v3.0. Not created or endorsed by Oak.", "teacher": "The grid shows each child’s step and the last hint they saw, so you can spot a misconception live. Children are offered the next step after 3 in a row, and they decide. A third try shows the answer kindly and moves on.", "lowEnergy": "Tap an answer is on by default. Stay on a secure step; a few answers is a win."}, {"type": "plenary", "title": "How did it feel?", "question": "How did your flightpath feel today?", "emojis": ["🚀", "😊", "🤔", "😴", "💪", "🌟"], "nextTime": "Next time, we'll start from where you finished today.", "teacher": "Ask one child to share something they're proud of. Then the Goodbye Circle."}]}];
 
 const SCREEN_TYPES = ['intro','sort','read','poll','stop','vocab','levels','quiz','plenary','pathway'];
-const PATHWAY_KINDS = ['orient','countOn','facts','mulWritten','shortDiv'];
+const PATHWAY_KINDS = ["orient", "countOn", "groups", "facts", "zeroOne", "scale10", "remainder", "partition", "mulWritten", "shortDiv", "three", "factorPair", "prime", "longMul", "longDiv", "orderOps"];
 const SUBJECTS = ['English','Maths','Topic'];
 
 function esc(s){
@@ -6381,8 +6411,10 @@ function validatePack(p){
         break;
       case 'plenary': if(!isStr(s.question)) errs.push(`${at}: plenary needs a question.`); break;
       case 'pathway':
-        if(!isArr(s.steps, 2) || s.steps.length > 12) errs.push(`${at}: a flightpath needs 2 to 12 steps.`);
-        else s.steps.forEach((p, j) => { if(!p || !isStr(p.name) || !PATHWAY_KINDS.includes(p.kind)) errs.push(`${at}: step ${j+1} needs a name and a known kind (${PATHWAY_KINDS.join(', ')}).`); });
+        if(!isArr(s.steps, 2) || s.steps.length > 30) errs.push(`${at}: a flightpath needs 2 to 30 steps.`);
+        else s.steps.forEach((p, j) => { if(!p || !isStr(p.name) || !PATHWAY_KINDS.includes(p.kind)) errs.push(`${at}: step ${j+1} needs a name and a known kind (${PATHWAY_KINDS.join(', ')}).`); 
+          if(p && p.hints != null && (typeof p.hints !== 'object' || Array.isArray(p.hints) || Object.values(p.hints).some(h => !h || !isStr(h.child)))) errs.push(`${at}: step ${j+1} hints must each have child text.`);
+          if(p && p.params != null && (typeof p.params !== 'object' || Array.isArray(p.params))) errs.push(`${at}: step ${j+1} params must be an object.`); });
         break;
     }
   });
@@ -6467,7 +6499,7 @@ function learnLivePush(delay){
 function learnLocalKey(){ return Learn.pack && Learn.learner ? `bmf_progress_${Learn.pack.id}_${Learn.learner}` : null; }
 function learnSaveLocal(){
   const k = learnLocalKey(); if(!k) return;
-  try{ store.setJSON(k, { step: Learn.step, state: Learn.state, saved: Date.now() }); }catch(e){}
+  try{ store.setJSON(k, { step: Learn.step, state: Learn.state, rev: Learn.pack.rev || 1, saved: Date.now() }); }catch(e){}
 }
 function learnGo(step){
   const n = Learn.pack.screens.length;
@@ -6719,67 +6751,312 @@ async function learnFetchPacks(){
 }
 learnRenderList();
 
-/* ============ ADAPTIVE FLIGHTPATH SCREEN (Phase F2 prototype) ============
+/* ============ ADAPTIVE FLIGHTPATH SCREEN (Phase F3) ============
    One lesson, many pathways. Every child works on their own step of a
    small-steps ladder, with practice made fresh on their device, while the
    teacher sees everyone at once and can move a child up or down a step.
    - Children choose when to move on: after 3 correct in a row they're
-     offered the next step, never pushed.
-   - A wrong answer gets a gentle hint and another go. Nothing is scored
-     publicly; the teacher's grid is for the teacher.
+     offered the next step, never pushed. They can also choose an easier step.
+   - A wrong answer gets a gentle hint and another go. Hints come from the
+     misconceptions Oak National Academy records for each lesson: if the
+     answer matches a known slip, the child gets the hint for that slip.
+     A second go shows a worked first step; a third shows the answer kindly
+     and moves on to a fresh question. Nothing is scored publicly.
+   - "Tap an answer" (on by default) gives three choices instead of the
+     keypad, so children can work on paper or the Pencil Spaces whiteboard
+     and keep moving. The wrong choices are the common slips.
    - "I'd like help" and "I need a break" flag the child on the teacher's grid.
    Live in Pencil Spaces each child's work is keyed by their Pencil user ID;
    on a single screen it runs for one learner, with a teacher view to peek. */
 
 const PW_STREAK_TO_OFFER = 3;
+const PW_MAX_INPUT = 8;
 
 function pwRand(n){ return Math.floor(Math.random() * n); }
 function pwPick(arr){ return arr.at(pwRand(arr.length)); }
+function pwBetween(lo, hi){ return lo + pwRand(hi - lo + 1); }
+function pwShuffle(arr){ const a = arr.slice(); for(let i = a.length - 1; i > 0; i--){ const j = pwRand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function pwFmt(n){ return typeof n === 'number' && Math.abs(n) >= 1000 ? n.toLocaleString('en-GB') : String(n); }
+function pwShow(v){ const s = String(v); return /^\d{4,}$/.test(s) ? Number(s).toLocaleString('en-GB') : s; }
+function pwNorm(v){ return String(v == null ? '' : v).toLowerCase().replace(/[\s,]/g, ''); }
+function pwToArr(v){ return Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.keys(v).sort((a, b) => a - b).map(k => v[k]) : []); }
+function pwRange(p, lo, hi){ const r = pwToArr(p.range); return r.length === 2 ? [Number(r[0]), Number(r[1])] : [lo, hi]; }
+function pwIsPrime(x){ if(x < 2) return false; for(let i = 2; i * i <= x; i++) if(x % i === 0) return false; return true; }
+
+/* ---------- Question generators ----------
+   Each returns plain data (so it can sync live):
+   { say, ask, vis, ans, wrong:[{v, tag}], vars, mode, choices? }
+   mode: 'num' (keypad) | 'rem' (keypad with r) | 'choice' (choices only) | 'orient'
+   wrong: the slips Oak records for this kind of question, as answers. */
+const PW_GEN = {
+  orient(p){
+    const d = pwPick(pwToArr(p.digits).length ? pwToArr(p.digits) : [6, 9, 2, 3, 5, 7]);
+    return { mode:'orient', d, flip: Math.random() < 0.5, ans:'1', wrong:[], vars:{ d } };
+  },
+  countOn(p){
+    const by = pwToArr(p.by).length ? pwToArr(p.by) : [2];
+    const n = pwPick(by);
+    let k = pwBetween(1, p.maxStart || 8);
+    if(n === 2 && Math.random() < 0.3) k = 3; /* 6, 8, 10 → 12: Oak notes 12 is often missed */
+    const seq = [k * n, (k + 1) * n, (k + 2) * n], last = seq[2];
+    const wrong = [];
+    if(n === 2 && last === 10) wrong.push({ v:14, tag:'skip12' });
+    if(n === 5 && last % 10 === 0) wrong.push({ v:last + 10, tag:'tens' });
+    wrong.push({ v:last + 1, tag:'ones' }, { v:last + 2 * n, tag:'ones' });
+    return { mode:'num', ask:`Count on in ${n}s. What comes next?`, vis:{ seq }, ans:last + n, wrong,
+      say:`${seq.join(', ')}, …`, vars:{ n, last, seq:seq.join(', ') } };
+  },
+  groups(p){
+    const g = pwBetween(2, p.maxGroups || 5), n = pwPick(pwToArr(p.size).length ? pwToArr(p.size) : [2, 5, 10]);
+    const counting = Array.from({ length:g }, (_, i) => (i + 1) * n);
+    return { mode:'num', ask:`${g} groups of ${n}. How many altogether?`, vis:{ groups:g, size:n }, ans:g * n,
+      wrong:[{ v:g, tag:'groups' }, { v:n, tag:'size' }], say:`${g} groups of ${n}`,
+      vars:{ g, n, seq:counting.join(', '), start:counting.slice(0, Math.max(1, g - 1)).join(', ') } };
+  },
+  facts(p){
+    const tables = pwToArr(p.tables).length ? pwToArr(p.tables) : [2];
+    const n = pwPick(tables);
+    const [lo, hi] = pwRange(p, 2, 12);
+    const a = pwBetween(lo, hi);
+    const rest = n > 10 ? n - 10 : n - 5;
+    const vars = { a, n, x2:2 * a, x3:3 * a, x5:5 * a, x10:10 * a, rest, restProd:rest * a, x10n:10 * n, x5n:5 * n };
+    if(Math.random() < (Number(p.divide) || 0)){
+      const d = a * n;
+      const wrong = [{ v:a + 1, tag:'divNeighbour' }, { v:a - 1, tag:'divNeighbour' }];
+      if(n !== a) wrong.unshift({ v:n, tag:'divisor' });
+      return { mode:'num', div:true, ask:`${pwFmt(d)} ÷ ${n} =`, ans:a, wrong, say:`${pwFmt(d)} ÷ ${n}`, vars:{ ...vars, d, ans:a } };
+    }
+    const flip = Math.random() < 0.5;
+    const say = flip ? `${n} × ${a}` : `${a} × ${n}`;
+    return { mode:'num', ask:`${say} =`, ans:a * n,
+      wrong:[{ v:(a + 1) * n, tag:'neighbour' }, { v:(a - 1) * n, tag:'neighbour' }, { v:a + n, tag:'added' }],
+      say, vars:{ ...vars, ans:a * n } };
+  },
+  zeroOne(p){
+    const tables = pwToArr(p.tables).length ? pwToArr(p.tables) : [2, 5, 10];
+    const n = pwPick(tables) * pwBetween(1, 3);
+    const form = pwPick(['n×0', '0×n', 'n×1', '1×n', 'n÷1', 'n÷n', '0÷n']);
+    const F = {
+      'n×0':{ say:`${n} × 0`, ans:0, wrong:[{ v:n, tag:'zero' }, { v:1, tag:'zero' }] },
+      '0×n':{ say:`0 × ${n}`, ans:0, wrong:[{ v:n, tag:'zero' }, { v:1, tag:'zero' }] },
+      'n×1':{ say:`${n} × 1`, ans:n, wrong:[{ v:n + 1, tag:'one' }, { v:1, tag:'one' }] },
+      '1×n':{ say:`1 × ${n}`, ans:n, wrong:[{ v:n + 1, tag:'one' }, { v:1, tag:'one' }] },
+      'n÷1':{ say:`${n} ÷ 1`, ans:n, wrong:[{ v:1, tag:'divOne' }, { v:0, tag:'divOne' }] },
+      'n÷n':{ say:`${n} ÷ ${n}`, ans:1, wrong:[{ v:n, tag:'same' }, { v:0, tag:'same' }] },
+      '0÷n':{ say:`0 ÷ ${n}`, ans:0, wrong:[{ v:n, tag:'zeroDiv' }, { v:1, tag:'zeroDiv' }] },
+    }[form];
+    return { mode:'num', ask:`${F.say} =`, ans:F.ans, wrong:F.wrong, say:F.say, vars:{ n, form } };
+  },
+  scale10(p){
+    const tables = pwToArr(p.tables).length ? pwToArr(p.tables) : [2, 3, 4, 8];
+    const n = pwPick(tables), a = pwBetween(2, 9), base = a * n;
+    const form = pwRand(3);
+    if(form === 2){
+      const d = base * 10;
+      return { mode:'num', ask:`${pwFmt(d)} ÷ ${n} =`, ans:a * 10, wrong:[{ v:a, tag:'forgot10' }, { v:a * 100, tag:'twoZeros' }],
+        say:`${pwFmt(d)} ÷ ${n}`, vars:{ a, n, base, big:d, tens:base, ans:a * 10 } };
+    }
+    const big = form === 0 ? n * 10 : a * 10, small = form === 0 ? a : n;
+    const say = form === 0 ? `${a} × ${big}` : `${big} × ${n}`;
+    return { mode:'num', ask:`${say} =`, ans:base * 10, wrong:[{ v:base, tag:'forgot10' }, { v:base * 100, tag:'twoZeros' }],
+      say, vars:{ a, n, base, big, small, tens:big / 10, ans:base * 10 } };
+  },
+  remainder(p){
+    const n = pwPick(pwToArr(p.by).length ? pwToArr(p.by) : [3, 4, 5, 6, 7, 8, 9]);
+    const q = pwBetween(2, p.maxQ || 12), r = pwBetween(1, n - 1), d = q * n + r;
+    const wrong = [{ v:`${q + 1} r 0`, tag:'tooHigh' }];
+    if(q > 1) wrong.push({ v:`${q - 1} r ${r + n}`, tag:'bigRem' });
+    wrong.push({ v:`${q} r ${r === 1 ? 2 : r - 1}`, tag:'any' });
+    return { mode:'rem', ask:`${d} ÷ ${n} =`, ans:`${q} r ${r}`, wrong, say:`${d} ÷ ${n}`,
+      vars:{ n, d, q, r, qn:q * n, qn1:(q + 1) * n } };
+  },
+  partition(p){
+    const n = pwPick(pwToArr(p.by).length ? pwToArr(p.by) : [2, 3, 4, 5]);
+    let a; do { a = pwBetween(12, 99); } while(a % 10 === 0);
+    const t = Math.floor(a / 10), o = a % 10;
+    const wrong = [{ v:t * n + o * n, tag:'tensAsOnes' }, { v:t * 10 * n + o, tag:'forgotOnes' }];
+    const glued = Number(`${t * n}${o * n}`);
+    if(glued !== a * n) wrong.push({ v:glued, tag:'tensAsOnes' });
+    return { mode:'num', ask:`${a} × ${n} =`, ans:a * n, wrong, say:`${a} × ${n}`,
+      vars:{ a, n, t, o, tens:t * 10, tp:t * 10 * n, op:o * n } };
+  },
+  mulWritten(p){
+    const n = pwPick(pwToArr(p.by).length ? pwToArr(p.by) : [6, 7]);
+    const a = p.digits === 2 ? pwBetween(12, 99) : pwBetween(102, 999);
+    const ds = String(a).split('').reverse().map(Number);
+    let noCarry = 0;
+    ds.forEach((d, i) => { const prod = d * n; noCarry += (i < ds.length - 1 ? prod % 10 : prod) * 10 ** i; });
+    const o = a % 10, op = o * n;
+    return { mode:'num', ask:'Work it out. Use paper if it helps!', vis:{ column:[String(a), `× ${n}`] }, ans:a * n,
+      wrong:[{ v:noCarry, tag:'noCarry' }, { v:a * n + 10, tag:'any' }, { v:a * n - 10, tag:'any' }],
+      say:`${a} × ${n}`, vars:{ a, n, o, op, opOnes:op % 10, opTens:Math.floor(op / 10) } };
+  },
+  shortDiv(p){
+    const n = pwPick(pwToArr(p.by).length ? pwToArr(p.by) : [6, 7]);
+    const maxQ = Math.min(p.maxQuotient || 99, Math.floor((p.maxDividend || 9999) / n));
+    const q = pwBetween(12, Math.max(12, maxQ)), d = q * n;
+    const ds = String(d);
+    const first = Number(ds[0]) < n && ds.length > 1 ? Number(ds.slice(0, 2)) : Number(ds[0]);
+    const wrong = [{ v:q + 10, tag:'regroup' }, { v:q + 1, tag:'any' }];
+    if(q > 20) wrong.push({ v:q - 10, tag:'regroup' });
+    return { mode:'num', ask:`${pwFmt(d)} ÷ ${n} =`, vis:{ bus:[n, d] }, ans:q, wrong, say:`${pwFmt(d)} ÷ ${n}`,
+      vars:{ n, d, q, first, firstQ:Math.floor(first / n), firstR:first % n } };
+  },
+  three(p){
+    const pairs = [[2, 5], [4, 25], [5, 20], [2, 50], [4, 5], [5, 6], [3, 10]];
+    const [x, y] = pwPick(pairs), other = pwBetween(2, 9), pair = x * y;
+    const nums = pwShuffle([x, y, other]);
+    const say = nums.join(' × ');
+    return { mode:'num', ask:`${say} =`, ans:pair * other,
+      wrong:[{ v:pair * other + other, tag:'any' }, { v:pair * other - other, tag:'any' }, { v:x + y + other, tag:'added' }],
+      say, vars:{ pairExpr:`${x} × ${y}`, pair, other } };
+  },
+  factorPair(p){
+    if(Math.random() < 0.6){
+      const n = pwBetween(2, 12), k = pwBetween(2, 12), x = n * k;
+      return { mode:'num', ask:`${n} × ? = ${x}`, ans:k, wrong:[{ v:k + 1, tag:'neighbour' }, { v:k - 1, tag:'neighbour' }, { v:x - n, tag:'any' }],
+        say:`${n} × ${k} = ${x}, so the missing number`, vars:{ n, x, k } };
+    }
+    const xs = [12, 18, 20, 24, 28, 30, 32, 36, 40, 42, 45, 48, 54, 56, 60, 63, 72];
+    const x = pwPick(xs);
+    const fs = []; for(let i = 2; i <= 12; i++) if(x % i === 0 && i !== x) fs.push(i);
+    const nfs = []; for(let i = 2; i <= 12; i++) if(x % i !== 0) nfs.push(i);
+    const f = pwPick(fs), nf = pwPick(nfs), m = x * 2;
+    return { mode:'choice', ask:`Which of these is a factor of ${x}?`, ans:f,
+      wrong:[{ v:m, tag:'multiple' }, { v:nf, tag:'notFactor' }], choices:pwShuffle([String(f), String(m), String(nf)]),
+      say:`${f} is a factor of ${x}, because ${f} × ${x / f} = ${x}. The answer`, vars:{ x, f, m, nf, k:x / f, n:f } };
+  },
+  prime(p){
+    const max = p.max || 50;
+    let x; const wantPrime = Math.random() < 0.5;
+    do { x = pwBetween(4, max); } while(pwIsPrime(x) !== wantPrime);
+    let f1 = 1; for(let i = 2; i * i <= x; i++) if(x % i === 0){ f1 = i; break; }
+    const yes = pwIsPrime(x);
+    return { mode:'choice', ask:`Is ${x} a prime number?`, ans:yes ? 'Yes' : 'No',
+      wrong:[{ v:yes ? 'No' : 'Yes', tag:yes ? 'notPrime' : 'allPrime' }], choices:['Yes', 'No'],
+      say:'', vars:{ x, f1, f2:x / f1 } };
+  },
+  longMul(p){
+    const a = pwBetween(12, 99);
+    let b; do { b = pwBetween(12, 99); } while(b % 10 === 0);
+    const bo = b % 10, bt = Math.floor(b / 10), r1 = a * bo, r2 = a * bt * 10;
+    return { mode:'num', ask:'Work it out. Use paper if it helps!', vis:{ column:[String(a), `× ${b}`] }, ans:a * b,
+      wrong:[{ v:r1 + a * bt, tag:'placeholder' }, { v:a * b + 100, tag:'any' }, { v:a * b - 10, tag:'any' }],
+      say:`${a} × ${b}`, vars:{ a, b, bo, bt, bt0:bt * 10, r1, r2 } };
+  },
+  longDiv(p){
+    const by = pwToArr(p.by).length === 2 ? pwToArr(p.by) : [11, 25];
+    const n = pwBetween(Number(by[0]), Number(by[1])), q = pwBetween(12, p.maxQuotient || 99), d = n * q;
+    return { mode:'num', ask:`${pwFmt(d)} ÷ ${n} =`, vis:{ bus:[n, d] }, ans:q,
+      wrong:[{ v:q + 1, tag:'any' }, { v:q - 1, tag:'any' }, { v:q + 10, tag:'any' }], say:`${pwFmt(d)} ÷ ${n}`,
+      vars:{ n, d, q, n10:10 * n, n20:20 * n, n50:50 * n } };
+  },
+  orderOps(p){
+    const form = pwRand(4);
+    const b = pwBetween(2, 9), c = pwBetween(2, 9);
+    if(form === 0){
+      const a = pwBetween(2, 20);
+      return { mode:'num', ask:`${a} + ${b} × ${c} =`, ans:a + b * c, wrong:[{ v:(a + b) * c, tag:'leftRight' }],
+        say:`${a} + ${b} × ${c}`, vars:{ firstExpr:`${b} × ${c}`, first:b * c } };
+    }
+    if(form === 1){
+      const a = b * c + pwBetween(1, 30);
+      return { mode:'num', ask:`${a} − ${b} × ${c} =`, ans:a - b * c, wrong:[{ v:(a - b) * c, tag:'leftRight' }],
+        say:`${a} − ${b} × ${c}`, vars:{ firstExpr:`${b} × ${c}`, first:b * c } };
+    }
+    if(form === 2){
+      const a = pwBetween(2, 20);
+      return { mode:'num', ask:`(${a} + ${b}) × ${c} =`, ans:(a + b) * c, wrong:[{ v:a + b * c, tag:'brackets' }],
+        say:`(${a} + ${b}) × ${c}`, vars:{ firstExpr:`${a} + ${b}`, first:a + b } };
+    }
+    const k = pwBetween(2, 9), dividend = c * k, a = c * pwBetween(1, 5);
+    return { mode:'num', ask:`${a} + ${dividend} ÷ ${c} =`, ans:a + k, wrong:[{ v:(a + dividend) / c, tag:'leftRight' }],
+      say:`${a} + ${dividend} ÷ ${c}`, vars:{ firstExpr:`${dividend} ÷ ${c}`, first:k } };
+  },
+};
 
 /* Make one practice question for a step. Plain data only, so it can sync. */
 function pwQuestion(step){
-  const p = step.params || {};
-  switch(step.kind){
-    case 'orient': {
-      const d = pwPick(p.digits || [6, 9, 2, 3, 5, 7]);
-      return { kind:'orient', d, flip: Math.random() < 0.5 };
+  const gen = PW_GEN[step && step.kind];
+  if(!gen) return null;
+  const q = gen(step.params || {});
+  q.kind = step.kind;
+  q.ans = String(q.ans);
+  q.wrong = (q.wrong || []).filter(w => w && w.v !== '' && !(typeof w.v === 'number' && (w.v < 0 || !Number.isInteger(w.v))) && pwNorm(w.v) !== pwNorm(q.ans));
+  if(q.mode !== 'orient' && !q.choices){
+    const opts = [q.ans];
+    q.wrong.forEach(w => { if(opts.length < 3 && !opts.some(o => pwNorm(o) === pwNorm(w.v))) opts.push(String(w.v)); });
+    const a = Number(q.ans);
+    for(let k = 1; opts.length < 3 && Number.isFinite(a) && k < 60; k++){
+      [a + k, a - k].forEach(c => { if(opts.length < 3 && c >= 0 && !opts.includes(String(c))) opts.push(String(c)); });
     }
-    case 'countOn': {
-      const n = pwPick(p.by || [6]);
-      const k = 1 + pwRand(6);
-      return { kind:'countOn', seq:[k * n, (k + 1) * n, (k + 2) * n], ans:(k + 3) * n, n };
-    }
-    case 'facts': {
-      const n = pwPick(p.tables || [6]);
-      const a = 2 + pwRand(11);
-      return { kind:'facts', a, n, ans:a * n };
-    }
-    case 'mulWritten': {
-      const n = pwPick(p.by || [6, 7]);
-      const a = (p.digits === 2 ? 12 + pwRand(88) : 102 + pwRand(898));
-      return { kind:'mulWritten', a, n, ans:a * n };
-    }
-    case 'shortDiv': {
-      const n = pwPick(p.by || [6, 7]);
-      const q = 12 + pwRand(p.maxQuotient ? p.maxQuotient - 11 : 88);
-      return { kind:'shortDiv', a:q * n, n, ans:q };
-    }
+    q.choices = pwShuffle(opts);
   }
-  return null;
+  return q;
 }
 
-function pwHint(q){
-  switch(q.kind){
-    case 'orient': return `Look at the curl. ${q.d === 6 ? 'A 6 has its round tummy at the bottom.' : q.d === 9 ? 'A 9 has its round head at the top.' : 'Which one faces the way we read?'}`;
-    case 'countOn': return `Each jump adds ${q.n}. What is ${q.seq.at(-1)} + ${q.n}?`;
-    case 'facts': return `Try counting in ${q.n}s, ${q.a} times. Or use a fact you know, like 5 × ${q.n} = ${5 * q.n}.`;
-    case 'mulWritten': return `Start with the ones: ${q.a % 10} × ${q.n}. Carry any tens across.`;
-    case 'shortDiv': return `How many ${q.n}s go into ${String(q.a)[0] < q.n ? String(q.a).slice(0, 2) : String(q.a)[0]}? Carry what's left over.`;
-  }
-  return 'Have another look.';
+/* ---------- Hints ----------
+   A pack step may carry hints keyed by slip: { tag: { child, label, oak:{...} } }.
+   Lookup: tag@table → tag → divAny/any → built-in. {name} fills from the question. */
+function pwFill(text, vars){
+  return String(text).replace(/\{(\w+)\}/g, (m, k) => vars && vars[k] != null ? pwFmt(vars[k]) : m);
 }
-
-function pwToArr(v){ return Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.keys(v).sort((a, b) => a - b).map(k => v[k]) : []); }
+const PW_DEFAULT_HINT = {
+  orient: q => `Look at the curl. ${q.d === 6 ? 'A 6 has its round tummy at the bottom.' : q.d === 9 ? 'A 9 has its round head at the top.' : 'Which one faces the way we read?'}`,
+  countOn: q => `Each jump adds ${q.vars.n}. What is ${q.vars.last} + ${q.vars.n}?`,
+  groups: q => `Count in ${q.vars.n}s, one jump for each group.`,
+  facts: q => q.div ? `Which ${q.vars.n} times fact makes ${pwFmt(q.vars.d)}?` : `Try counting in ${q.vars.n}s, ${q.vars.a} times. Or start from a fact you know, like 5 × ${q.vars.n} = ${5 * q.vars.n}.`,
+  zeroOne: q => 'Think about what 0 and 1 do. Picture it with plates of biscuits.',
+  scale10: q => `Use the fact you know: ${q.vars.a} × ${q.vars.n} = ${q.vars.base}.`,
+  remainder: q => `Find the biggest ${q.vars.n}s fact that is not more than ${q.vars.d}.`,
+  partition: q => `Split ${q.vars.a} into ${q.vars.tens} and ${q.vars.o}.`,
+  mulWritten: q => `Start with the ones: ${q.vars.o} × ${q.vars.n}. Carry any tens across.`,
+  shortDiv: q => `How many ${q.vars.n}s go into ${q.vars.first}? Carry what's left over.`,
+  three: q => `Look for an easy pair first, like ${q.vars.pairExpr}.`,
+  factorPair: q => q.vars.k ? `Which number times ${q.vars.n} makes exactly ${q.vars.x}?` : `A factor fits into ${q.vars.x} exactly.`,
+  prime: q => `A prime number has exactly two factors: 1 and itself.`,
+  longMul: q => `Multiply by the ones, then by the tens, then add the two rows.`,
+  longDiv: q => `Write a few multiples of ${q.vars.n} first: 10 × ${q.vars.n} = ${q.vars.n10}.`,
+  orderOps: q => `Do ${q.vars.firstExpr} first.`,
+};
+const PW_WORKED = {
+  orient: q => PW_DEFAULT_HINT.orient(q),
+  countOn: q => `Jump on ${q.vars.n} from ${q.vars.last}. Count up ${q.vars.n} on your fingers.`,
+  groups: q => `Count in ${q.vars.n}s: ${q.vars.start}… keep going for every group.`,
+  facts: q => q.div ? `Count in ${q.vars.n}s until you reach ${pwFmt(q.vars.d)}. How many jumps?` : `Count in ${q.vars.n}s, ${q.vars.a} times: ${q.vars.n}, ${2 * q.vars.n}, ${3 * q.vars.n}…`,
+  zeroOne: q => ({ 'n×0':'Nothing in each group means nothing at all.', '0×n':'0 groups means there is nothing at all.',
+    'n×1':`One lot of ${q.vars.n} is just ${q.vars.n}.`, '1×n':`One lot of ${q.vars.n} is just ${q.vars.n}.`,
+    'n÷1':`Share ${q.vars.n} with one person: they get all of it.`, 'n÷n':`How many ${q.vars.n}s fit in ${q.vars.n}? Just one.`,
+    '0÷n':'Sharing nothing out means everyone gets nothing.' })[q.vars.form],
+  scale10: q => `${q.vars.a} × ${q.vars.n} = ${q.vars.base}. Now make it 10 times the size.`,
+  remainder: q => `${q.vars.q} × ${q.vars.n} = ${q.vars.qn}. How much is left over from ${q.vars.d}?`,
+  partition: q => `${q.vars.tens} × ${q.vars.n} = ${q.vars.tp}, and ${q.vars.o} × ${q.vars.n} = ${q.vars.op}. Add them together.`,
+  mulWritten: q => `Ones: ${q.vars.o} × ${q.vars.n} = ${q.vars.op}. Write ${q.vars.opOnes}, carry ${q.vars.opTens}. Then do the tens.`,
+  shortDiv: q => `${q.vars.first} ÷ ${q.vars.n} = ${q.vars.firstQ} with ${q.vars.firstR} left over. Carry it into the next digit.`,
+  three: q => `${q.vars.pairExpr} = ${q.vars.pair}. Now ${q.vars.pair} × ${q.vars.other}.`,
+  factorPair: q => q.vars.k && q.mode === 'num' ? `Count in ${q.vars.n}s up to ${q.vars.x}. How many jumps?` : `Try dividing ${q.vars.x} by each one. Which one goes in exactly?`,
+  prime: q => q.ans === 'Yes' ? `Try 2, 3, 5 and 7. None of them go into ${q.vars.x} exactly.` : `${q.vars.f1} × ${q.vars.f2} = ${q.vars.x}.`,
+  longMul: q => `${q.vars.a} × ${q.vars.bo} = ${pwFmt(q.vars.r1)} and ${q.vars.a} × ${q.vars.bt0} = ${pwFmt(q.vars.r2)}. Add the two rows.`,
+  longDiv: q => `10 × ${q.vars.n} = ${q.vars.n10}, 20 × ${q.vars.n} = ${q.vars.n20}, 50 × ${q.vars.n} = ${pwFmt(q.vars.n50)}. Start from the closest.`,
+  orderOps: q => `First: ${q.vars.firstExpr} = ${q.vars.first}.`,
+};
+function pwFindHint(step, q, tag){
+  const hs = (step && step.hints) || {};
+  const n = q.vars && q.vars.n;
+  const keys = [];
+  if(tag){ keys.push(`${tag}@${n}`, tag); }
+  keys.push(q.div ? `divAny@${n}` : `any@${n}`, q.div ? 'divAny' : 'any');
+  for(const k of keys){
+    const h = hs[k];
+    if(h && h.child) return { text:pwFill(h.child, q.vars), label:h.label || '', key:k };
+  }
+  const d = PW_DEFAULT_HINT[q.kind];
+  return { text:d ? d(q) : 'Have another look.', label:'', key:null };
+}
+function pwReveal(q){
+  if(q.mode === 'orient') return 'That one was tricky! Here is another.';
+  return q.say ? `${q.say} = ${pwShow(q.ans)}. Here's a new one to try.` : `It's ${pwShow(q.ans)}. Here's a new one to try.`;
+}
 
 /* Who am I on this screen? Live: Pencil user; otherwise a single local learner. */
 function pwMe(){ return (typeof Live !== 'undefined' && Live.on && Live.me) ? Live.me : (Learn.learner ? 'learner:' + Learn.learner : 'local'); }
@@ -6799,44 +7076,69 @@ function pwStart(s, st, id, stepIdx){
   if(!st.kids) st.kids = {};
   const prev = st.kids[id] || {};
   st.kids[id] = {
-    step: stepIdx, q: pwQuestion(s.steps[stepIdx]), streak:0, done: prev.done || 0, stepDone:0,
-    secured: pwToArr(prev.secured), help: !!prev.help, rest:false, last:null, offer:false, input:''
+    step: stepIdx, q: pwQuestion(s.steps[stepIdx]), streak:0, done: prev.done || 0, stepDone:0, tries:0,
+    secured: pwToArr(prev.secured), help: !!prev.help, rest:false, last:null, msg:null, hintLabel:null,
+    offer:false, input:'', tap: prev.tap == null ? true : !!prev.tap
   };
 }
 
+/* ---------- Stages (groups of rungs) ---------- */
+let pwOpenStage = null; /* this screen only; never synced */
+function pwStages(s){
+  const out = [];
+  s.steps.forEach((stp, i) => {
+    const name = stp.stage || '';
+    if(!out.length || out.at(-1).name !== name) out.push({ name, emoji: stp.stageEmoji || '', idx:[] });
+    out.at(-1).idx.push(i);
+  });
+  return out;
+}
+
 /* ---------- Rendering ---------- */
-function pwQuestionHTML(q, kid){
-  const input = `<div class="pw-answer" aria-live="polite">${esc(kid.input || '') || '<span class="pw-ph">?</span>'}</div>`;
-  switch(q.kind){
-    case 'orient':
-      return `<p class="pw-ask">Which ${q.d} is the right way round?</p>
-        <div class="pw-orient">
-          <button class="pw-digit ${q.flip ? 'mirror' : ''}" data-orient="${q.flip ? 0 : 1}" aria-label="Option 1">${q.d}</button>
-          <button class="pw-digit ${q.flip ? '' : 'mirror'}" data-orient="${q.flip ? 1 : 0}" aria-label="Option 2">${q.d}</button>
-        </div>`;
-    case 'countOn':
-      return `<p class="pw-ask">Count on in ${q.n}s. What comes next?</p>
-        <div class="pw-seq">${q.seq.map(n => `<span>${n}</span>`).join('')}<span class="pw-next">${input}</span></div>`;
-    case 'facts':
-      return `<p class="pw-ask">${q.a} × ${q.n} =</p>${input}`;
-    case 'mulWritten':
-      return `<p class="pw-ask">Work it out. Use paper if it helps!</p>
-        <div class="pw-column"><div>${q.a}</div><div>× ${q.n}</div><div class="pw-rule"></div>${input}</div>`;
-    case 'shortDiv':
-      return `<p class="pw-ask">${q.a} ÷ ${q.n} =</p>
-        <div class="pw-bus"><span class="pw-divisor">${q.n}</span><span class="pw-dividend">${q.a}</span></div>${input}`;
+function pwVisHTML(q){
+  const v = q.vis || {};
+  if(v.seq) return `<div class="pw-seq">${pwToArr(v.seq).map(n => `<span>${pwFmt(n)}</span>`).join('')}<span class="pw-next pw-gap">?</span></div>`;
+  if(v.groups){
+    const one = `<span class="pw-group">${'<i></i>'.repeat(v.size)}</span>`;
+    return `<div class="pw-groups" aria-label="${v.groups} groups of ${v.size}">${one.repeat(v.groups)}</div>`;
   }
+  if(v.column){ const c = pwToArr(v.column); return `<div class="pw-column"><div>${esc(c[0])}</div><div>${esc(c[1])}</div><div class="pw-rule"></div></div>`; }
+  if(v.bus){ const b = pwToArr(v.bus); return `<div class="pw-bus"><span class="pw-divisor">${b[0]}</span><span class="pw-dividend">${pwFmt(b[1])}</span></div>`; }
   return '';
+}
+function pwQuestionHTML(q, kid){
+  if(q.mode === 'orient'){
+    return `<p class="pw-ask">Which ${q.d} is the right way round?</p>
+      <div class="pw-orient">
+        <button class="pw-digit ${q.flip ? 'mirror' : ''}" data-orient="${q.flip ? 0 : 1}" aria-label="Option 1">${q.d}</button>
+        <button class="pw-digit ${q.flip ? '' : 'mirror'}" data-orient="${q.flip ? 1 : 0}" aria-label="Option 2">${q.d}</button>
+      </div>`;
+  }
+  const tapping = q.mode === 'choice' || kid.tap;
+  const answer = tapping ? '' : `<div class="pw-answer" aria-live="polite">${esc(kid.input || '') || '<span class="pw-ph">?</span>'}</div>`;
+  return `<p class="pw-ask">${esc(q.ask)}</p>${pwVisHTML(q)}${answer}`;
 }
 const PW_KEYS = ['1','2','3','4','5','6','7','8','9','⌫','0','✓'];
 
 function pwLadderHTML(s, kid, pickable){
   const secured = pwToArr(kid && kid.secured);
-  return `<ol class="pw-ladder">${s.steps.map((stp, i) => {
-    const now = kid && kid.step === i, done = secured.includes(i);
+  const rung = i => {
+    const stp = s.steps[i], now = kid && kid.step === i, done = secured.includes(i);
     return `<li><button class="pw-rung ${now ? 'now' : ''} ${done ? 'secure' : ''}" ${pickable ? `data-pwpick="${i}"` : 'disabled'}>
       <span class="pw-rung-n">${done ? '✓' : i + 1}</span><span class="pw-rung-name">${esc(stp.name)}</span>${stp.year ? `<span class="pw-rung-year">${esc(stp.year)}</span>` : ''}</button></li>`;
-  }).reverse().join('')}</ol>`;
+  };
+  const stages = pwStages(s);
+  if(stages.length < 2) return `<ol class="pw-ladder">${s.steps.map((_, i) => rung(i)).reverse().join('')}</ol>`;
+  const mine = kid ? stages.findIndex(g => g.idx.includes(kid.step)) : 0;
+  const open = pwOpenStage != null && pwOpenStage < stages.length ? pwOpenStage : mine;
+  return `<div class="pw-stages">${stages.map((g, k) => {
+    const got = g.idx.filter(i => secured.includes(i)).length;
+    const isOpen = k === open;
+    return `<div class="pw-stage ${isOpen ? 'open' : ''} ${k === mine && kid ? 'mine' : ''}">
+      <button class="pw-stage-head" data-pwstage="${k}" aria-expanded="${isOpen}">
+        <span>${esc(g.emoji)} ${esc(g.name)}</span><span class="pw-stage-count">${got ? `✓ ${got}/${g.idx.length}` : `${g.idx.length} steps`}</span></button>
+      ${isOpen ? `<ol class="pw-ladder">${g.idx.map(rung).reverse().join('')}</ol>` : ''}</div>`;
+  }).reverse().join('')}</div>`;
 }
 
 function pwChildHTML(s, st, id){
@@ -6852,10 +7154,21 @@ function pwChildHTML(s, st, id){
       <p>Would you like to try the next step, <b>${esc(s.steps[kid.step + 1].name)}</b>?</p>
       <div class="choice-row"><button class="btn leaf" data-pwact="up">Yes, let's try it ➡️</button><button class="btn soft" data-pwact="stay">I'll stay here</button></div></div>`;
   } else {
-    const keypad = kid.q.kind === 'orient' ? '' : `<div class="pw-keys">${PW_KEYS.map(k => `<button class="pw-key ${k === '✓' ? 'go' : ''}" data-pwkey="${k}" aria-label="${k === '⌫' ? 'Delete' : k === '✓' ? 'Check' : k}">${k}</button>`).join('')}</div>`;
+    const q = kid.q;
+    const tapping = q.mode === 'choice' || (q.mode !== 'orient' && kid.tap);
+    let pad = '';
+    if(tapping){
+      pad = `<div class="pw-choices">${pwToArr(q.choices).map((c, i) => `<button class="pw-choice" data-pwchoice="${i}">${esc(pwShow(c))}</button>`).join('')}</div>`;
+    } else if(q.mode !== 'orient'){
+      const keys = q.mode === 'rem' ? [...PW_KEYS.slice(0, 9), 'r', '0', '⌫', '✓'] : PW_KEYS;
+      pad = `<div class="pw-keys ${q.mode === 'rem' ? 'rem' : ''}">${keys.map(k => `<button class="pw-key ${k === '✓' ? 'go' : ''}" data-pwkey="${k}" aria-label="${k === '⌫' ? 'Delete' : k === '✓' ? 'Check' : k === 'r' ? 'remainder' : k}">${k}</button>`).join('')}</div>`;
+    }
     const fb = kid.last === 'right' ? '<div class="pw-fb good">Yes! Well done 🌟</div>'
-      : kid.last === 'try' ? `<div class="pw-fb try">Good try! ${esc(pwHint(kid.q))} 💛</div>` : '<div class="pw-fb"></div>';
-    body = `<div class="pw-q">${pwQuestionHTML(kid.q, kid)}</div>${fb}${keypad}`;
+      : kid.last === 'try' ? `<div class="pw-fb try">Good try! ${esc(kid.msg || '')} 💛</div>`
+      : kid.last === 'reveal' ? `<div class="pw-fb reveal">💛 ${esc(kid.msg || '')}</div>` : '<div class="pw-fb"></div>';
+    const modeBtn = q.mode === 'num' || q.mode === 'rem'
+      ? `<button class="btn small soft" data-pwact="mode">${kid.tap ? '⌨️ Type my answer' : '✋ Tap an answer'}</button>` : '';
+    body = `<div class="pw-q">${pwQuestionHTML(q, kid)}</div>${fb}${pad}<div class="pw-modes">${modeBtn}</div>`;
   }
   return `<div class="pw-child">
     <div class="pw-main">
@@ -6865,20 +7178,44 @@ function pwChildHTML(s, st, id){
       <div class="pw-flags">
         <button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '🙋 Help is on the way' : "🙋 I'd like help"}</button>
         <button class="btn small soft" data-pwact="rest">😴 I need a break</button>
+        ${kid.step > 0 && !kid.offer ? '<button class="btn small soft" data-pwact="down">⬇️ An easier step</button>' : ''}
       </div>
     </div>
     <aside class="pw-side"><div class="pw-side-title">My flightpath</div>${pwLadderHTML(s, kid, false)}</aside>
   </div>`;
 }
 
+function pwOakLessonURL(slug){ return `https://www.thenational.academy/teachers/lessons/${encodeURIComponent(slug)}`; }
+function pwOakUnitURL(slug){ return `https://www.thenational.academy/teachers/curriculum/maths-primary/units/${encodeURIComponent(slug)}`; }
+
+function pwGuideHTML(s){
+  const rows = s.steps.map((stp, i) => {
+    const nc = stp.nc || {}, oak = stp.oak || {};
+    const lessons = pwToArr(oak.lessons).map(l => `<li><a href="${esc(pwOakLessonURL(l.slug))}" target="_blank" rel="noopener">${esc(l.title || l.slug)}</a></li>`).join('');
+    const slips = Object.values(stp.hints || {}).filter(h => h && h.oak && h.oak.misconception);
+    const seen = new Set();
+    const mis = slips.filter(h => { const k = h.oak.misconception; if(seen.has(k)) return false; seen.add(k); return true; }).map(h =>
+      `<li><b>${esc(h.label || 'Common slip')}.</b> ${esc(h.oak.misconception)}${h.oak.response ? `<br><i>Oak suggests:</i> ${esc(h.oak.response)}` : ''}<br><span class="pw-guide-child">Child sees: “${esc(h.child)}”</span></li>`).join('');
+    return `<tr>
+      <td><b>${i + 1}. ${esc(stp.name)}</b>${stp.stage ? `<br><span class="hint">${esc(stp.stage)}</span>` : ''}</td>
+      <td>${nc.year ? `<b>${esc(stp.year || 'Y' + nc.year)}</b> ` : ''}${esc(nc.objective || '')}</td>
+      <td>${oak.unit ? `<a href="${esc(pwOakUnitURL(oak.unit))}" target="_blank" rel="noopener">${esc(oak.unitTitle || oak.unit)}</a>${oak.year ? ` <span class="hint">(Oak Year ${esc(String(oak.year))})</span>` : ''}` : ''}${lessons ? `<ul>${lessons}</ul>` : ''}</td>
+      <td>${mis ? `<ul>${mis}</ul>` : ''}</td></tr>`;
+  }).join('');
+  return `<div class="pw-guide"><table><thead><tr><th>Step</th><th>National Curriculum</th><th>Oak unit and lessons</th><th>What pupils often find tricky, and the hint</th></tr></thead><tbody>${rows}</tbody></table>
+    ${s.attribution ? `<p class="pw-attrib">${esc(s.attribution)}</p>` : ''}</div>`;
+}
+
 function pwTeacherHTML(s, st){
+  const guideBtn = `<div class="choice-row pw-guide-toggle"><button class="pill-choice ${st.guide ? '' : 'selected'}" data-pwact="grid">👀 Everyone</button><button class="pill-choice ${st.guide ? 'selected' : ''}" data-pwact="guide">📚 Step guide</button></div>`;
+  if(st.guide) return guideBtn + pwGuideHTML(s);
   const kids = st.kids || {};
   let ids = Object.keys(kids);
   if(typeof Live !== 'undefined' && Live.on){
     Live.users.filter(u => u.role !== 'HOST' && !ids.includes(u._id)).forEach(u => ids.push(u._id));
   }
-  if(!ids.length) return '<p class="lp-intro">Waiting for children to choose a step…</p>';
-  return `<p class="lp-intro">Everyone's flightpath, live. Only you can see this.</p><div class="pw-grid">${ids.map(id => {
+  if(!ids.length) return guideBtn + '<p class="lp-intro">Waiting for children to choose a step…</p>';
+  return guideBtn + `<p class="lp-intro">Everyone's flightpath, live. Only you can see this.</p><div class="pw-grid">${ids.map(id => {
     const k = kids[id];
     if(!k) return `<div class="pw-card waiting"><div class="pw-card-name">${esc(pwName(id))}</div><p class="hint">Choosing a step…</p>
       <div class="pw-card-btns"><button class="btn small soft" data-pwset="${esc(id)}" data-pwto="0">Start at step 1</button></div></div>`;
@@ -6887,14 +7224,15 @@ function pwTeacherHTML(s, st){
     return `<div class="pw-card ${k.help ? 'help' : ''} ${k.rest ? 'rest' : ''}">
       <div class="pw-card-name">${esc(pwName(id))}</div>
       <div class="pw-card-step">Step ${k.step + 1}: ${esc(stp.name)}${stp.year ? ` <span class="pw-rung-year">${esc(stp.year)}</span>` : ''}</div>
-      <div class="pw-card-status">${status}</div>
-      <div class="pw-card-stats">⭐ ${k.done || 0} correct today · ${'●'.repeat(k.streak || 0)}${'○'.repeat(Math.max(0, PW_STREAK_TO_OFFER - (k.streak || 0)))} in a row · ✓ ${pwToArr(k.secured).length} steps secure</div>
+      <div class="pw-card-status">${status} · ${k.tap ? '✋ tapping' : '⌨️ typing'}</div>
+      ${k.hintLabel ? `<div class="pw-card-hint">💡 ${esc(k.hintLabel)}</div>` : ''}
+      <div class="pw-card-stats">⭐ ${k.done || 0} correct today · ${'●'.repeat(Math.min(k.streak || 0, PW_STREAK_TO_OFFER))}${'○'.repeat(Math.max(0, PW_STREAK_TO_OFFER - (k.streak || 0)))} in a row · ✓ ${pwToArr(k.secured).length} steps secure</div>
       <div class="pw-card-btns">
         <button class="btn small soft" data-pwset="${esc(id)}" data-pwto="${k.step - 1}" ${k.step === 0 ? 'disabled' : ''}>◀ Easier</button>
         <button class="btn small soft" data-pwset="${esc(id)}" data-pwto="${k.step + 1}" ${k.step >= s.steps.length - 1 ? 'disabled' : ''}>Harder ▶</button>
         ${k.help ? `<button class="btn small amber" data-pwclear="${esc(id)}">Helped ✓</button>` : ''}
       </div></div>`;
-  }).join('')}</div>`;
+  }).join('')}</div>${s.attribution ? `<p class="pw-attrib">${esc(s.attribution)}</p>` : ''}`;
 }
 
 RENDER.pathway = function(s, st){
@@ -6906,39 +7244,59 @@ RENDER.pathway = function(s, st){
 
 /* ---------- Actions ---------- */
 function pwCheck(s, kid, value){
-  const q = kid.q;
-  const right = q.kind === 'orient' ? value === 1 : Number(value) === q.ans;
+  const step = s.steps[kid.step], q = kid.q;
+  const right = q.mode === 'orient' ? value === 1 : pwNorm(value) === pwNorm(q.ans);
+  kid.input = '';
   if(right){
     kid.done = (kid.done || 0) + 1; kid.streak = (kid.streak || 0) + 1; kid.stepDone = (kid.stepDone || 0) + 1;
-    kid.last = 'right'; kid.input = '';
+    kid.last = 'right'; kid.msg = null; kid.tries = 0;
     const secured = pwToArr(kid.secured);
     if(kid.stepDone >= PW_STREAK_TO_OFFER && !secured.includes(kid.step)){ secured.push(kid.step); kid.secured = secured; }
     if(kid.streak >= PW_STREAK_TO_OFFER && kid.step < s.steps.length - 1) kid.offer = true;
-    kid.q = pwQuestion(s.steps[kid.step]);
+    kid.q = pwQuestion(step);
     Sound.jingle();
-  } else {
-    kid.streak = 0; kid.last = 'try'; kid.input = '';
-    Sound.gentle();
+    return 'right';
   }
+  kid.streak = 0;
+  kid.tries = (kid.tries || 0) + 1;
+  const w = pwToArr(q.wrong).find(x => pwNorm(x.v) === pwNorm(value));
+  if(kid.tries >= 3){
+    kid.last = 'reveal'; kid.msg = pwReveal(q); kid.hintLabel = 'Answer shown, new question';
+    kid.q = pwQuestion(step); kid.tries = 0;
+  } else if(kid.tries === 2){
+    const worked = PW_WORKED[q.kind];
+    kid.last = 'try'; kid.msg = worked ? worked(q) : pwFindHint(step, q, null).text; kid.hintLabel = 'Worked first step shown';
+  } else {
+    const h = pwFindHint(step, q, w ? w.tag : null);
+    kid.last = 'try'; kid.msg = h.text; kid.hintLabel = h.label || 'Hint shown';
+  }
+  Sound.gentle();
+  return kid.last;
 }
 
 function pwClick(t, s, st){
   const me = pwMe();
+  const stg = t.closest('[data-pwstage]');
+  if(stg){ const k = Number(stg.dataset.pwstage); pwOpenStage = pwOpenStage === k ? -1 : k; Sound.tick(); return true; }
   const act = t.closest('[data-pwact]');
   const kid = pwKid(st, me);
   if(act){
     const a = act.dataset.pwact;
     if(a === 'view-child'){ st.teacherView = false; return true; }
     if(a === 'view-teacher'){ st.teacherView = true; return true; }
+    if(a === 'guide'){ st.guide = true; return true; }
+    if(a === 'grid'){ st.guide = false; return true; }
     if(!kid) return false;
     if(a === 'help'){ kid.help = !kid.help; Sound.tick(); return true; }
     if(a === 'rest'){ kid.rest = true; Sound.gentle(); return true; }
     if(a === 'back'){ kid.rest = false; Sound.tick(); return true; }
-    if(a === 'up'){ const keep = kid.done; pwStart(s, st, me, kid.step + 1); st.kids[me].done = keep; Sound.jingle(); return true; }
+    if(a === 'mode'){ kid.tap = !kid.tap; kid.input = ''; Sound.tick(); return true; }
+    if(a === 'up'){ const keep = kid.done; pwStart(s, st, me, kid.step + 1); st.kids[me].done = keep; pwOpenStage = null; Sound.jingle(); return true; }
+    if(a === 'down'){ if(kid.step < 1) return false; const keep = kid.done; pwStart(s, st, me, kid.step - 1); st.kids[me].done = keep; pwOpenStage = null; Sound.tick(); return true; }
     if(a === 'stay'){ kid.offer = false; kid.streak = 0; Sound.tick(); return true; }
   }
   const pick = t.closest('[data-pwpick]');
-  if(pick && !kid){ pwStart(s, st, me, Number(pick.dataset.pwpick)); Sound.ding(); return true; }
+  if(pick && !kid){ pwStart(s, st, me, Number(pick.dataset.pwpick)); pwOpenStage = null; Sound.ding(); return true; }
   const set = t.closest('[data-pwset]');
   if(set && pwIsTeacher(st)){
     const id = set.dataset.pwset, to = Math.max(0, Math.min(s.steps.length - 1, Number(set.dataset.pwto)));
@@ -6952,12 +7310,15 @@ function pwClick(t, s, st){
   if(!kid || kid.offer || kid.rest) return false;
   const o = t.closest('[data-orient]');
   if(o){ pwCheck(s, kid, Number(o.dataset.orient)); return true; }
+  const ch = t.closest('[data-pwchoice]');
+  if(ch){ const c = pwToArr(kid.q.choices)[Number(ch.dataset.pwchoice)]; if(c == null) return false; pwCheck(s, kid, c); return true; }
   const key = t.closest('[data-pwkey]');
   if(key){
     const k = key.dataset.pwkey;
     if(k === '⌫') kid.input = (kid.input || '').slice(0, -1);
     else if(k === '✓'){ if((kid.input || '').length) pwCheck(s, kid, kid.input); else return false; }
-    else if((kid.input || '').length < 5){ kid.input = (kid.input || '') + k; kid.last = null; Sound.tick(); }
+    else if(k === 'r'){ if(kid.input && !/r/.test(kid.input)){ kid.input += ' r '; kid.last = null; Sound.tick(); } else return false; }
+    else if((kid.input || '').length < PW_MAX_INPUT){ kid.input = (kid.input || '') + k; kid.last = null; Sound.tick(); }
     return true;
   }
   return false;
@@ -6969,8 +7330,8 @@ document.addEventListener('keydown', e => {
   const s = Learn.pack.screens[Learn.step];
   if(!s || s.type !== 'pathway') return;
   const st = Learn.state[Learn.step]; if(!st || pwIsTeacher(st)) return;
-  const kid = pwKid(st, pwMe()); if(!kid || kid.offer || kid.rest || kid.q.kind === 'orient') return;
-  const map = { Backspace:'⌫', Enter:'✓' };
+  const kid = pwKid(st, pwMe()); if(!kid || kid.offer || kid.rest || !kid.q || kid.q.mode === 'orient' || kid.q.mode === 'choice' || kid.tap) return;
+  const map = { Backspace:'⌫', Enter:'✓', r:'r', R:'r' };
   const k = /^[0-9]$/.test(e.key) ? e.key : map[e.key];
   if(!k) return;
   e.preventDefault();
@@ -6991,7 +7352,7 @@ function learnDeepLink(){
   learnOpen(pack);
   Learn.learner = name || null;
   const saved = name ? store.getJSON(learnLocalKey(), null) : null;
-  if(saved && saved.state){ Learn.state = saved.state; Learn.step = Math.min(pack.screens.length, Number(saved.step) || 0); }
+  if(saved && saved.state && (saved.rev || 1) === (pack.rev || 1)){ Learn.state = saved.state; Learn.step = Math.min(pack.screens.length, Number(saved.step) || 0); }
   const step = q.get('step');
   if(step != null && !saved){ Learn.step = Math.max(0, Math.min(pack.screens.length - 1, Number(step) || 0)); }
   if(name){
