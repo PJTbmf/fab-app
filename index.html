@@ -6491,6 +6491,17 @@ function learnOpen(p){
   showScreen('screen-lesson');
   learnRender();
 }
+/* In a live Space the lesson (step, polls, flightpath grid) is shared, but a child's own
+   choices are not: each child's taps on these screens live under their own id. */
+const LP_PERSONAL = ['sort','read','vocab','levels','quiz','plenary'];
+function lpState(i){
+  const shared = Learn.state[i] || (Learn.state[i] = {});
+  const s = Learn.pack && Learn.pack.screens[i];
+  if(!(typeof Live !== 'undefined' && Live.on) || !s || LP_PERSONAL.indexOf(s.type) < 0) return shared;
+  const me = Live.me || 'local';
+  if(!shared.mine || typeof shared.mine !== 'object') shared.mine = {};
+  return shared.mine[me] || (shared.mine[me] = {});
+}
 function learnLivePush(delay){
   if(typeof Live !== 'undefined' && Live.on){ Live.push(delay); return; }
   learnSaveLocal();
@@ -6520,7 +6531,7 @@ function learnRenderView(){
   const stage = $('#lpStage');
   if(i >= n){ stage.innerHTML = learnDoneHTML(); learnTips(null); return; }
   const s = p.screens[i];
-  const st = Learn.state[i] || (Learn.state[i] = {});
+  const st = lpState(i);
   stage.innerHTML = `<h2 class="lp-title">${esc(s.title)}</h2>` + (RENDER[s.type] ? RENDER[s.type](s, st) : '');
   learnTips(s);
 }
@@ -6637,7 +6648,7 @@ const RENDER = {
    escaped text, matching escaped phrases, so nothing un-escaped is emitted. */
 function learnMarkClues(par, clues){
   let html = esc(par);
-  const st = Learn.state[Learn.step] || {};
+  const st = lpState(Learn.step) || {};
   clues.forEach((c, k) => {
     const needle = esc(c.text);
     const at = html.indexOf(needle);
@@ -6653,7 +6664,7 @@ function learnMarkClues(par, clues){
 /* ---------- Stage events (one delegated listener; always re-reads state) ---------- */
 $('#lpStage').addEventListener('click', e => {
   if(!Learn.pack || Learn.step >= Learn.pack.screens.length) return;
-  const s = Learn.pack.screens[Learn.step], st = Learn.state[Learn.step];
+  const s = Learn.pack.screens[Learn.step], st = lpState(Learn.step);
   const t = e.target;
   if(s.type === 'pathway'){ if(pwClick(t, s, st)) learnRender(); return; }
   const act = t.closest('[data-act]');
@@ -6732,11 +6743,11 @@ $('#lpStage').addEventListener('keydown', e => {
 });
 $('#lpStage').addEventListener('focusin', e => {
   const g = e.target.closest('input[data-gap]');
-  if(g && Learn.state[Learn.step]) Learn.state[Learn.step].lastGap = g.dataset.gap;
+  if(g && Learn.state[Learn.step]) lpState(Learn.step).lastGap = g.dataset.gap;
 });
 $('#lpStage').addEventListener('input', e => {
   const g = e.target.closest('input[data-gap]'); if(!g) return;
-  const st = Learn.state[Learn.step];
+  const st = Learn.state[Learn.step] && lpState(Learn.step);
   if(st && st.level != null){ st.answers[st.level][g.dataset.gap] = g.value; learnLivePush(400); }
 });
 
@@ -7483,6 +7494,15 @@ function learnRestoreState(raw){
   Object.keys(raw).forEach(k => {
     const s = Object.assign({}, raw[k]);
     ['place','found','votes','open','tried'].forEach(f => { if(s[f] != null) s[f] = toArr(s[f]); });
+    if(s.mine && typeof s.mine === 'object'){
+      const m = {};
+      Object.keys(s.mine).forEach(id => {
+        const c = Object.assign({}, s.mine[id]);
+        ['place','found','open','tried'].forEach(f => { if(c[f] != null) c[f] = toArr(c[f]); });
+        m[id] = c;
+      });
+      s.mine = m;
+    }
     out[k] = s;
   });
   return out;
