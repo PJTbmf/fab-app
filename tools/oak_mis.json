@@ -1,0 +1,792 @@
+{
+ "skip-count-in-twos-forwards-and-backwards": {
+  "title": "Skip count in twos forwards and backwards",
+  "misconception": "Children often miss out 12 when reciting the multiples of two due to the irregularity and not hearing the 'two' in twelve.",
+  "response": "Make deliberate errors around this and use practical objects to show the effect of adding two to ten. Orally rehearse counting in twos, both through and from 10."
+ },
+ "count-efficiently-in-groups-of-two": {
+  "title": "Count efficiently in groups of two",
+  "misconception": "Children may confuse the number of groups with the amount altogether, for example, they may count 3 groups of 2 as 3 not 6  They may also confuse the number of groups with the group size.",
+  "response": "Draw a ring around each group of 2 whilst using the stem sentence to help describe what you are seeing as you identify each group."
+ },
+ "count-efficiently-in-groups-of-ten": {
+  "title": "Count efficiently in groups of ten",
+  "misconception": "Children may confuse the number of groups with the amount altogether, for example, they may count 4 groups of 10 as 4 not 40  They may also confuse the number of groups with the group size.",
+  "response": "Draw a ring around each group of 10 whilst using the stem sentence to help describe what you are seeing as you identify each group."
+ },
+ "skip-count-in-fives-forwards-and-backwards": {
+  "title": "Skip count in fives forwards and backwards",
+  "misconception": "When counting in fives, children may revert to the pattern of counting in tens after reciting a decade number.",
+  "response": "Use practical equipment such as ten frames and base ten number boards to highlight why the next number in our count could not be a decade number. Explore the pattern in the digits and display these in the environment to promote further discussion."
+ },
+ "count-efficiently-in-groups-of-5": {
+  "title": "Count efficiently in groups of five",
+  "misconception": "Children may confuse the number of groups with the total, so 3 groups of 5 may be counted as 3 and not 15",
+  "response": "Provide opportunities for children to identify both the number of groups as well as the total throughout. Encourage the use of the stem sentences to support their articulation of this."
+ },
+ "count-efficiently-in-groups-of-two-five-and-ten": {
+  "title": "Count efficiently in groups of two, five and ten",
+  "misconception": "Children may not be sure which unit to count in. They may confuse the size of the group with the number of groups, for example saying 5 groups of 2 instead of 2 groups of 5.",
+  "response": "Encourage children to draw a ring around each group as they count the groups and display and use the stem sentence to help them describe this."
+ },
+ "recognise-and-explain-the-value-of-1p-in-pence": {
+  "title": "Recognise and explain the value of 1p in pence",
+  "misconception": "Children may not automatically link what they know about additive relationships to money contexts.",
+  "response": "Explicitly link known facts and stem sentences to money contexts where appropriate."
+ },
+ "recognise-and-explain-the-value-of-2p-coins-in-pence": {
+  "title": "Recognise and explain the value of 2p coins in pence",
+  "misconception": "Children may think that larger coins or a greater number of coins represent a larger value.",
+  "response": "Use pre-money tokens to draw attention to the value of the 2 p coin. When comparing 1 p and 2 p coins, ensure children swap coins for equivalent amounts to draw attention to the value of the coins as opposed to their size or quantity."
+ },
+ "recognise-and-explain-the-value-of-5p-in-pence": {
+  "title": "Recognise and explain the value of 5p in pence",
+  "misconception": "Children may think that larger coins or a greater number of coins represents a larger value.",
+  "response": "Use pre-money tokens to draw attention to the value of the 5 p coin. When comparing 1 p and 5 p coins, ensure children swap coins for equivalent amounts to draw attention to the value of the coins as opposed to their size or quantity."
+ },
+ "recognise-and-explain-the-value-of-10p-in-pence": {
+  "title": "Recognise and explain the value of 10p in pence.",
+  "misconception": "Children may think that larger coins or a greater number of coins represents a larger value.",
+  "response": "Use pre-money tokens to draw attention to the value of the 10 p coin. When comparing 1 p and 10 p coins, ensure children swap coins for equivalent amounts to draw attention to the value of the coins as opposed to their size or quantity."
+ },
+ "explain-that-objects-can-be-grouped-in-different-ways": {
+  "title": "Explain that objects can be grouped in different ways",
+  "misconception": "Children may confuse groups with number of items in a group.",
+  "response": "Clear teacher modelling of groups, demarcating groups and physically placing items into groups e.g. a bundle of straws with an elastic band."
+ },
+ "describe-how-objects-have-been-grouped": {
+  "title": "Describe how objects have been grouped",
+  "misconception": "Children may confuse groups with number of items.",
+  "response": "Clear teacher modelling of groups, demarcating groups and physically placing items into groups e.g. a bundle of straws with an elastic band."
+ },
+ "represent-equal-groups-as-repeated-addition": {
+  "title": "Represent equal groups as repeated addition",
+  "misconception": "Pupils might confuse the number of groups with the value of the groups and therefore write incorrect expressions.",
+  "response": "Once familiar with building the relevant additive expression, the multiplicative expression is introduced alongside e.g. 3 + 3 + 3 + 3 + 3 is the same as 5 x 3  Take time to connect these ideas using `groups of language' and physical representations."
+ },
+ "represent-equal-groups-as-repeated-addition-and-multiplication": {
+  "title": "Represent equal groups as repeated addition and multiplication",
+  "misconception": "Pupils may not understand how to represent the repeated addition expression and a multiplication expression.",
+  "response": "Encourage pupils to identify exactly how the equation relates to the image: with the questions ‘What does the 3 represent?’ ‘What does the 2 represent?’ ‘What does the 6 represent?’"
+ },
+ "represent-equal-groups-as-multiplication": {
+  "title": "Represent equal groups as multiplication",
+  "misconception": "Children are not able to explain the multiplication expression.",
+  "response": "Children are encouraged to identify exactly how the equation relates to the image. For example 3 groups of 2 shoes: 3 x 2 - with the questions ‘What does the 3 represent?’ ‘What does the 2 represent?’ ‘What does the 6 represent?’"
+ },
+ "explain-and-represent-multiplication-when-a-group-contains-zero-or-one-items": {
+  "title": "Explain and represent multiplication when a group contains zero or one items",
+  "misconception": "Children may struggle to comprehend groups of zero. For example children may see four empty plates as four groups of one.",
+  "response": "Use a context where the number of groups is still visible when the group size is zero. Remember to make the distinction as to what is representing zero. Use the familiar stem sentences There are ___ groups of ___."
+ },
+ "identify-and-explain-each-part-of-a-multiplication-equation": {
+  "title": "Identify and explain each part of a multiplication equation",
+  "misconception": "Children may confuse the terminology of factor and product and therefore be inaccurate when describing equations.",
+  "response": "Take time to clearly model use of terminology and ask questions such as: 'What does the 3 represent?' 'What does the 5 represent?' 'What does the 15 represent?' Continue to explicitly use key terms such as factor and products within explanation."
+ },
+ "use-knowledge-of-multiplication-to-calcuate-the-product": {
+  "title": "Use knowledge of multiplication to calcuate the product",
+  "misconception": "Children may confuse how to find the product (total amount)",
+  "response": "Model use of terminology - ask children what various parts of the multiplication equation represents. E.g. 'The 2 represents how many coins there are.' ' The 5 represents the value of each coin.' 'That is the same as 5, 2 times."
+ },
+ "use-knowledge-of-multiplication-to-solve-problems": {
+  "title": "Use knowledge of multiplication to solve problems",
+  "misconception": "Children may confuse group size and number of groups.",
+  "response": "Clearly model the number of groups by demarcating groups where possible and using familiar stem sentences such as 'There are ___ groups.' Then, move onto identifying the amount of items / objects in each group. 'There are ___ in each group.'"
+ },
+ "use-knowledge-of-multiplication-to-solve-problems-in-a-range-of-contexts": {
+  "title": "Use knowledge of multiplication to solve problems in a range of contexts",
+  "misconception": "Pupils may find it difficult to identify the factors in the word problems.",
+  "response": "Model how to address questions. Use of familiar stem sentences to support pupils in identifying the factors: 'There are 7 bamboos. Each bamboo is a length of 5 m. 7 is factor and 5 is factor.  We can skip count in ___ to find the product.'"
+ },
+ "represent-the-2-times-table-in-different-ways": {
+  "title": "Represent the 2 times table in different ways",
+  "misconception": "Children may struggle to count in multiples of 2 and want to count in steps of 1",
+  "response": "Use of concrete resources: counters can support children to practise skip counting in 2s"
+ },
+ "use-knowledge-of-the-2-times-table-to-solve-problems": {
+  "title": "Use knowledge of the 2 times table to solve problems",
+  "misconception": "Pupils often confuse the keywords of this lesson and use them interchangeably or incorrectly. Pupils may also not understand how to deduce the operation for the calculation.",
+  "response": "Model correct usage in a range of contexts including labelling abstract equations and using the terms to identify the known elements in worded problems. Choral response can also support pupils using these words correctly."
+ },
+ "explain-the-relationship-between-adjacent-multiples-of-2": {
+  "title": "Explain the relationship between adjacent multiples of 2",
+  "misconception": "Pupils may find worded problems related to adjacent multiples challenging if they are not clear on the structure of finding previous and next multiples.",
+  "response": "Model correct usage in a range of contexts including labelling abstract equations and using the term to identify the known elements in worded problems. Take time to show adjacent on number lines connecting to addition and subtraction of equal groups."
+ },
+ "explain-that-factor-pairs-can-be-written-in-any-order": {
+  "title": "Explain that factor pairs can be written in any order",
+  "misconception": "Pupils may confuse identifying the number of groups and group size.",
+  "response": "Use sentence stems to support children's thinking and model writing the equation, e.g. for 2 groups of 5  we can say 2 × 5 For 5, two times we can say 5 × 2"
+ },
+ "represent-counting-in-tens-as-the-10-times-table": {
+  "title": "Represent counting in tens as the 10 times table",
+  "misconception": "Children may struggle to count in multiples of 10s",
+  "response": "Use of concrete resources: 10 frames, number lines and 100 squares and can support children to practise skip counting in groups of 10"
+ },
+ "represent-the-10-times-table-in-different-ways": {
+  "title": "Represent the 10 times table in different ways",
+  "misconception": "Children may struggle to count in multiples of 10s and recognise this as groups of 10",
+  "response": "Use of concrete resources: 10 frame and 10 p coins can support children to practise skip counting in 10s. Then move onto counting in 10s on a number line."
+ },
+ "explain-the-relationship-between-adjacent-multiples-of-10": {
+  "title": "Explain the relationship between adjacent multiples of 10",
+  "misconception": "Pupils may not understand the keyword adjacent and have difficulty understanding the word problems.",
+  "response": "Model correct usage in a range of contexts including labelling abstract equations and using the term to identify the known elements in worded problems. Take time to show adjacent on number lines connecting to addition and subtraction of equal groups."
+ },
+ "represent-counting-in-fives-as-the-5-times-table": {
+  "title": "Represent counting in fives as the 5 times table",
+  "misconception": "Children may struggle to count in multiples of 5s",
+  "response": "Use of concrete resources: counters can support children to practise skip counting in 5s"
+ },
+ "represent-the-5-times-table-in-different-ways": {
+  "title": "Represent the 5 times table in different ways",
+  "misconception": "Children may struggle to count in multiples of 5s",
+  "response": "Use of concrete resources: 10 frame and 5 p coins can support children to practise skip counting in 5s. Then move onto counting in 5s on a number line."
+ },
+ "explain-the-relationship-between-adjacent-multiples-of-5": {
+  "title": "Explain the relationship between adjacent multiples of 5",
+  "misconception": "Pupils may not understand the keyword adjacent and have difficulty understanding the word problems.",
+  "response": "Model correct usage in a range of contexts including labelling abstract equations and using the term to identify the known elements in worded problems. Take time to show adjacent on number lines connecting to addition and subtraction of equal groups."
+ },
+ "explain-how-groups-of-five-and-ten-are-related": {
+  "title": "Explain how groups of five and ten are related",
+  "misconception": "Pupils may assume that multiples of 5 and 10 are multiples of 10",
+  "response": "Show children the relationship between 5s and 10s using the multiplication chart and number line. Make clear that even multiples of 5 are multiples of 10  Not all multiples of 10 are multiples of 5 Encourage discussions to highlight the relationship."
+ },
+ "explain-the-relationship-between-multiples-of-five-and-ten": {
+  "title": "Explain the relationship between multiples of five and ten",
+  "misconception": "Pupils may assume that all multiples of 5 are multiples of 10",
+  "response": "Show children the relationship between 5s and 10s using the multiplication chart and number line. Make clear the relationship between the multiples of 5 and 10 through using stem sentences; for every one group of ten, there are two groups of 5"
+ },
+ "use-knowledge-of-the-relationships-between-the-5-and-10-times-tables-to-solve-problems": {
+  "title": "Use knowledge of the relationships between the 5 and 10 times tables to solve problems",
+  "misconception": "Pupils may find it difficult to solve problems or misunderstand questions.",
+  "response": "Model clearly how to identify key phrases and words which will identify the operation and equation required for word problems. Support pupils in annotating problems and rephrasing using words such as groups to identify the factors."
+ },
+ "explain-how-a-factor-of-zero-or-one-affects-the-product": {
+  "title": "Explain how a factor of zero or one affects the product",
+  "misconception": "Children may have the misconception that multiplying always makes the number bigger and therefore 0 cannot be a product.",
+  "response": "Remind children that 0 groups of something is equal to zero. You can show this practically using groups of zero. When a factor is 1 the product is the other factor."
+ },
+ "represent-multiplication-equations-in-different-ways": {
+  "title": "Represent multiplication equations in different ways",
+  "misconception": "Pupils may confuse the number of groups and group size.",
+  "response": "Continue to use the number stems and arrays to highlight the relationship between the factors and products."
+ },
+ "use-knowledge-of-the-2-5-and-10-times-tables-to-solve-problems": {
+  "title": "Use knowledge of the 2, 5 and 10 times tables to solve problems",
+  "misconception": "Pupils may misunderstand the contexts or language within worded problems and therefore not understand the calculation required to solve.",
+  "response": "Model clearly how to identify key phrases and words which will identify the operation and equation required for word problems. Pupils may benefit from representing what is known and what is unknown such as by drawing a bar model."
+ },
+ "use-knowledge-of-the-2-5-and-10-times-tables-to-solve-problems-in-a-range-of-contexts": {
+  "title": "Use knowledge of the 2, 5 and 10 times tables to solve problems in a range of contexts",
+  "misconception": "Pupils may misunderstand the contexts or language within worded problems and therefore not understand the calculation required to solve.",
+  "response": "Model clearly how to identify key phrases and words which will identify the operation and equation required for word problems."
+ },
+ "explain-what-each-factor-represents-in-a-multiplication-story": {
+  "title": "Explain what each factor represents in a multiplication story",
+  "misconception": "Pupils may find it difficult to identify the factors from the word problems.",
+  "response": "Model clearly how to identify key phrases and words which will identify the operation and equation required for word problems. Pupils may benefit by highlighting which number shows the number of group size and which shows the number of groups."
+ },
+ "explain-what-each-factor-represents-in-a-multiplication-story-when-one-of-the-factors-is-one": {
+  "title": "Explain what each factor represents in a multiplication story when one of the factors is one",
+  "misconception": "Pupils may not recognise that 1 can be a factor, particularly when the context includes 1 group.",
+  "response": "Work with children to discuss groups and what they can see, such as 3 groups of 4   Reduce the number of groups to 2 and then 1 group and identify that 1 group can still be used. Then attach this to multiplication and expressions."
+ },
+ "explain-how-a-multiplication-equation-with-2-as-a-factor-is-related-to-doubling": {
+  "title": "Explain how a multiplication equation with 2 as a factor is related to doubling",
+  "misconception": "Children may not grasp why 5 + 5 is equal to 2 × 5",
+  "response": "Continue to use the stem sentences to help children understand doubling; 5 + 5 is the same as 2 groups of 5. This is the same as 2 × 5. Children can use a 2 times table chart to help them answer questions."
+ },
+ "explain-that-objects-can-be-grouped-equally": {
+  "title": "Explain that objects can be grouped equally",
+  "misconception": "Pupils may misinterpret the 'number of groups' and 'the size of each group' when reading multiplication equations.",
+  "response": "Emphasise the order of multiplication equations, referring to these as '___ groups of ___: there are ___ groups with ___ in each group'. Reinforce this with visual representations such as counters and bar models."
+ },
+ "identify-and-explain-when-objects-cannot-be-grouped-equally": {
+  "title": "Identify and explain when objects cannot be grouped equally",
+  "misconception": "Pupils may struggle to understand why equal groups can / cannot be made.",
+  "response": "This is a challenging concept for Y2 children without visual representations. Take time to explore how even numbers can be grouped in equal groups of 2, whereas odd numbers cannot be and how multiples of 5 can be grouped into equal groups of five."
+ },
+ "explain-the-relationship-between-division-expressions-and-division-stories": {
+  "title": "Explain the relationship between division expressions and division stories",
+  "misconception": "Pupils may confuse the size of each group with the number of groups when reading and understanding an expression.",
+  "response": "Focus on the whole and dividing this into groups of a certain size, modelling this with visual representations, without discussing the number of groups at this point."
+ },
+ "calculate-the-number-of-equal-groups-in-a-division-story": {
+  "title": "Calculate the number of equal groups in a division story",
+  "misconception": "Pupils may be confuse the 'size of group' and  the 'number of groups' in a division equation.",
+  "response": "Label each part of a division equation e.g. 12 divided into groups of 2 is equal to 6    There are 12 __________ altogether. They have been divided into groups of 2 / there are 2 __________ in each group. There are 6 groups of __________."
+ },
+ "use-knowledge-of-skip-counting-and-division-to-solve-problems-relating-to-measure": {
+  "title": "Use knowledge of skip counting and division to solve problems relating to measure",
+  "misconception": "Pupils may assume that any number is equal to an exact number of number rods.",
+  "response": "There is a focus on multiples of numbers, especially multiples of 2, 5 and 10 in the lesson, but there is an example of a division calculation with a remainder in the first cycle to help pupils become familiar with this concept."
+ },
+ "skip-count-using-the-group-size-to-find-the-number-of-groups": {
+  "title": "Skip count using the group size to find the number of groups",
+  "misconception": "Pupils may think that the 'divisor' (the number we are dividing by) always represents the number of groups.",
+  "response": "Avoid generalising the divisor as the 'number of group' for every division problem, explaining that this only works in contexts in which grouping takes place. For sharing problems later in the unit, the divisor is the 'size of each group'."
+ },
+ "explain-that-objects-can-be-shared-equally": {
+  "title": "Explain that objects can be shared equally",
+  "misconception": "Pupils may find it challenging to represent sharing problems with a division equation.",
+  "response": "Continually describe what each number represents in any division equation. Examples on slides 11-13. It's important that pupils do not over generalise this to all division problems (e.g. in grouping problems, the divisor is the size of each group)."
+ },
+ "use-skip-counting-to-solve-a-sharing-problem": {
+  "title": "Use skip counting to solve a sharing problem",
+  "misconception": "Pupils may struggle to link sharing problems with a division equation.",
+  "response": "Continue to stress that in sharing problems, the divisor represents the 'number of groups'. We are trying to find the 'size of each group'. It is important that pupils do not over generalise this to all division problems."
+ },
+ "skip-count-to-find-the-group-size-in-a-sharing-problem": {
+  "title": "Skip count to find the group size in a sharing problem",
+  "misconception": "Pupils may forget to stop their count when giving an answer to a sharing problem.",
+  "response": "Emphasise the whole when writing equations and discussing problems. We count in 2s, 5s or 10s until we reach that whole. Stress that if we go further, we share more than we have to begin with."
+ },
+ "solve-a-variety-of-division-problems-explaining-understanding": {
+  "title": "Solve a variety of division problems, explaining understanding",
+  "misconception": "Pupils may struggle to identify grouping and sharing structures.",
+  "response": "Model the problem visually, using manipulatives such as cubes, counters and numbers lines. Alongside this, present these problems as division equations, discussing with the pupils what each number means."
+ },
+ "identify-the-patterns-and-relationships-between-the-5-and-10-times-tables": {
+  "title": "Identify the patterns and relationships between the 5 and 10 times tables",
+  "misconception": "Children may struggle to recall multiplication facts related to the 5 and 10 times tables.",
+  "response": "Using times table charts where needed throughout this unit will support children in recalling facts and enable them to focus on seeing the relationships, e.g. between the 5 and 10 times table. These can be used until children become more fluent."
+ },
+ "explain-patterns-and-relationships-between-the-5-and-10-times-tables": {
+  "title": "Explain patterns and relationships between the 5 and 10 times tables",
+  "misconception": "Children may incorrectly double or halve to find the missing products or factors.",
+  "response": "The use of counters or visuals will help children to see the relationship between 10 and 5 in each context and support them to know when they must use doubling and when they must use halving."
+ },
+ "use-knowledge-of-the-5-and-10-times-tables-to-solve-problems": {
+  "title": "Use knowledge of the 5 and 10 times tables to solve problems",
+  "misconception": "Children may incorrectly double or halve to find the missing products or factors.",
+  "response": "The use of counters or visuals will help children to see the relationship between 10 and 5 in each context and support them to know when they must use doubling and when they must use halving."
+ },
+ "explain-how-times-table-facts-can-help-to-find-the-quotient-10-times-table": {
+  "title": "Explain how times table facts can help to find the quotient (10 times table)",
+  "misconception": "Children misunderstanding the difference between partitive and quotative division when discussing the problems.",
+  "response": "Although they will result in the correct answers, the calculation itself will not accurately reflect the problem. Ensure children initially describe each problem and represent it visually so that they can see whether they are grouping or sharing."
+ },
+ "explain-how-times-table-facts-can-help-to-find-the-quotient-5-times-table": {
+  "title": "Explain how times table facts can help to find the quotient (5 times table)",
+  "misconception": "Children misunderstanding the difference between partitive and quotative division when discussing the problems.",
+  "response": "Although they will result in the correct answers, the calculation itself will not accurately reflect the problem. Ensure children initially describe each problem and represent it visually so that they can see whether they are grouping or sharing."
+ },
+ "explain-how-times-table-facts-can-help-to-find-the-quotient-2-times-table": {
+  "title": "Explain how times table facts can help to find the quotient (2 times table)",
+  "misconception": "Children misunderstanding the difference between partitive and quotative division when discussing the problems.",
+  "response": "Although they will result in the correct answers, the calculation itself will not accurately reflect the problem. Ensure children initially describe each problem and represent it visually so that they can see whether they are grouping or sharing."
+ },
+ "explain-how-a-division-equation-with-2-as-a-divisor-is-related-to-halving": {
+  "title": "Explain how a division equation with 2 as a divisor is related to halving",
+  "misconception": "Children may make errors when halving 2-digit numbers.",
+  "response": "Recap strategies for halving from previous units prior to the lesson so that the process of halving numbers does not take over the focus of this lesson."
+ },
+ "explain-each-part-of-a-division-equation-and-know-how-they-can-be-interchanged": {
+  "title": "Explain each part of a division equation and know how they can be interchanged",
+  "misconception": "Children may incorrectly identify parts of the equation.",
+  "response": "Multiple opportunities to label and call out the different parts of the equation will help children to become confident in using this new vocabulary."
+ },
+ "use-knowledge-of-divisibility-rules-when-the-divisor-is-2-to-solve-problems": {
+  "title": "Use knowledge of divisibility rules when the divisor is 2 to solve problems",
+  "misconception": "Children may not see 2-digit numbers as divisible by 2 if they are not in their 2 times tables.",
+  "response": "Encourage children to apply the knowledge that a number is divisible by 2 when it is even. The distinction between even and odd numbers can be revisited prior to the lesson and displayed to reference within the lesson."
+ },
+ "use-knowledge-of-divisibility-rules-when-the-divisor-is-10-to-solve-problems": {
+  "title": "Use knowledge of divisibility rules when the divisor is 10 to solve problems",
+  "misconception": "Children may not see 2-digit numbers as divisible by 10 if they are not in their 10 times tables.",
+  "response": "Encourage children to apply the knowledge that a number is divisible by 10 when it has a ones digit of 0     Examples showing this idea can be explored and displayed to reference within the lesson."
+ },
+ "use-knowledge-of-divisibility-rules-when-the-divisor-is-5-to-solve-problems": {
+  "title": "Use knowledge of divisibility rules when the divisor is 5 to solve problems",
+  "misconception": "Children may not see 2-digit numbers as divisible by 5 if they are not in their 5 times tables.",
+  "response": "Encourage children to apply the knowledge that a number is divisible by 5 when it has a ones digit of 0 or 5     Examples showing this idea can be explored and displayed to reference within the lesson."
+ },
+ "explain-how-a-dividend-of-zero-affects-the-quotient": {
+  "title": "Explain how a dividend of zero affects the quotient",
+  "misconception": "Children assume that the answer to all questions posed is 0 because that is the focus.",
+  "response": "Always encourage children to read an equation aloud and describe the role of each number within it. Relating each to a context can help children to visualise the mathematics when 0 feels abstract."
+ },
+ "explain-how-the-quotient-is-affected-when-the-divisor-is-equal-to-the-dividend": {
+  "title": "Explain how the quotient is affected when the divisor is equal to the dividend",
+  "misconception": "Children are unsure as to why, when the dividend and divisor are equal, the quotient is equal to 1",
+  "response": "Use physical resources  e.g. counters or children to represent both sharing and grouping contexts to help children to visualise the idea before applying to abstract equations."
+ },
+ "explain-how-a-divisor-of-one-affects-the-quotient": {
+  "title": "Explain how a divisor of one affects the quotient",
+  "misconception": "Children are unsure as to why, when the divisor is equal to 1, the quotient is equal to the dividend.",
+  "response": "Use physical resources e.g. counters or children to represent both sharing and grouping contexts to help children to visualise the idea before applying to abstract equations."
+ },
+ "use-knowledge-of-division-strategies-to-solve-problems": {
+  "title": "Use knowledge of division strategies to solve problems",
+  "misconception": "Children may revert to inefficient strategies to solve problems e.g. skip counting.",
+  "response": "Within the second learning cycle, children are encouraged to evaluate strategies used by others. The most efficient strategies should be discussed together throughout the first learning cycle to support with this."
+ },
+ "represent-counting-in-fours-as-the-4-times-table": {
+  "title": "Represent counting in fours as the 4 times table",
+  "misconception": "Pupils often confuse the keywords of this lesson and use them interchangeably or incorrectly.",
+  "response": "Model correct usage in a range of contexts including labelling abstract equations and using the terms to identify the known elements in worded problems. Choral response can also support pupils using these words correctly."
+ },
+ "use-knowledge-of-the-4-times-table-to-solve-problems": {
+  "title": "Use knowledge of the 4 times table to solve problems",
+  "misconception": "Pupils often confuse the keywords of this lesson and use them interchangeably or incorrectly. Pupils may also not understand how to deduce the operation for the calculation.",
+  "response": "Model correct usage in a range of contexts including labelling abstract equations and using the terms to identify the known elements in worded problems. Choral response can also support pupils using these words correctly."
+ },
+ "explain-the-relationship-between-adjacent-multiples-of-four": {
+  "title": "Explain the relationship between adjacent multiples of four",
+  "misconception": "Pupils may not understand the keyword adjacent and have difficult understanding the word problems.",
+  "response": "Model correct usage in a range of contexts including labelling abstract equations and using the term to identify the known elements in worded problems. Take time to show adjacent on number lines connecting to addition and subtraction of equal groups."
+ },
+ "explain-the-relationship-between-multiples-of-2-and-multiples-of-4": {
+  "title": "Explain the relationship between multiples of 2 and multiples of 4",
+  "misconception": "Pupils may generalise the rule and assume that when dividing by 4 is the last digit is even, then the number is divisible by 4",
+  "response": "Show children the relationship between 2s and 4s using the multiplication chart. Make clear that identifying the last digit as even is the first step - the last 2 digits should be a multiple of 4. Encourage discussions to highlight the relationship."
+ },
+ "use-knowledge-of-the-relationship-between-the-2-and-4-times-tables-to-solve-problems": {
+  "title": "Use knowledge of the relationship between the 2 and 4 times tables to solve problems",
+  "misconception": "Pupils may find it difficult to solve problems or misunderstand questions.",
+  "response": "Model clearly how to identify key phrases and words which will identify the operation and equation required for word problems."
+ },
+ "represent-counting-in-eights-as-the-8-times-table": {
+  "title": "Represent counting in eights as the 8 times table",
+  "misconception": "Pupils often confuse the keywords of this lesson and use them interchangeably or incorrectly.",
+  "response": "Model correct usage in a range of contexts including labelling abstract equations and using the terms to identify the known elements in worded problems. Choral response can also support pupils using these words correctly."
+ },
+ "explain-the-relationship-between-adjacent-multiples-of-eight": {
+  "title": "Explain the relationship between adjacent multiples of eight",
+  "misconception": "Pupils may not understand the key term 'adjacent,' and have difficult understanding the word problems.",
+  "response": "Model correct usage in a range of contexts including labelling abstract equations and using the terms to identify the known elements in worded problems."
+ },
+ "explain-the-relationship-between-multiples-of-4-and-multiples-of-8": {
+  "title": "Explain the relationship between multiples of 4 and multiples of 8",
+  "misconception": "Lack of fluency in the 4s and 8s times tables and generalisation of the rule.",
+  "response": "Encourage children to test generalisation - model this clearly using key words and identifying why the rule applies."
+ },
+ "use-knowledge-of-the-relationship-between-the-4-and-8-times-tables-to-solve-problems": {
+  "title": "Use knowledge of the relationship between the 4 and 8 times tables to solve problems",
+  "misconception": "Pupils may find it difficult to solve problems or misunderstand questions.",
+  "response": "Model clearly how to identify key phrases and words which will identify the operation and equation required for word problems. This could involve drawing bar models or other representations."
+ },
+ "explain-the-relationship-between-the-multiples-of-2-4-and-8": {
+  "title": "Explain the relationship between the multiples of 2, 4 and 8",
+  "misconception": "Lack of fluency in 2s, 4s, or 8s times tables can mean that pupils struggle to generalise rules of and relationships within multiples of 2, 4 and 8",
+  "response": "Take time to practically model grouping a set of objects in different ways. For example, take 24 straws and clearly show how groups of 2, 4 and 8 can be made. Discuss the relationships focusing on doubling and halving."
+ },
+ "use-knowledge-of-the-relationship-between-the-2-4-and-8-times-tables-to-solve-problems": {
+  "title": "Use knowledge of the relationship between the 2, 4 and 8 times tables to solve problems",
+  "misconception": "Pupils may misunderstand the contexts or language within worded problems and therefore not understand the calculation required to solve.",
+  "response": "Model clearly how to identify key phrases and words which will identify the operation and equation required for word problems. Pupils may benefit from representing what is known and what is unknown such as by drawing a bar model."
+ },
+ "use-knowledge-of-the-divisibility-rules-for-divisors-of-2-and-4-to-solve-problems": {
+  "title": "Use knowledge of the divisibility rules for divisors of 2 and 4 to solve problems",
+  "misconception": "Lack of fluency in 2s and 4s times tables and not understanding the divisibility rules or the problems.",
+  "response": "To clearly model highlighting key words of worded problems to understand the problem and the operation required for the calculation. Continue to use language stems such as 'If I know...' 'Then I know...,' to support mathematical thinking."
+ },
+ "use-knowledge-of-the-divisibility-rules-for-divisors-8-to-solve-problems": {
+  "title": "Use knowledge of the divisibility rules for divisors 8 to solve problems",
+  "misconception": "Lack of fluency in 4s and or 8s times tables and understanding when tackling word problems.",
+  "response": "Clearly model highlighting key words of worded problems to understand the problem and the operation required for the calculation. Continue to use language stems such as 'If I know...' 'Then I know...,' to support mathematical thinking."
+ },
+ "scale-known-multiplication-facts-by-10": {
+  "title": "Scale known multiplication facts by 10",
+  "misconception": "Lack of fluency in multiplication facts and / or understanding of word problems. 'Adding a 0' at the end.",
+  "response": "Use language of unitisation to support pupils mathematical thinking. Clear modelling of steps in how to find the operation for the calculation. Use gattegno chart or place value chart to highlight scaling by 10."
+ },
+ "scale-divisions-derived-from-multiplication-facts-by-10": {
+  "title": "Scale divisions derived from multiplication facts by 10",
+  "misconception": "Lack of fluency in 2s, 4s and 8s times tables and not understanding the divisibility rules or the problems.",
+  "response": "To clearly model use of gattegno chart or place value chart to highlight scaling up and down by 10. Highlight key words of worded problems to understand the problem and the operation required for the calculation."
+ },
+ "multiply-a-2-digit-number-by-a-1-digit-number-using-partitioning-and-representations-one-regroup": {
+  "title": "Multiply a 2-digit number by a 1-digit number using partitioning and representations (one regroup)",
+  "misconception": "Pupils may not regroup correctly if they do not understand the place value of digits in a factor.",
+  "response": "Encourage pupils to use the stem sentences / array to identify when they may need to regroup."
+ },
+ "multiply-a-2-digit-number-by-a-1-digit-number-using-partitioning-and-representations-two-regroups": {
+  "title": "Multiply a 2-digit number by a 1-digit number using partitioning and representations (two regroups)",
+  "misconception": "Pupils may not regroup correctly.",
+  "response": "Encourage pupils to use the stem sentences / array to identify when they may need to regroup."
+ },
+ "multiply-a-2-digit-number-by-a-1-digit-number-using-partitioning": {
+  "title": "Multiply a 2-digit number by a 1-digit number using partitioning",
+  "misconception": "Pupils may not record partitioned factors as tens and ones leading to incorrect calculation.",
+  "response": "Encourage pupils to use the stem sentences to support their thinking. Use the language of ___ tens to support place value."
+ },
+ "multiply-a-2-digit-number-by-a-1-digit-number-using-expanded-multiplication-no-regroups": {
+  "title": "Multiply a 2-digit number by a 1-digit number using expanded multiplication (no regroups)",
+  "misconception": "When using the expanded method, pupils may not align the digits correctly with the same place value.",
+  "response": "Use clear teacher modelling and continue to ask what each digit that has been recorded represents and link back to the place value chart."
+ },
+ "multiply-a-2-digit-number-by-a-1-digit-number-using-short-multiplication-no-regroups": {
+  "title": "Multiply a 2-digit number by a 1-digit number using short multiplication (no regroups)",
+  "misconception": "When using the short method, pupils may not align the digits correctly with the same place value.",
+  "response": "Continue to ask what each digit that has been recorded represents, linking back to the place value chart."
+ },
+ "multiply-a-2-digit-number-by-a-1-digit-number-using-expanded-multiplication-regrouping-1s-to-10s": {
+  "title": "Multiply a 2-digit number by a 1-digit number using expanded multiplication (regrouping 1s to 10s)",
+  "misconception": "Pupils may not align or regroup correctly leading to an inaccurate calculation.",
+  "response": "Continue to ask what each digit that has been recorded represents. Demonstrate the regrouping using base ten blocks to help."
+ },
+ "multiply-a-2-digit-number-by-a-1-digit-number-using-short-multiplication-regrouping-1s-to-10s": {
+  "title": "Multiply a 2-digit number by a 1-digit number using short multiplication (regrouping 1s to 10s)",
+  "misconception": "Pupils may not align or regroup correctly leading to an inaccurate calculation.",
+  "response": "Ask children about the additional ten or tens as a small digit to be added in with the tens. What does this show? What is the value?"
+ },
+ "multiply-a-2-digit-number-by-a-1-digit-number-using-expanded-multiplication-regrouping-10s-to-100s": {
+  "title": "Multiply a 2-digit number by a 1-digit number using expanded multiplication (regrouping 10s to 100s)",
+  "misconception": "Pupils may not align or regroup correctly leading to an inaccurate calculation.",
+  "response": "Model accurately what happens when we regroup from 10s to 100s. Why did this happen? How do we record this?"
+ },
+ "multiply-a-2-digit-number-by-a-1-digit-number-using-short-multiplication-regrouping-10s-to-100s": {
+  "title": "Multiply a 2-digit number by a 1-digit number using short multiplication (regrouping 10s to 100s)",
+  "misconception": "Pupils may not align or regroup correctly leading to an inaccurate calculation.",
+  "response": "Reiterate that if the product of the single digit and the tens number is greater than 100 then you regroup ten tens into one hundred."
+ },
+ "estimate-and-multiply-a-2-digit-by-a-1-digit-number-using-expanded-and-short-multiplication": {
+  "title": "Estimate and multiply a 2-digit by a 1-digit number using expanded and short multiplication",
+  "misconception": "Pupils may find it difficult to identify the multiples of 10 a number is between when estimating.",
+  "response": "Provide a number line and continue to use stem sentences to support pupils in their thinking."
+ },
+ "multiply-a-3-digit-by-a-1-digit-number-using-partitioning": {
+  "title": "Multiply a 3-digit by a 1-digit number using partitioning",
+  "misconception": "Pupils may partition numbers incorrectly and arrange grid model incorrectly.",
+  "response": "Clear teacher modelling, ask pupils 'what does this digit represent?'"
+ },
+ "multiply-a-3-digit-by-a-1-digit-number-with-no-regroups": {
+  "title": "Multiply a 3-digit by a 1-digit number with no regroups",
+  "misconception": "Misalignment of digits when setting out short multiplication.",
+  "response": "Clear teacher modelling, ask pupils 'what does this digit represent?' Return to expanded layout briefly, before re-doing the problem."
+ },
+ "multiply-a-3-digit-by-a-1-digit-number-with-one-or-two-regroups": {
+  "title": "Multiply a 3-digit by a 1-digit number with one or two regroups",
+  "misconception": "Children may misalign digits when arranging into the short multiplication layout.",
+  "response": "Children should use unitising language to help them understand and apply this to formal written methods."
+ },
+ "multiply-a-3-digit-by-a-1-digit-number-with-multiple-regroups": {
+  "title": "Multiply a 3-digit by a 1-digit number with multiple regroups",
+  "misconception": "Incorrectly regrouping or forgetting to record a regrouped amount.",
+  "response": "Clear teacher modelling. 'What does this digit represent?' 'Where do we place the regrouped amount?'"
+ },
+ "use-estimation-to-support-accurate-calculation": {
+  "title": "Use estimation to support accurate calculation",
+  "misconception": "Pupils attempt to estimate using approximations that do not allow for quick mental calculation.",
+  "response": "Spend time estimating yourself and modelling the simplicity of it. Use estimations regularly to check the magnitude of an answer."
+ },
+ "divide-a-2-digit-by-a-1-digit-number-using-partitioning-and-representations-no-remainders": {
+  "title": "Divide a 2-digit by a 1-digit number using partitioning and representations (no remainders)",
+  "misconception": "Some children may continue to share one by one when dividing.",
+  "response": "Encourage children to skip count in the divisor and remind children that it is an efficient way of dividing."
+ },
+ "divide-a-2-digit-by-a-1-digit-number-using-partitioning-with-regrouping": {
+  "title": "Divide a 2-digit by a 1-digit number using partitioning (with regrouping)",
+  "misconception": "Pupils not being able to regroup when dividing.",
+  "response": "Use concrete resources to highlight regrouping of tens. Ask children 'What is the highest multiple you know?' to support with partitioning."
+ },
+ "divide-a-2-digit-by-a-1-digit-number-using-representations-with-exchanging-and-remainders": {
+  "title": "Divide a 2-digit by a 1-digit number using representations with exchanging and remainders",
+  "misconception": "Pupils may forget to record the remainder.",
+  "response": "Remind children that if the ones are not divisible there will be a remainder and that this is expressed as 'r'."
+ },
+ "divide-a-2-digit-by-a-1-digit-number-using-short-division-no-regrouping": {
+  "title": "Divide a 2-digit by a 1-digit number using short division (no regrouping )",
+  "misconception": "Pupils may incorrectly arrange the dividend or divisor and quotient.",
+  "response": "Clear modelling. Ask children 'What does this number represent?' - 'The dividend and it is placed inside the division frame.'"
+ },
+ "divide-a-2-digit-by-a-1-digit-number-using-short-division-with-regrouping": {
+  "title": "Divide a 2-digit by a 1-digit number using short division (with regrouping)",
+  "misconception": "Pupils not understanding and/or recording the regrouped amount.",
+  "response": "Continue to use language of unitisation. For example '7 tens ÷ 3 is 2 tens remainder 1 ten.' Ask what the regrouped amount represents."
+ },
+ "divide-a-2-digit-number-using-short-division-with-regrouping-and-remainders": {
+  "title": "Divide a 2-digit number using short division (with regrouping and remainders)",
+  "misconception": "Working through algorithmically without having an understanding of the regrouped amount.",
+  "response": "Clear modelling with PVC. Ask children 'What does this number represent?'. Continue to use sentence stems."
+ },
+ "divide-a-3-digit-by-a-1-digit-number-using-partitioning-and-representations-no-remainders": {
+  "title": "Divide a 3-digit by a 1-digit number using partitioning and representations (no remainders)",
+  "misconception": "Lack of understanding of place value may lead to the rise of incorrect partial quotients.",
+  "response": "Encourage children to identify what each digit represents. If misconceptions persist - use place value counters to divide by skip counting."
+ },
+ "divide-a-3-digit-number-using-partitioning-and-representations-one-regroup": {
+  "title": "Divide a 3-digit number using partitioning and representations (one regroup)",
+  "misconception": "Pupils may not regroup correctly.",
+  "response": "Encourage children to identify what each digit in the dividend represents. Ask, 'Is this digit a multiple of the divisor?'"
+ },
+ "divide-using-partitioning-and-representations-multiple-regroups-and-remainder": {
+  "title": "Divide using partitioning and representations (multiple regroups and remainder)",
+  "misconception": "Pupils may not regroup correctly.",
+  "response": "Ask pupils what each digit represents. Continue to use skip counting when dividing each digit in the dividend."
+ },
+ "divide-a-3-digit-by-a-1-digit-number-using-short-division": {
+  "title": "Divide a 3-digit by a 1-digit number using short division",
+  "misconception": "Pupils may not be able to arrange digits within the division frame correctly and work procedurally.",
+  "response": "Clear teacher modelling of arrangement of digits using the division frame. Continue to use stem sentences."
+ },
+ "divide-using-short-division-with-regrouping-and-remainders": {
+  "title": "Divide using short division with regrouping and remainders",
+  "misconception": "Pupils not understanding why they may have to regroup or what the regrouped amount represents.",
+  "response": "Ask pupils 'What does this digit represent?' draw attention to place value and use continue to use language of unitisation."
+ },
+ "use-short-division-when-the-hundreds-digit-is-smaller-than-the-divisor": {
+  "title": "Use short division when the hundreds digit is smaller than the divisor",
+  "misconception": "Pupils may confuse the terminology of dividend and divisor. Pupils may regroup the incorrect amount.",
+  "response": "Ensure pupils can identify the dividend and the divisor. Use language of unitisation to correct any place value misconceptions."
+ },
+ "use-efficient-division-strategies-to-solve-problems": {
+  "title": "Use efficient division strategies to solve problems",
+  "misconception": "Pupils may always choose short division to solve division equations.",
+  "response": "Encourage pupils to think about other strategies that they know. Ask questions such as 'Is this the most efficient method?'"
+ },
+ "solve-problems-involving-multiplication-and-division": {
+  "title": "Solve problems involving multiplication and division",
+  "misconception": "Pupils may not be able to identify the key words leading to the operation.",
+  "response": "Highlight the keyword and read back the question highlighting the context of the word problem. Words such as 'of' will need exemplifying."
+ },
+ "solve-problems-involving-multiplication-and-division-in-a-range-of-contexts": {
+  "title": "Solve problems involving multiplication and division in a range of contexts",
+  "misconception": "Pupils may not be able to identify whether a question is a 1-step or 2-step problem.",
+  "response": "Read and highlight key words which identify the operation. Highlight the numbers which will lead to the calculation."
+ },
+ "explain-the-use-of-the-commutative-and-associative-laws-when-multiplying-three-or-more-numbers": {
+  "title": "Explain the use of the commutative and associative laws when multiplying three or more numbers",
+  "misconception": "Pupils only ever calculate an equation from left to right.",
+  "response": "Ensure pupils are given time to explore where the commutative law might be best used and where the associative law might be better used. Pupils should be expected to reason why they have chosen to adopt a strategy."
+ },
+ "apply-commutative-and-associative-laws-to-simplify-multiplications": {
+  "title": "Apply commutative and associative laws to simplify multiplications",
+  "misconception": "Pupils continue to work only from left to right in calculations, therefore making calculations more time-consuming.",
+  "response": "Support pupils to find pairs of factors that are easy to multiply with. For example, finding factors that make a power of ten often make calculations easier as they can multiply by 10, 100 or 1000 for example at the end."
+ },
+ "explain-the-reasons-for-changing-two-factor-multiplication-calculations-to-three-factor-calculations": {
+  "title": "Explain the reasons for changing two-factor multiplication calculations to three-factor calculations",
+  "misconception": "Pupils think that the factor that must become the product of two factors is always the largest factor.",
+  "response": "Ensure pupils are provided with a range of opportunities to break down factors, identifying where it does make a calculation easier, and also where it doesn't make the calculation easier."
+ },
+ "apply-the-commutative-and-associative-laws-to-simplify-volume-calculations": {
+  "title": "Apply the commutative and associative laws to simplify volume calculations",
+  "misconception": "Pupils struggle to understand that a 3 factor calculation problem with two unknown factors can be represented as a 2 factor calculation with one unknown factor.",
+  "response": "Spend time manipulating 2 factor calculations into 3 factors and vice versa. Once pupils are confident with this, apply this to a context where the numbers are kept simple to support pupils to see the structure of the problems."
+ },
+ "apply-the-commutative-and-associative-laws-to-simplify-problems-in-a-range-of-contexts": {
+  "title": "Apply the commutative and associative laws to simplify problems in a range of contexts",
+  "misconception": "Pupils struggle to solve unknown factor calculations where the volume is known.",
+  "response": "Ensure pupils record missing factor problems as a multiplication equation. You may choose to build up the number of missing factors from one to two. You may also choose to build up from a missing factor in a 2 factor equation to a 3 factor equation."
+ },
+ "explain-what-a-factor-is-and-use-arrays-and-multiplication-and-division-facts-to-find-them": {
+  "title": "Explain what a factor is and use arrays and multiplication and division facts to find them",
+  "misconception": "Pupils try to represent numbers as an array with an unequal amount in rows and columns.",
+  "response": "Ensure pupils are given time to explore representing numbers as arrays and identifying where the numbers in a multiplication equation come from within their array."
+ },
+ "explain-how-to-find-all-the-factors-of-a-number-systematically": {
+  "title": "Explain how to find all the factors of a number systematically",
+  "misconception": "Pupils do not know when to stop looking for more factors.",
+  "response": "Build up finding factors of numbers systematically by arranging into rows and columns, starting with 1 row. Encourage pupils to generalise that when the number of rows becomes larger than the number of columns, you can stop looking for factors."
+ },
+ "use-a-complete-list-of-factors-to-explain-when-a-number-is-a-square-number": {
+  "title": "Use a complete list of factors to explain when a number is a square number",
+  "misconception": "Pupils record the number of factors for a square number as even as they record the same number twice when writing down the factors of the square arrangement.",
+  "response": "Highlight the need to only record each number as a factor once. You may like to record this on the tail of the factor bug to help emphasise this."
+ },
+ "explain-how-to-identify-a-prime-number-or-a-composite-number": {
+  "title": "Explain how to identify a prime number or a composite number",
+  "misconception": "Every number has one and itself as a factor, so every number is a prime number.",
+  "response": "Ensure pupils explore the different arrangements that numbers can make with tiles in arrays. Point out that the numbers which cannot be arranged in any way except for one row or column are prime numbers."
+ },
+ "explain-how-to-identify-a-prime-factor-of-a-number": {
+  "title": "Explain how to identify a prime factor of a number",
+  "misconception": "Pupils try to compose numbers additively using prime factors.",
+  "response": "Ensure pupils are confident with finding the factors of a number first before extending to finding prime factors of known factors. Give time to building numbers with prime factors in arrays to help emphasise their multiplicative composition."
+ },
+ "explain-how-to-identify-common-factors-between-two-or-more-numbers": {
+  "title": "Explain how to identify common factors between two or more numbers",
+  "misconception": "Pupils may only record a prime factor once in the Venn diagram even though it might be used more than once in the composition of the number.",
+  "response": "It is important the clarify that we are finding common prime factors that are used in the composition of two numbers, and this might include a prime factor being used more than once."
+ },
+ "explain-how-to-identify-a-common-multiple-of-two-or-more-numbers": {
+  "title": "Explain how to identify a common multiple of two or more numbers",
+  "misconception": "Pupils confuse the terminology of factors and multiples and mistake them for one another.",
+  "response": "Spend time encouraging pupils to identify the factors in an array and within both multiplication and division equations. Make explicit that the product and dividend represent the multiple in each equation."
+ },
+ "explain-how-to-use-the-factor-pairs-of-100-to-solve-calculations-efficiently": {
+  "title": "Explain how to use the factor pairs of 100 to solve calculations efficiently",
+  "misconception": "Pupils decompose the wrong factor therefore find it difficult to find a pair of factors that are equal to 100",
+  "response": "Scaffold pupil's thinking when they begin to tackle a 2 digit by 2 digit calculation. Encourage them to ask questions of the numbers, for example: 'Is one of the numbers I have to start with a factor of 100?'"
+ },
+ "use-properties-of-numbers-and-the-commutative-and-associative-laws-to-simplify-calculations": {
+  "title": "Use properties of numbers and the commutative and associative laws to simplify calculations",
+  "misconception": "Pupils may struggle to find factors of a number if they do not have automatic recall of their times tables.",
+  "response": "Provide children with a multiplication grid to help pupils understand the process of the calculations, however ensure additional support is in place for children to build towards automatic recall of times tables."
+ },
+ "explain-how-to-multiply-a-3-digit-number-by-a-2-digit-number": {
+  "title": "Explain how to multiply a 3-digit number by a 2-digit number",
+  "misconception": "Children lack fluency and recall in multiplication tables and therefore lose the thread of longer multiplication strategies.",
+  "response": "Providing multiplication grids and / or adapting questions to focus on known multiplication tables can support learners to focus on the steps of an algorithm."
+ },
+ "explain-how-to-use-long-multiplication-to-multiply-two-2-digit-numbers-regrouping-ones-to-tens": {
+  "title": "Explain how to use long multiplication to multiply two 2-digit numbers regrouping ones to tens",
+  "misconception": "Pupils forget to include regrouped values when multiplying.",
+  "response": "Decide on a place and structure for regrouped values - they are included at the top of the algorithm in these lessons to avoid confusion with addition regrouping when partial products are summed. Ensure this is clearly modelled."
+ },
+ "explain-how-to-use-long-multiplication-to-multiply-two-2-digit-numbers-with-regrouping": {
+  "title": "Explain how to use long multiplication to multiply two 2-digit numbers with regrouping",
+  "misconception": "Pupils forget to include regrouped values when multiplying.",
+  "response": "Decide on a place and structure for regrouped values - they are included at the top of the algorithm in these lessons to avoid confusion with addition regrouping when partial products are summed. Ensure this is clearly modelled."
+ },
+ "explain-how-to-use-long-multiplication-to-multiply-a-3-digit-by-a-2-digit-number": {
+  "title": "Explain how to use long multiplication to multiply a 3-digit by a 2-digit number",
+  "misconception": "Pupil automatically assume that the largest 3-digit factor will lead to the largest product.",
+  "response": "Encourage pupils to think about the multiplicative structure of 'groups' of and consider e.g. whether 30 groups of 52 or 20 groups of 53 will be greater or smaller."
+ },
+ "explain-how-to-use-long-multiplication-to-multiply-a-4-digit-by-a-2-digit-number": {
+  "title": "Explain how to use long multiplication to multiply a 4-digit by a 2-digit number",
+  "misconception": "Pupils find it challenging to keep track of multiple regroupings in the long multiplication layout and therefore forget to add these to partial products.",
+  "response": "Estimation can support checking of magnitude. Discuss and agree on a position for regrouped values and continuously model noting and using these."
+ },
+ "explain-how-to-use-the-associative-law-to-multiply-efficiently": {
+  "title": "Explain how to use the associative law to multiply efficiently",
+  "misconception": "Pupils can identify factors of a 2-digit number but do not consider efficiency when multiplying.",
+  "response": "Draw attention to factor pairs and those which result in easier calculations e.g. pupils often find multiplying by 4 or 5 easier than 7, or can apply doubling when multiplying by 2"
+ },
+ "explain-when-it-is-efficient-to-use-factorising-or-long-multiplication-to-multiply-by-2-digits": {
+  "title": "Explain when it is efficient to use factorising or long multiplication to multiply by 2-digits",
+  "misconception": "Pupils can 'default' to using a written algorithm when learned regardless of the values of the calculation.",
+  "response": "Consider using confident mathematicians in a race to show efficiency of different methods. Encourage pupils to 'interrogate' the values of the calculation in order to identify more efficient approaches."
+ },
+ "dividing-numbers-with-up-to-4-digits-by-multiples-of-10": {
+  "title": "Dividing numbers with up to 4 digits by multiples of 10",
+  "misconception": "Pupils may make mistakes converting from km into m or kg in g.",
+  "response": "Pupils may need supporting converting units and multiplying by one thousand. Place value charts may be needed here."
+ },
+ "using-short-and-long-division-to-divide-by-a-2-digit-divisor": {
+  "title": "Using short and long division to divide by a 2-digit divisor",
+  "misconception": "Pupils may not unitise when using long division and make errors (e.g. when dividing 7 hundreds by 12).",
+  "response": "Explain to pupils that they are looking for multiples of the divisor (1 hundred × 12 = 1,200). This becomes clearer when dividing the tens digits (6 tens × 12 = 72 tens)."
+ },
+ "dividing-by-a-2-digit-divisor-including-using-long-division": {
+  "title": "Dividing by a 2-digit divisor including using long division",
+  "misconception": "Pupils may struggle to set out the long division algorithm correctly.",
+  "response": "Use the modelling from the lesson to focus on this, especially when writing multiples of the divisor (e.g. 3 tens × 17 = 51 tens) and subtracting this from the dividend."
+ },
+ "solve-problems-with-4-digit-dividends-using-factors-and-long-division": {
+  "title": "Solve problems with 4-digit dividends using factors and long division",
+  "misconception": "Pupils may be overwhelmed by the long division algorithm, especially with using multiples of the divisor and  subsequent subtraction calculations.",
+  "response": "Encourage pupils to complete and make use of the multiplication facts tables to support them in their calculation."
+ },
+ "dividing-by-a-2-digit-divisor-with-a-remainder": {
+  "title": "Dividing by a 2-digit divisor with a remainder",
+  "misconception": "Pupils may not make efficient use of multiplication facts when answering long division problems, especially 10 or 100 times the divisor.",
+  "response": "Encourage pupils to make estimations using multiplication facts. Once the multiplication facts are completed, they could be used to ask quick-fire questions (e.g. what is 20 × 18? 50 × 18? 200 × 18?)"
+ },
+ "use-long-division-with-fraction-remainders": {
+  "title": "Use long division with fraction remainders",
+  "misconception": "Pupils do not make the link between fractions and division and therefore do not understand why a remainder can be written as a fraction.",
+  "response": "Show that fractions can be the result of division e.g. one-quarter is one divided by four. Use models and examples to show that a remainder can be written as a fraction of a whole group (the divisor)."
+ },
+ "use-long-division-with-decimal-remainders": {
+  "title": "Use long division with decimal remainders",
+  "misconception": "Pupils do not convert fractions to decimals accurately.",
+  "response": "Take time to remind pupils about key equivalences such as one-half is 0.5 and one-fifth is 0.2   Pupils can use these to check the reasonableness of their answers."
+ },
+ "solve-problems-involving-remainders-in-context": {
+  "title": "Solve problems involving remainders in context",
+  "misconception": "Pupils do not consider the context when identifying what to do with the remainder.",
+  "response": "Pupils often respond well to ridiculous examples here such as suggesting some of the class are left behind on a school trip in order to have equal-sized teams. These more extreme examples help consideration of context."
+ },
+ "combine-multiplication-with-addition-and-subtraction": {
+  "title": "Combine multiplication with addition and subtraction",
+  "misconception": "Children will solve an equation by working from left to right and forget that multiplication needs to be completed before addition or subtraction.",
+  "response": "Allow plenty of opportunities for children to practise solving equations that cannot be solved working from left to right. You could highlight the operation symbols to draw children's attention to these before they begin to solve them."
+ },
+ "explain-how-the-distributive-law-applies-to-multiplication-expressions-with-a-common-factor": {
+  "title": "Explain how the distributive law applies to multiplication expressions with a common factor",
+  "misconception": "Children may add or subtract the common factors together rather than the uncommon factors.",
+  "response": "Use unitising counters or other physical resources to represent each problem and manipulate these to demonstrate the distributive law before showing children the equation that represents it."
+ },
+ "combine-division-with-addition-and-subtraction": {
+  "title": "Combine division with addition and subtraction",
+  "misconception": "Children may struggle to identify the dividends and confuse these with the divisor.",
+  "response": "For each problem, ask the children what each number represents and help them to describe this. For example,  'the number of sweets before they were shared and the number they are sharing between' alongside the terms dividend and divisor."
+ },
+ "explain-how-the-distributive-law-applies-to-division-expressions-with-a-common-divisor": {
+  "title": "Explain how the distributive law applies to division expressions with a common divisor",
+  "misconception": "When writing the subtraction expression within the equation, children may write the parts to be divided in the order they appear in the problem, rather than putting the greatest one first.",
+  "response": "Explore where the parts to be divided need to be written in a different order to how they appear in the problem. Compare this with addition and explore commutativity so that children can see how addition is commutative but subtraction is not."
+ },
+ "use-knowledge-of-the-order-of-operations-to-solve-equations": {
+  "title": "Use knowledge of the order of operations to solve equations",
+  "misconception": "Children may forget to use the order of operations and revert back to working from left to right.",
+  "response": "Encourage them to identify all the operations in an equation before they begin to solve it so that they can apply their knowledge of the order of operations."
+ },
+ "represent-counting-in-threes-as-the-3-times-table": {
+  "title": "Represent counting in threes as the 3 times table",
+  "misconception": "Pupils often confuse the keywords of this lesson and use them interchangeably or incorrectly.",
+  "response": "Model correct usage in a range of contexts including labelling abstract equations and using the terms to identify the known elements in worded problems. Choral response can also support pupils using these words correctly."
+ },
+ "represent-counting-in-sixes-as-the-6-times-table": {
+  "title": "Represent counting in sixes as the 6 times table",
+  "misconception": "Pupils often confuse the keywords of this lesson and use them interchangeably or incorrectly.",
+  "response": "Model correct usage in a range of contexts including labelling abstract equations and using the terms to identify the known elements in worded problems. Choral response can also support pupils using these words correctly."
+ },
+ "explain-the-relationship-between-multiples-of-three-and-six": {
+  "title": "Explain the relationship between multiples of three and six",
+  "misconception": "Lack of fluency in the 3s and 6s times tables can lead to pupils being slower to grasp the generalisation about the relationship between the 3 and 6 times tables.",
+  "response": "Use arrays and other representations to draw clear comparisons. Multiplication grids could also be provided while pupils become more fluent in recall."
+ },
+ "represent-counting-in-nines-as-the-9-times-table": {
+  "title": "Represent counting in nines as the 9 times table",
+  "misconception": "Pupils often confuse the keywords of this lesson and use them interchangeably or incorrectly.",
+  "response": "Model correct usage in a range of contexts including labelling abstract equations and using the terms to identify the known elements in worded problems. Choral response can also support pupils using these words correctly."
+ },
+ "use-known-facts-from-the-10-times-table-to-solve-problems-involving-the-9-times-table": {
+  "title": "Use known facts from the 10 times table to solve problems involving the 9 times table",
+  "misconception": "Lack of fluency in 9 times tables and not understanding the problems.",
+  "response": "To clearly model highlighting key words of worded problems to understand the problem and the operation required for the calculation. Continue to use language stems such as 'If I know...' 'Then I know...,' to support mathematical thinking."
+ },
+ "represent-counting-in-sevens-as-the-7-times-table": {
+  "title": "Represent counting in sevens as the 7 times table",
+  "misconception": "Pupils may think that the 7 times table is just counting by sevens without recognising it as multiplication.",
+  "response": "Emphasise that the 7 times table is not just counting by sevens but a series of products of 7 and whole numbers (e.g., 7 × 1, 7 × 2, etc.)."
+ },
+ "explain-the-relationship-between-adjacent-multiples-of-seven": {
+  "title": "Explain the relationship between adjacent multiples of seven",
+  "misconception": "Pupils may not see that adjacent multiples of seven differ by exactly seven.",
+  "response": "Show that each step in the 7 times table is adding seven to the previous multiple, reinforcing the concept with number lines or skip counting, use visual aids such as a number line."
+ },
+ "use-known-facts-from-the-2-5-and-6-times-tables-to-solve-problems-involving-the-7-times-table": {
+  "title": "Use known facts from the 2, 5 and 6 times tables to solve problems involving the 7 times table",
+  "misconception": "Pupils may not realise they can use simpler multiplication facts to build up to the 7 times table or may not know their times tables facts.",
+  "response": "You can provide multiplication charts. Continue to encourage pupils to break down problems involving 7 into smaller, known facts (e.g., 7 × 6 = 5 × 6 + 2 × 6)."
+ },
+ "use-knowledge-of-the-distributive-law-to-calculate-products-using-known-times-tables": {
+  "title": "Use knowledge of the distributive law to calculate products using known times tables",
+  "misconception": "Pupils may think that there is only one strategy for finding a solution and struggle to see that there is more than one way of partitioning a factor.",
+  "response": "Spend some time discussing how many combinations of partitioned factor you could use with the distributive law and evaluate each combination for efficiency. This would be a worthwhile guided group task."
+ },
+ "explain-what-each-factor-represents-in-a-multiplication-equation": {
+  "title": "Explain what each factor represents in a multiplication equation",
+  "misconception": "Pupils may struggle to identify whether a factor is representing the group size or the number of groups, particularly when their position in the equation is swapped to show commutativity.",
+  "response": "Give children concrete examples to look at, such as jars of marbles, boxes of erasers or pots of pencils and write corresponding multiplication equations, identifying the factor that represents group size and the one that represents number of groups."
+ },
+ "explain-where-zero-can-be-part-of-a-multiplication-or-division-expression-and-the-impact-it-has": {
+  "title": "Explain where zero can be part of a multiplication or division expression and the impact it has",
+  "misconception": "Many pupils will come into the lesson believing that the value of 3 ÷ 0 is 0",
+  "response": "Make sure that you use other examples of related multiplication and division equations to show how they can help to disprove the idea that the divisor can be used as zero. Keep them clearly displayed on the learning wall."
+ },
+ "use-multiplication-facts-to-answer-division-questions": {
+  "title": "Use multiplication facts to answer division questions",
+  "misconception": "Children may choose the multiple that is higher than or closest to the dividend, for example to solve 47 divided by 6, they may choose 8 x 6 = 48 instead of 7 x 6 = 42",
+  "response": "Choose smaller numbers to demonstrate the concept, using practical equipment and number lines to demonstrate why the number must be equal to or less than the dividend."
+ },
+ "explain-how-the-remainder-relates-to-the-divisor-in-a-division-equation": {
+  "title": "Explain how the remainder relates to the divisor in a division equation",
+  "misconception": "Rather than using the largest multiple less than or equal to the dividend, children may identify the closest multiple (one that is too high) or one that is less than the dividend but is too low.",
+  "response": "Add further examples using counters to explore patterns where one more is added to draw attention to the size of the remainder compared to the divisor. Draw number lines alongside these so children begin to also visualise in a more abstract way."
+ },
+ "use-knowledge-of-division-equations-and-remainders-to-solve-problems": {
+  "title": "Use knowledge of division equations and remainders to solve problems",
+  "misconception": "Children may either choose to use a multiple higher than the dividend, e.g. 53 ÷ 9 = , or choose a multiple that is too low, e.g. 57 ÷ 8 = , which results in a remainder greater than the divisor.",
+  "response": "When solving equations, refer back to the largest multiple that is less than or equal to the dividend and use number lines to allow children to visualise this."
+ }
+}
