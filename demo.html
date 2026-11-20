@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#bemorefab classroom demo</title>
+<style>
+  :root{ --ink:#314128; --soft:#5d6b55; --cream:#FFF8EC; --line:#F0DFC0; --flame:#E84432; --leaf:#437039; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--cream); color:var(--ink); }
+  header{ padding:16px 20px 8px; max-width:1500px; margin:0 auto; }
+  h1{ margin:0 0 6px; font-size:1.5rem; }
+  p{ margin:4px 0; line-height:1.45; }
+  .steps{ display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 4px; padding:0; list-style:none; }
+  .steps li{ background:#fff; border:2px solid var(--line); border-radius:12px; padding:6px 12px; font-size:.92rem; }
+  .bar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:8px 0 0; }
+  button{ font:inherit; font-weight:700; border:0; border-radius:999px; padding:8px 16px; cursor:pointer; background:var(--leaf); color:#fff; }
+  button.soft{ background:#fff; color:var(--ink); border:2px solid var(--line); }
+  .room{ display:grid; grid-template-columns:repeat(auto-fit, minmax(440px, 1fr)); gap:14px; padding:12px 20px 24px; max-width:1500px; margin:0 auto; }
+  .pane{ background:#fff; border:3px solid var(--line); border-radius:18px; overflow:hidden; display:flex; flex-direction:column; }
+  .pane.teacher{ border-color:var(--flame); }
+  .pane h2{ margin:0; padding:8px 14px; font-size:1rem; background:#FFF1E2; display:flex; justify-content:space-between; align-items:center; }
+  .pane.teacher h2{ background:#FDE3DF; }
+  .pane h2 small{ font-weight:400; color:var(--soft); }
+  iframe{ border:0; width:100%; height:760px; display:block; }
+  .note{ font-size:.85rem; color:var(--soft); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Classroom demo: one teacher, several children</h1>
+  <p>Each panel below is a different person's own screen in the same Pencil Space. This is how the Fab App will behave once it runs as a custom Pencil Spaces app. Nothing here is saved or shared outside this page.</p>
+  <ol class="steps">
+    <li>1. In the <b>Teacher</b> panel: Learning Hub → Times tables flightpath → Next</li>
+    <li>2. Each child picks a different step</li>
+    <li>3. Answer a few questions in a child panel, or tap "I'd like help"</li>
+    <li>4. Watch the Teacher panel update, and try ◀ Easier / Harder ▶</li>
+  </ol>
+  <div class="bar">
+    <button id="add">+ Add a child (up to 5)</button>
+    <button class="soft" id="reset">Start again</button>
+    <span class="note">Try Meet Scrooge too: there, everyone shares one screen ("Together" mode).</span>
+  </div>
+</header>
+<main class="room" id="room"></main>
+<script>
+/* A stand-in for Pencil Spaces: tells each panel who is in the "Space" and
+   relays the app's shared updates between panels, as Pencil does for custom apps. */
+(function(){
+  const NAMES = ['Amy', 'Ben', 'Cara', 'Dev', 'Ellis'];
+  const people = [{ _id:'teacher', name:'Teacher', role:'HOST', profilePicture:'' }];
+  const frames = new Map();   // window -> user id
+  let updates = [];           // every shared change so far, replayed to late joiners
+  const room = document.getElementById('room');
+
+  function send(win, data){ win.postMessage(data, location.origin); }
+  function everyoneInfo(id){ return { currentUserId:id, ownerId:'teacher', users:people.slice() }; }
+  function tellEveryoneWhoIsHere(){
+    frames.forEach((id, win) => send(win, { _type:'SpaceContext', spaceContext:{ marioId:'demo', spaceUsersInfo:everyoneInfo(id), spaceSessionInfo:{ spaceId:'demo', sessionId:'demo' } } }));
+  }
+  window.addEventListener('message', e => {
+    if(e.origin !== location.origin || !frames.has(e.source)) return;
+    const ev = e.data && e.data.event; if(!ev) return;
+    const id = frames.get(e.source);
+    if(ev._type === 'RequestSpaceContext'){
+      send(e.source, { _type:'SpaceContext', spaceContext:{ marioId:'demo', spaceUsersInfo:everyoneInfo(id), spaceSessionInfo:{ spaceId:'demo', sessionId:'demo' } } });
+    } else if(ev._type === 'Ready'){
+      updates.forEach(u => send(e.source, { _type:'YJSUpdate', update:u }));
+      if(!updates.length) send(e.source, { _type:'YJSUpdate', update:new Uint8Array([0, 0]) });
+    } else if(ev._type === 'YJSUpdate'){
+      const u = new Uint8Array(ev.update);
+      updates.push(u);
+      frames.forEach((other, win) => { if(win !== e.source) send(win, { _type:'YJSUpdate', update:u }); });
+    }
+  });
+  function addPane(person){
+    const pane = document.createElement('section');
+    pane.className = 'pane' + (person.role === 'HOST' ? ' teacher' : '');
+    pane.innerHTML = `<h2><span>${person.role === 'HOST' ? '🧑‍🏫 ' : '🧒 '}${person.name}</span><small>${person.role === 'HOST' ? "teacher's screen" : 'a child\'s own screen'}</small></h2>`;
+    const f = document.createElement('iframe');
+    f.title = person.name + "'s screen";
+    f.src = 'index.html?pencil=demo&as=' + encodeURIComponent(person._id);
+    pane.appendChild(f);
+    room.appendChild(pane);
+    f.addEventListener('load', () => { frames.set(f.contentWindow, person._id); });
+    frames.set(f.contentWindow, person._id);
+  }
+  function addChild(){
+    const n = people.length - 1;
+    if(n >= NAMES.length) return;
+    const p = { _id:'child-' + (n + 1), name:NAMES[n], role:'PARTICIPANT', profilePicture:'' };
+    people.push(p);
+    addPane(p);
+    tellEveryoneWhoIsHere();
+    document.getElementById('add').disabled = people.length - 1 >= NAMES.length;
+  }
+  document.getElementById('add').addEventListener('click', addChild);
+  document.getElementById('reset').addEventListener('click', () => location.reload());
+  addPane(people[0]);
+  addChild(); addChild();
+})();
+</script>
+</body>
+</html>

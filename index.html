@@ -6459,7 +6459,16 @@ function learnOpen(p){
   showScreen('screen-lesson');
   learnRender();
 }
-function learnLivePush(delay){ if(typeof Live !== 'undefined') Live.push(delay); }
+function learnLivePush(delay){
+  if(typeof Live !== 'undefined' && Live.on){ Live.push(delay); return; }
+  learnSaveLocal();
+}
+/* A child's own Web Viewer: progress is kept in that viewer's browser, per lesson and learner. */
+function learnLocalKey(){ return Learn.pack && Learn.learner ? `bmf_progress_${Learn.pack.id}_${Learn.learner}` : null; }
+function learnSaveLocal(){
+  const k = learnLocalKey(); if(!k) return;
+  try{ store.setJSON(k, { step: Learn.step, state: Learn.state, saved: Date.now() }); }catch(e){}
+}
 function learnGo(step){
   const n = Learn.pack.screens.length;
   Learn.step = Math.max(0, Math.min(n, step)); /* n = the finished screen */
@@ -6773,13 +6782,14 @@ function pwHint(q){
 function pwToArr(v){ return Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.keys(v).sort((a, b) => a - b).map(k => v[k]) : []); }
 
 /* Who am I on this screen? Live: Pencil user; otherwise a single local learner. */
-function pwMe(){ return (typeof Live !== 'undefined' && Live.on && Live.me) ? Live.me : 'local'; }
+function pwMe(){ return (typeof Live !== 'undefined' && Live.on && Live.me) ? Live.me : (Learn.learner ? 'learner:' + Learn.learner : 'local'); }
 function pwIsTeacher(st){
   if(typeof Live !== 'undefined' && Live.on) return Live.isHost();
   return !!st.teacherView;
 }
 function pwName(id){
   if(id === 'local') return 'You';
+  if(String(id).startsWith('learner:')) return String(id).slice(8);
   const u = (typeof Live !== 'undefined' ? Live.users : []).find(x => x._id === id);
   return u ? (u.name || 'Guest').split(' ')[0] : 'Someone';
 }
@@ -6968,6 +6978,29 @@ document.addEventListener('keydown', e => {
   if(btn) btn.click();
 });
 
+/* ---------- Links for a child's own Web Viewer ----------
+   ?lesson=<pack id>&learner=<first name>[&step=<n>] opens that lesson straight
+   away for that child, and picks up where they left off last time. */
+function learnDeepLink(){
+  let q;
+  try{ q = new URLSearchParams(location.search); }catch(e){ return; }
+  const id = q.get('lesson'); if(!id) return;
+  const pack = Learn.all().find(p => p.id === id); if(!pack) return;
+  const raw = (q.get('learner') || '').trim();
+  const name = raw.replace(/[^A-Za-z\u00C0-\u024F' -]/g, '').slice(0, 20).trim();
+  learnOpen(pack);
+  Learn.learner = name || null;
+  const saved = name ? store.getJSON(learnLocalKey(), null) : null;
+  if(saved && saved.state){ Learn.state = saved.state; Learn.step = Math.min(pack.screens.length, Number(saved.step) || 0); }
+  const step = q.get('step');
+  if(step != null && !saved){ Learn.step = Math.max(0, Math.min(pack.screens.length - 1, Number(step) || 0)); }
+  if(name){
+    const t = document.getElementById('lpLessonTitle');
+    t.textContent = `${pack.emoji || '📘'} ${pack.title} · 👋 ${name}`;
+  }
+  learnRender();
+}
+
 /* ============ LIVE IN PENCIL SPACES (Phase F1) ============
    When the Fab App is opened as a custom Pencil Spaces app, everyone in the
    Space sees the same Learning Hub lesson, on the same step, with the same
@@ -6986,11 +7019,13 @@ const Live = {
     try{
       const inFrame = window.parent && window.parent !== window;
       const q = new URLSearchParams(location.search);
-      return !!(inFrame && q.get('pencil') === '1' && window.BMFMarioClient);
+      return !!(inFrame && (q.get('pencil') === '1' || q.get('pencil') === 'demo') && window.BMFMarioClient);
     }catch(e){ return false; }
   },
+  demo(){ try{ return new URLSearchParams(location.search).get('pencil') === 'demo'; }catch(e){ return false; } },
   hostOrigin(){
-    /* Only accept messages from Pencil Spaces itself. */
+    /* The classroom demo page is served from this same site; otherwise only Pencil Spaces itself. */
+    if(this.demo()) return location.origin;
     try{
       const ref = document.referrer ? new URL(document.referrer).origin : '';
       if(/^https:\/\/(my|staging)\.pencilapp\.com$/.test(ref)) return ref;
@@ -7073,7 +7108,7 @@ const Live = {
     el.style.display = '';
     const names = this.users.map(u => u._id === this.me ? 'You' : (u.name || 'Guest').split(' ')[0]);
     el.textContent = this.users.length
-      ? `🟢 Live in Pencil Spaces · ${this.users.length} here: ${names.slice(0, 6).join(', ')}${names.length > 6 ? '…' : ''}`
+      ? `🟢 ${this.demo() ? 'Demo classroom' : 'Live in Pencil Spaces'} · ${this.users.length} here: ${names.slice(0, 6).join(', ')}${names.length > 6 ? '…' : ''}`
       : '🟢 Live in Pencil Spaces · connecting…';
   }
 };
@@ -7105,7 +7140,7 @@ function learnFocusRestore(f){
   try{ el.setSelectionRange(f.s, f.e); }catch(e){}
 }
 
-Live.start();
+if(!Live.start()) learnDeepLink();
 </script>
 </body>
 </html>
