@@ -942,6 +942,8 @@ button,.btn,.btn-back,.pill-choice,.tile h2,.ritual-btn,.pw-choice,.pw-key,.leve
 .fab-family .fab-char{ width:84px; } .fab-family .fab-char.mum,.fab-family .fab-char.dad{ width:92px; }
 .fab-friends{ display:none; }
 .game-frame{ width:100%; border:0; display:block; height:calc(100vh - 90px); min-height:660px; border-radius:18px; background:transparent; }
+.game-frame.fab-full-frame{ position:fixed; inset:0; width:100vw; height:100vh; min-height:0; z-index:9000; border-radius:0; background:#FCE6B4; }
+body.fab-world-full{ overflow:hidden; }
 
 .lp-wait{ text-align:center; font-weight:700; margin:8px 0; }
 .poll-opt.mine{ outline:3px solid var(--sunshine,#F0B913); }
@@ -1977,6 +1979,11 @@ function fabOverlayGame(key){
   o.querySelector('#fabOverlayBack').onclick = () => closeFabOverlay(true);
   o.querySelector('#fabOverlayBack').focus();
 }
+/* Fab Fox World asks for the whole window; the frame simply fills it (no browser permission needed). */
+function fabWorldFull(on){
+  const fr = document.querySelector('.game-frame[data-game="world"]'); if(!fr) return false;
+  fr.classList.toggle('fab-full-frame', !!on); document.body.classList.toggle('fab-world-full', !!on); return true;
+}
 function closeFabOverlay(reward){
   const o = document.getElementById('fabOverlay'); if(!o) return;
   o.remove();
@@ -1989,6 +1996,7 @@ function closeFabOverlay(reward){
 document.addEventListener('keydown', e => { if(e.key === 'Escape') closeFabOverlay(true); });
 function fabGameMount(id){
   const map = { 'screen-pinball':'pinball', 'screen-shuffleboard':'shuffleboard', 'screen-battleships2':'battleships2', 'screen-pairs':'pairs', 'screen-world':'world' };
+  if(id !== 'screen-world') fabWorldFull(false);
   document.querySelectorAll('.game-frame').forEach(fr => { if(!map[id] || fr.dataset.game !== map[id]) fr.removeAttribute('srcdoc'); });
   if(!map[id]) return;
   const fr = document.querySelector('.game-frame[data-game="'+map[id]+'"]');
