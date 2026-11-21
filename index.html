@@ -764,6 +764,17 @@ footer{ text-align:center; color:var(--ink-soft); font-size:.85rem; padding:20px
 .pw-stephead{ font-family:var(--disp); font-weight:700; font-size:1.2rem; color:var(--ink); }
 .pw-steptag{ font-family:var(--body); font-size:.8rem; color:#fff; background:var(--flame); border-radius:999px; padding:2px 10px; margin-right:6px; vertical-align:middle; }
 .pw-sparkles{ font-size:1rem; margin:2px 0 6px; }
+.pw-mission{ background:#fff7dd; border:2px dashed var(--amber,#e0a63a); border-radius:14px; padding:8px 12px; margin:6px 0; font-size:1rem; }
+.pw-found{ background:#e8f7e4; border:2px solid #7cc576; border-radius:14px; padding:10px 12px; margin:6px 0; font-size:1.05rem; animation:pwpop .6s ease-out; }
+.pw-found .big{ font-size:2rem; display:inline-block; animation:pwbob 1.4s ease-in-out infinite; }
+@keyframes pwpop{ from{ transform:scale(.85); opacity:0 } to{ transform:scale(1); opacity:1 } }
+@keyframes pwbob{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-4px) } }
+.pw-coll{ margin-top:10px; padding:8px; border:2px solid #e6d8b8; border-radius:12px; background:#fffdf6; }
+.pw-coll b{ display:block; font-size:.85rem; margin-bottom:4px; }
+.pw-coll .slots{ display:flex; flex-wrap:wrap; gap:4px; font-size:1.4rem; }
+.pw-coll .slots span{ width:34px; height:34px; display:grid; place-items:center; border-radius:10px; background:#f3ecd9; }
+.pw-coll .slots span.got{ background:#fff; box-shadow:0 1px 0 rgba(0,0,0,.12); }
+@media (prefers-reduced-motion: reduce){ .pw-found,.pw-found .big{ animation:none } }
 .pw-streak{ margin:6px 0 4px; font-size:1.4rem; letter-spacing:4px; }
 .pw-streak span{ opacity:.2; filter:grayscale(1); }
 .pw-streak span.on{ opacity:1; filter:none; }
@@ -6988,6 +6999,17 @@ learnRenderList();
    on a single screen it runs for one learner, with a teacher view to peek. */
 
 const PW_STREAK_TO_OFFER = 3;
+/* Collectables: each step has a nature treasure to find by getting 3 answers right. */
+const PW_BADGES = ['🍄 Mushroom','🌰 Acorn','🍂 Golden leaf','🪶 Feather','🐚 Shell','🌸 Blossom','🪨 Shiny pebble','🍎 Apple','🌻 Sunflower','🦋 Butterfly','🐞 Ladybird','🌈 Rainbow piece','⭐ Star','🍓 Strawberry','🪺 Nest','🍯 Honey drop','🌿 Fern','💎 Gem','🔔 Bluebell','🌙 Moon shard'];
+function pwBadge(i){ const b = PW_BADGES[i % PW_BADGES.length].split(' '); return { e: b[0], n: b.slice(1).join(' ') }; }
+function pwCollectionHTML(s, kid){
+  const got = kid ? pwToArr(kid.secured) : [];
+  if(!s.steps.length) return '';
+  return `<div class="pw-coll"><b>🧺 Fab's treasure basket · ${got.length}/${s.steps.length}</b><div class="slots">${s.steps.map((_, i) => {
+    const bd = pwBadge(i), has = got.includes(i);
+    return `<span class="${has ? 'got' : ''}" title="${has ? esc(bd.n) : 'Still to find'}" aria-label="${has ? esc(bd.n) + ', found' : 'Treasure still to find'}">${has ? bd.e : '·'}</span>`;
+  }).join('')}</div></div>`;
+}
 const PW_MAX_INPUT = 8;
 
 function pwRand(n){ return Math.floor(Math.random() * n); }
@@ -7545,7 +7567,7 @@ function pwStart(s, st, id, stepIdx){
     step: stepIdx, q: pwQuestion(s.steps[stepIdx]), streak:0, done: prev.done || 0, stepDone:0, tries:0,
     secured: pwToArr(prev.secured), help: !!prev.help, rest:false, last:null, msg:null, hintLabel:null,
     offer:false, input:'', tap: prev.tap == null ? true : !!prev.tap,
-    taught: pwToArr(prev.taught), phase:'ydo', ex:null, idoStage:0, wedoDone:0, wtries:0
+    taught: pwToArr(prev.taught), justFound:false, phase:'ydo', ex:null, idoStage:0, wedoDone:0, wtries:0
   };
   const k = st.kids[id];
   if(s.steps[stepIdx].teach && !k.taught.includes(stepIdx)) pwTeachInit(k, s.steps[stepIdx]);
@@ -7655,6 +7677,13 @@ function pwLadderHTML(s, kid, pickable){
   }).reverse().join('')}</div>`;
 }
 
+function pwMissionHTML(kid){
+  const bd = pwBadge(kid.step);
+  if(kid.justFound) return `<div class="pw-found" role="status"><span class="big" aria-hidden="true">${bd.e}</span> <b>You found a ${esc(bd.n)}!</b> It's in Fab's treasure basket now. Keep going if you like, or take a rest whenever you want.</div>`;
+  if(kid.phase === 'wedo' || pwToArr(kid.secured).includes(kid.step)) return '';
+  return `<div class="pw-mission">🎯 <b>Today's mission:</b> find the ${esc(bd.n)} ${bd.e} by getting 3 answers right. There's no timer, so take your time.</div>`;
+}
+
 function pwChildHTML(s, st, id){
   const kid = pwKid(st, id);
   if(!kid) return `<p class="lp-intro">${esc(s.intro || 'Choose a step to start. Your teacher might suggest one too.')}</p>
@@ -7668,7 +7697,7 @@ function pwChildHTML(s, st, id){
       <div class="pw-stephead"><span class="pw-steptag">Step ${kid.step + 1}</span> ${esc(stp.name)}</div>
       ${kid.phase === 'ido' ? pwIdoHTML(s, kid, stp) : pwReadyHTML(stp)}
       <div class="pw-flags">${kid.phase === 'ido' ? '<button class="btn small soft" data-pwact="practise">⏭️ Skip to practice</button>' : ''}<button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '🙋 Nurse Fox is on the way' : "🙋 I'd like help"}</button><button class="btn small soft" data-pwact="rest">😴 I need a break</button></div>
-    </div><aside class="pw-side"><div class="pw-side-title">My flightpath</div>${pwLadderHTML(s, kid, false)}</aside></div>`;
+    </div><aside class="pw-side"><div class="pw-side-title">My flightpath</div>${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside></div>`;
   }
   if(kid.offer){
     body = `<div class="pw-offer"><span class="fab-char yellow" role="img" aria-label="Fab Fox’s friend cheering" style="width:96px;margin:0 auto"></span><p class="pw-ask">Brilliant! Three in a row.</p>
@@ -7697,6 +7726,7 @@ function pwChildHTML(s, st, id){
     <div class="pw-main">
       <div class="pw-stephead"><span class="pw-steptag">Step ${kid.step + 1}</span> ${esc(stp.name)}</div>
       <div class="pw-streak" aria-label="${kid.streak} in a row" ${kid.phase === 'wedo' ? 'hidden' : ''}>${[0,1,2].map(i => `<span class="${i < kid.streak ? 'on' : ''}">⭐</span>`).join('')}</div>
+      ${pwMissionHTML(kid)}
       ${kid.phase !== 'wedo' && (kid.done || 0) > 0 ? `<div class="pw-sparkles">🦊 Your learning has earned <b>${kid.done}</b> sparkle${kid.done === 1 ? '' : 's'} for Fab Fox World today. Thank you!</div>` : ''}
       ${body}
       <div class="pw-flags">
@@ -7705,7 +7735,7 @@ function pwChildHTML(s, st, id){
         ${kid.step > 0 && !kid.offer ? '<button class="btn small soft" data-pwact="down">⬇️ An easier step</button>' : ''}
       </div>
     </div>
-    <aside class="pw-side"><div class="pw-side-title">My flightpath</div>${pwLadderHTML(s, kid, false)}</aside>
+    <aside class="pw-side"><div class="pw-side-title">My flightpath</div>${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside>
   </div>`;
 }
 
@@ -7789,13 +7819,14 @@ function pwCheck(s, kid, value){
     kid.done = (kid.done || 0) + 1; kid.streak = (kid.streak || 0) + 1; kid.stepDone = (kid.stepDone || 0) + 1; fabWorldAward(1);
     kid.last = 'right'; kid.msg = null; kid.tries = 0;
     const secured = pwToArr(kid.secured);
-    if(kid.stepDone >= PW_STREAK_TO_OFFER && !secured.includes(kid.step)){ secured.push(kid.step); kid.secured = secured; }
+    kid.justFound = false;
+    if(kid.stepDone >= PW_STREAK_TO_OFFER && !secured.includes(kid.step)){ secured.push(kid.step); kid.secured = secured; kid.justFound = true; }
     if(kid.streak >= PW_STREAK_TO_OFFER && kid.step < s.steps.length - 1) kid.offer = true;
     kid.q = pwQuestion(step);
     Sound.jingle();
     return 'right';
   }
-  kid.streak = 0;
+  kid.streak = 0; kid.justFound = false;
   kid.tries = (kid.tries || 0) + 1;
   const w = pwToArr(q.wrong).find(x => pwNorm(x.v) === pwNorm(value));
   if(kid.tries >= 3){
