@@ -942,7 +942,11 @@ button,.btn,.btn-back,.pill-choice,.tile h2,.ritual-btn,.pw-choice,.pw-key,.leve
 .fab-family .fab-char{ width:84px; } .fab-family .fab-char.mum,.fab-family .fab-char.dad{ width:92px; }
 .fab-friends{ display:none; }
 .game-frame{ width:100%; border:0; display:block; height:calc(100vh - 90px); min-height:660px; border-radius:18px; background:transparent; }
-.game-frame.fab-full-frame{ position:fixed; inset:0; width:100vw; height:100vh; min-height:0; z-index:9000; border-radius:0; background:#FCE6B4; }
+body.in-world .bunting{ display:none; }
+body.in-world #screen-world .screen-title{ display:none; }
+body.in-world #screen-world .screen-top{ margin:6px 0 6px; }
+body.in-world #screen-world .game-frame{ height:calc(100vh - 66px); min-height:500px; }
+.game-frame.fab-full-frame, body.in-world #screen-world .game-frame.fab-full-frame{ position:fixed; inset:0; width:100vw; height:100vh !important; min-height:0 !important; z-index:9000; border-radius:0; background:#FCE6B4; }
 body.fab-world-full{ overflow:hidden; }
 
 .lp-wait{ text-align:center; font-weight:700; margin:8px 0; }
@@ -2029,6 +2033,7 @@ function showScreen(id){
   // article-width column other screens use, so the boards can sit side by side instead
   // of wrapping to stacked. Scoped to this one screen; nothing else is affected.
   document.body.classList.toggle('bs-wide', id === 'screen-battleships' || id === 'screen-battleships2' || id === 'screen-pinball' || id === 'screen-shuffleboard' || id === 'screen-pairs' || id === 'screen-world');
+  document.body.classList.toggle('in-world', id === 'screen-world');
   fabGameMount(id);
   window.scrollTo({top:0, behavior: reducedMotion ? 'auto' : 'smooth'});
 }
