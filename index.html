@@ -756,6 +756,15 @@ footer{ text-align:center; color:var(--ink-soft); font-size:.85rem; padding:20px
 .pw-rung.now{ border-color:var(--flame); background:var(--sunshine); }
 .pw-child{ display:grid; grid-template-columns:minmax(0, 1fr) 260px; gap:18px; align-items:start; }
 @media (max-width:760px){ .pw-child{ grid-template-columns:1fr; } }
+/* The learning area is wider than the article column, so a picture can sit beside the question. */
+body.hub-wide main{ max-width:1200px; }
+body.lp-wide main{ max-width:1240px; }
+body.lp-wide .lp-stage, body.lp-wide .lp-nav, body.lp-wide .lp-tips{ max-width:1120px; }
+body.lp-path main{ max-width:1560px; }
+body.lp-path .lp-stage, body.lp-path .lp-nav, body.lp-path .lp-tips{ max-width:1500px; }
+.pw-child.has-vis{ grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr) 230px; }
+@media (max-width:1180px){ .pw-child.has-vis{ grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); } .pw-child.has-vis .pw-side{ grid-column:1 / -1; } }
+@media (max-width:760px){ .pw-child.has-vis{ grid-template-columns:1fr; } .pw-child.has-vis .pw-vis{ order:-1; } }
 .pw-main{ background:var(--white); border:3px solid var(--leaf); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px 20px; text-align:center; }
 .pw-side{ background:var(--cream); border:2px dashed var(--cream-deep); border-radius:var(--radius); padding:12px; }
 .pw-side .pw-rung{ font-size:.9rem; padding:6px 10px; }
@@ -1825,6 +1834,9 @@ ${r.toString()}`)},wi=class{constructor(t){this.patterns=[],this.$state=t}if(t,r
 
 </script>
 <script src="packs.js"></script>
+<script src="maps.js"></script>
+<script src="vis.js"></script>
+<script src="vis-dia.js"></script>
 <script src="games.js"></script>
 <script>
 /* ============ Safe storage (falls back gracefully if unavailable) ============ */
@@ -2034,6 +2046,8 @@ function showScreen(id){
   // of wrapping to stacked. Scoped to this one screen; nothing else is affected.
   document.body.classList.toggle('bs-wide', id === 'screen-battleships' || id === 'screen-battleships2' || id === 'screen-pinball' || id === 'screen-shuffleboard' || id === 'screen-pairs' || id === 'screen-world');
   document.body.classList.toggle('in-world', id === 'screen-world');
+  document.body.classList.toggle('hub-wide', id === 'screen-learn');
+  if(id !== 'screen-lesson') document.body.classList.remove('lp-wide', 'lp-path');
   fabGameMount(id);
   window.scrollTo({top:0, behavior: reducedMotion ? 'auto' : 'smooth'});
 }
@@ -6757,7 +6771,10 @@ function learnRenderView(){
   if(i >= n){ stage.innerHTML = learnDoneHTML(); learnTips(null); return; }
   const s = p.screens[i];
   const st = lpState(i);
+  document.body.classList.add('lp-wide'); document.body.classList.toggle('lp-path', s.type === 'pathway');
+  const snap = window.FabVis ? FabVis.snap(stage) : null;
   stage.innerHTML = `<h2 class="lp-title">${esc(s.title)}</h2>` + (RENDER[s.type] ? RENDER[s.type](s, st) : '');
+  if(snap) FabVis.keep(stage, snap);
   learnTips(s);
 }
 function learnTips(s){
@@ -7051,7 +7068,9 @@ const PW_GEN = {
     do { it = pwPick(items); tries++; } while(items.length > 1 && it.ask === pwWordLast && tries < 8);
     pwWordLast = it.ask;
     const wrong = pwToArr(it.wrong).map(w => ({ v:String(w.v), tag:w.tag || 'any' }));
-    return { mode:'choice', ask:it.ask, ans:it.ans, wrong, vars:{ hint:it.hint || 'Say each choice in your head. Which one looks and sounds right?', root:it.root || '' } };
+    const out = { mode:'choice', ask:it.ask, ans:it.ans, wrong, vars:{ hint:it.hint || 'Say each choice in your head. Which one looks and sounds right?', root:it.root || '' } };
+    if(it.v != null || it.vq != null || it.va != null || it.vx != null) out.fv = { v:it.v, vq:it.vq, va:it.va, vx:it.vx }; /* which picture, and which parts the question and the answer point at */
+    return out;
   },
   orient(p){
     const d = pwPick(pwToArr(p.digits).length ? pwToArr(p.digits) : [6, 9, 2, 3, 5, 7]);
@@ -7697,6 +7716,23 @@ function pwMissionHTML(kid){
   return `<div class="pw-mission">🎯 <b>Today's mission:</b> find the ${esc(bd.n)} ${bd.e} by getting 3 answers right. There's no timer, so take your time.</div>`;
 }
 
+/* ---------- Pictures beside the question ----------
+   A word-pack step may carry params.visual (a picture spec) and params.visuals (named alternatives);
+   each item can name one with v, and say which parts the question (vq) and answer (va) point at. */
+function pwVisSpec(stp, q){
+  const P = (stp && stp.params) || {}, fv = q && q.fv;
+  if(fv && fv.v && P.visuals && P.visuals[fv.v]) return P.visuals[fv.v];
+  return P.visual || null;
+}
+/* mode: 'overview' (the whole picture with its names), 'focus' (zoomed to what the question is about) or 'reveal' (the answer lit up too) */
+function pwVisPanel(stp, q, mode){
+  if(!window.FabVis || !q) return '';
+  const spec = pwVisSpec(stp, q); if(!spec) return '';
+  const fv = q.fv || {};
+  const html = FabVis.html(spec, { ask:q.ask || '', ans:q.ans, vq:fv.vq, va:fv.va, vx:fv.vx, overview:mode === 'overview', reveal:mode === 'reveal' });
+  return html ? `<div class="pw-vis">${html}</div>` : '';
+}
+
 function pwChildHTML(s, st, id){
   const kid = pwKid(st, id);
   if(!kid) return `<p class="lp-intro">${esc(s.intro || 'Choose a step to start. Your teacher might suggest one too.')}</p>
@@ -7706,11 +7742,12 @@ function pwChildHTML(s, st, id){
     <div class="choice-row"><button class="btn leaf" data-pwact="back">I'm ready</button></div></div>`;
   let body;
   if(kid.phase === 'ido' || kid.phase === 'ready'){
-    return `<div class="pw-child"><div class="pw-main">
+    const vis = kid.phase === 'ido' ? pwVisPanel(stp, kid.ex || pwQuestion(stp), ['overview', 'focus', 'reveal'][Math.min(2, kid.idoStage || 0)]) : pwVisPanel(stp, { ask:'', ans:'' }, 'overview');
+    return `<div class="pw-child ${vis ? 'has-vis' : ''}"><div class="pw-main">
       <div class="pw-stephead"><span class="pw-steptag">Step ${kid.step + 1}</span> ${esc(stp.name)}</div>
       ${kid.phase === 'ido' ? pwIdoHTML(s, kid, stp) : pwReadyHTML(stp)}
       <div class="pw-flags">${kid.phase === 'ido' ? '<button class="btn small soft" data-pwact="practise">⏭️ Skip to practice</button>' : ''}<button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '🙋 Nurse Fox is on the way' : "🙋 I'd like help"}</button><button class="btn small soft" data-pwact="rest">😴 I need a break</button></div>
-    </div><aside class="pw-side"><div class="pw-side-title">My flightpath</div>${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside></div>`;
+    </div>${vis}<aside class="pw-side"><div class="pw-side-title">My flightpath</div>${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside></div>`;
   }
   if(kid.offer){
     body = `<div class="pw-offer"><span class="fab-char yellow" role="img" aria-label="Fab Fox’s friend cheering" style="width:96px;margin:0 auto"></span><p class="pw-ask">Brilliant! Three in a row.</p>
@@ -7735,7 +7772,8 @@ function pwChildHTML(s, st, id){
     const we = kid.phase === 'wedo' ? `<div class="pw-phase"><span class="pw-phase-tag">🤝 We do</span> ${esc((stp.teach && stp.teach.we) || 'Let’s try one together. No scores, and the hint is open.')}</div><div class="pw-fb try"><div class="fab-say doc"><span class="fab-char doc" role="img" aria-label="Doc Fox"></span><div class="bubble"><b>Hint</b>${esc(pwFindHint(stp, q, null).text)}</div></div></div>` : '';
     body = `${we}<div class="pw-q">${pwQuestionHTML(q, kid)}</div>${fb}${pad}<div class="pw-modes">${modeBtn}</div>`;
   }
-  return `<div class="pw-child">
+  const vis2 = kid.offer ? '' : pwVisPanel(stp, kid.q, 'focus');
+  return `<div class="pw-child ${vis2 ? 'has-vis' : ''}">
     <div class="pw-main">
       <div class="pw-stephead"><span class="pw-steptag">Step ${kid.step + 1}</span> ${esc(stp.name)}</div>
       <div class="pw-streak" aria-label="${kid.streak} in a row" ${kid.phase === 'wedo' ? 'hidden' : ''}>${[0,1,2].map(i => `<span class="${i < kid.streak ? 'on' : ''}">⭐</span>`).join('')}</div>
@@ -7747,7 +7785,7 @@ function pwChildHTML(s, st, id){
         <button class="btn small soft" data-pwact="rest">😴 I need a break</button>
         ${kid.step > 0 && !kid.offer ? '<button class="btn small soft" data-pwact="down">⬇️ An easier step</button>' : ''}
       </div>
-    </div>
+    </div>${vis2}
     <aside class="pw-side"><div class="pw-side-title">My flightpath</div>${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside>
   </div>`;
 }
