@@ -1787,6 +1787,16 @@ body.fab-world-full{ overflow:hidden; }
     <button class="pill-choice" data-subject="Phonics">Phonics</button>
     <button class="pill-choice" data-subject="Topic">Topic</button>
   </div>
+  <div class="learn-filters learn-years" id="learnYears" aria-label="Choose a year group">
+    <button class="pill-choice selected" data-year="all">All years</button>
+    <button class="pill-choice" data-year="0">Reception</button>
+    <button class="pill-choice" data-year="1">Y1</button>
+    <button class="pill-choice" data-year="2">Y2</button>
+    <button class="pill-choice" data-year="3">Y3</button>
+    <button class="pill-choice" data-year="4">Y4</button>
+    <button class="pill-choice" data-year="5">Y5</button>
+    <button class="pill-choice" data-year="6">Y6</button>
+  </div>
   <div class="learn-list" id="learnList"></div>
   <details class="learn-teacher" id="learnTeacher">
     <summary>🧑‍🏫 For teachers: add a lesson pack</summary>
@@ -1837,6 +1847,7 @@ ${r.toString()}`)},wi=class{constructor(t){this.patterns=[],this.$state=t}if(t,r
 <script src="maps.js"></script>
 <script src="vis.js"></script>
 <script src="vis-dia.js"></script>
+<script src="vis-math.js"></script>
 <script src="games.js"></script>
 <script src="treasure.js"></script>
 <script>
@@ -6679,9 +6690,18 @@ const Learn = {
 };
 
 /* ---------- Lesson list ---------- */
+/* Which year groups a pack covers, read from its "years" text: "Years 1–6", "Year 3/4", "Reception / Year 1". */
+function packYears(p){
+  const s = String(p.years || ''), out = new Set();
+  if(/reception/i.test(s)) out.add(0);
+  const r = s.match(/(\d)\s*[–-]\s*(\d)/); if(r){ for(let y = +r[1]; y <= +r[2]; y++) out.add(y); }
+  (s.match(/\d/g) || []).forEach(d => out.add(+d));
+  return out;
+}
 function learnRenderList(){
   const list = $('#learnList');
-  const packs = Learn.all().filter(p => Learn.filter === 'all' || p.subject === Learn.filter)
+  const yr = Learn.year == null || Learn.year === 'all' ? null : Number(Learn.year);
+  const packs = Learn.all().filter(p => (Learn.filter === 'all' || p.subject === Learn.filter) && (yr === null || packYears(p).has(yr)))
     .sort((a,b) => (a.unit||'').localeCompare(b.unit||'') || (a.lesson||0) - (b.lesson||0));
   if(!packs.length){ list.innerHTML = '<p class="learn-empty">No lessons here yet.</p>'; return; }
   list.innerHTML = packs.map(p => `
@@ -6695,6 +6715,7 @@ function learnRenderList(){
     </button>`).join('');
 }
 pillGroup('learnFilters', d => { Learn.filter = d.subject; learnRenderList(); });
+pillGroup('learnYears', d => { Learn.year = d.year; learnRenderList(); });
 $('#learnList').addEventListener('click', e => {
   const c = e.target.closest('.lesson-card'); if(!c) return;
   const p = Learn.all().find(x => x.id === c.dataset.pack); if(p) learnOpen(p);
