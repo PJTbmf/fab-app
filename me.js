@@ -103,6 +103,8 @@
 .st-codes{display:flex;flex-direction:column;gap:6px;margin-top:8px}.st-codes div{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.st-codes input{flex:1;min-width:220px;font-size:.85rem;padding:6px 8px;border-radius:10px;border:1px solid #e3d3b5}
 .st-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
 .st-note{font-size:.9rem;line-height:1.45}.st-note li{margin-bottom:4px}
+.say-btn{border:0;background:#fff;border-radius:999px;width:44px;height:44px;margin-left:8px;font-size:1.2rem;cursor:pointer;box-shadow:0 2px 0 rgba(43,26,18,.2);vertical-align:middle}
+.mx-text .say-btn{float:right;margin:0 0 6px 8px}
 .pw-how{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;font-weight:700}.pw-how button{border:0;border-radius:999px;background:#fff;padding:8px 12px;font:700 .95rem Aleo,Georgia,serif;cursor:pointer;box-shadow:0 2px 0 rgba(43,26,18,.16);min-height:44px;color:var(--ink,#314128)}
 `;
   const HTML = `
@@ -266,6 +268,27 @@
     return '<div class="pw-how" role="group" aria-label="How did that feel?">How did that feel? <button type="button" data-pwhow="easy">😌 Easy</button><button type="button" data-pwhow="right">😊 Just right</button><button type="button" data-pwhow="tricky">🧗 Tricky, but I kept going</button></div>';
   };
 
+  /* ---- Read to me: every flightpath question (and reading passage) gets a speaker button. Uses the device's own voice. ---- */
+  function readAloud(text){
+    try{ const sp = window.speechSynthesis; if(!sp || !window.SpeechSynthesisUtterance) return false; sp.cancel();
+      const u = new SpeechSynthesisUtterance(text); u.lang = 'en-GB'; u.rate = .9; const v = (sp.getVoices() || []).find(x => /en[-_]GB/i.test(x.lang)); if(v) u.voice = v; sp.speak(u); return true; }catch(e){ return false; }
+  }
+  function sayBtn(label, fn){ const b = document.createElement('button'); b.type = 'button'; b.className = 'say-btn'; b.textContent = '🔊'; b.setAttribute('aria-label', label); b.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); fn(); }); return b; }
+  function addSay(root){
+    if(!window.speechSynthesis) return;
+    root.querySelectorAll('.pw-ask:not([data-say])').forEach(p => {
+      p.dataset.say = '1';
+      p.appendChild(sayBtn('Read this to me', () => {
+        const box = p.closest('.pw-main') || p.parentNode;
+        const ch = [...new Set([...box.querySelectorAll('.pw-choices button, button.pw-choice')].map(x => x.textContent.trim()).filter(Boolean))];
+        const qt = p.textContent.replace('🔊', '').trim(); window.__fabSaid = qt + (/[?.!]$/.test(qt) ? '' : '.') + (ch.length ? ' Is it: ' + ch.join(', or ') + '?' : '');
+        readAloud(window.__fabSaid);
+      }));
+    });
+    root.querySelectorAll('.mx-text:not([data-say])').forEach(t => { t.dataset.say = '1'; t.insertBefore(sayBtn('Read the passage to me', () => { window.__fabSaid = t.textContent.replace('🔊', '').trim(); readAloud(window.__fabSaid); }), t.firstChild); });
+  }
+  window.fabReadAloud = readAloud;
+
   /* ---- wire up ---- */
   function init(){
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
@@ -280,6 +303,7 @@
       wrapped._me = true; window.showScreen = wrapped;
     }
     renderWho();
+    const lp = q1('#lpStage'); if(lp){ addSay(lp); new MutationObserver(() => addSay(lp)).observe(lp, { childList:true, subtree:true }); }
   }
   window.FabMe = { renderMe, renderWho, renderStaff, signIn, codeProblem };
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
