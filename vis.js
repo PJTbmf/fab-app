@@ -351,6 +351,7 @@ const css = `
 .pw-vis .fv-body > svg{ flex:1 1 auto; width:100%; height:100%; max-height:100%; min-height:0; }
 .pw-vis .fv-words .fv-tile .tx{ font-size:clamp(1.4rem, 7.5cqi, 3.2rem); } .pw-vis .fv-words .fv-tile .em{ font-size:clamp(2rem, 10cqi, 4.4rem); }
 .pw-vis .fv-words .fv-op{ font-size:clamp(2rem, 8cqi, 3.4rem); }
+.pw-vis .mx-em{ font-size:clamp(3.5rem, 18cqi, 8rem); gap:4cqi; } .pw-vis .mx-em:has(> span:only-child){ font-size:clamp(5rem, 34cqi, 12rem); } .pw-vis .mx-em small{ font-size:clamp(1rem, 3.6cqi, 1.5rem); }
 .fv-map,.fv-uk{ background:#CBE9F6; }
 .fv{ position:relative; width:100%; margin:0 auto; background:#EAF6FB; border:3px solid var(--sunshine,#FFD483); border-radius:22px; overflow:hidden; box-shadow:var(--shadow,0 4px 14px rgba(49,65,40,.14)); font-family:var(--disp,Georgia,serif); }
 .fv svg{ display:block; width:100%; height:auto; max-height:72vh; }

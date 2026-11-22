@@ -864,6 +864,10 @@ body.lp-path .lp-stage, body.lp-path .lp-nav, body.lp-path .lp-tips{ max-width:1
 .pw-guide ul{ margin:4px 0 0; padding-left:18px; }
 .pw-guide li{ margin-bottom:6px; }
 .pw-guide-child{ color:var(--leaf-dark); }
+.pw-media{ margin:0; padding-left:0; list-style:none; } .pw-media li{ margin:0 0 6px; }
+.pw-med-add{ display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; } .pw-med-add input{ flex:1 1 120px; min-width:0; font:inherit; font-size:.85rem; padding:6px 8px; border:2px solid var(--cream-deep); border-radius:10px; min-height:40px; }
+.pw-med-rm{ padding:2px 8px; min-height:32px; }
+.pw-med-more summary{ cursor:pointer; font-weight:700; min-height:32px; padding:4px 0; }
 .pw-attrib{ font-family:var(--body); font-size:.8rem; color:var(--ink-soft); margin-top:12px; }
 
 .lp-wait{ text-align:center; font-weight:700; margin:8px 0; }
@@ -972,7 +976,14 @@ body.fab-world-full{ overflow:hidden; }
   .game-frame{ height:calc(100vh - 90px); height:calc(100dvh - 90px); min-height:0; border-radius:12px; }
   body.in-world #screen-world .game-frame{ height:calc(100vh - 56px); height:calc(100dvh - 56px); min-height:0; border-radius:12px; }
 }
-/* Phones held upright: ask the child to turn the phone sideways (like many game apps do). */
+@media (max-width:600px) and (orientation:portrait){
+  .bunting{ height:40px; }
+  .screen-top{ margin:2px 0 6px; }
+  .screen-title{ font-size:1.25rem; }
+  .screen-top{ padding-right:56px; }
+  .game-frame{ min-height:0; height:calc(100vh - 104px); height:calc(100dvh - 104px); }
+}
+/* Phones the wrong way round: ask the child to turn the phone (like many game apps do). */
 #rotateMe{ display:none; }
 body.rotate-me{ overflow:hidden; }
 body.rotate-me #rotateMe{ display:flex; position:fixed; inset:0; z-index:2147483000; align-items:center; justify-content:center; padding:24px;
@@ -990,7 +1001,12 @@ body.rotate-me #rotateMe{ display:flex; position:fixed; inset:0; z-index:2147483
 #rotateMe .rm-skip{ margin-top:18px; border:0; background:none; color:var(--ink); opacity:.7; text-decoration:underline; font:inherit; font-size:.9rem; padding:12px; min-height:44px; cursor:pointer; }
 @keyframes rmturn{ 0%,18%{ transform:rotate(0); } 48%,78%{ transform:rotate(-90deg); } 100%{ transform:rotate(0); } }
 @keyframes rmfox{ 0%,18%{ transform:rotate(0); } 48%,78%{ transform:rotate(90deg); } 100%{ transform:rotate(0); } }
-@media (prefers-reduced-motion: reduce){ #rotateMe .rm-phone{ animation:none; transform:rotate(-90deg); } #rotateMe .rm-phone .fab-char{ animation:none; transform:rotate(90deg); } }
+body.rotate-up #rotateMe .rm-phone{ animation-name:rmturnup; } body.rotate-up #rotateMe .rm-phone .fab-char{ animation-name:rmfoxup; }
+body.rotate-up #rotateMe .rm-arrow{ transform:scaleX(-1); }
+@keyframes rmturnup{ 0%,18%{ transform:rotate(-90deg); } 48%,78%{ transform:rotate(0); } 100%{ transform:rotate(-90deg); } }
+@keyframes rmfoxup{ 0%,18%{ transform:rotate(90deg); } 48%,78%{ transform:rotate(0); } 100%{ transform:rotate(90deg); } }
+@media (prefers-reduced-motion: reduce){ #rotateMe .rm-phone{ animation:none; transform:rotate(-90deg); } #rotateMe .rm-phone .fab-char{ animation:none; transform:rotate(90deg); }
+  body.rotate-up #rotateMe .rm-phone, body.rotate-up #rotateMe .rm-phone .fab-char{ transform:none; } }
 
 .lp-wait{ text-align:center; font-weight:700; margin:8px 0; }
 .poll-opt.mine{ outline:3px solid var(--sunshine,#F0B913); }
@@ -1008,20 +1024,37 @@ body.rotate-me #rotateMe{ display:flex; position:fixed; inset:0; z-index:2147483
   </div>
 </div>
 <script>
-/* Phones only (not tablets or computers): while the phone is upright, cover the app and ask the child to turn it.
-   A grown-up can skip it for this visit, for a child who is lying down or has the rotation lock on. */
+/* Phones only (not tablets or computers): each area has a best way round. Most are sideways (landscape);
+   Pinball and Shuffleboard are upright (portrait), like the real tables. While the phone is the wrong way round,
+   cover the app and ask the child to turn it. A grown-up can skip this for the visit (a child lying down, or rotation lock on). */
 (function(){
+  const UPRIGHT = { 'screen-pinball':'Pinball', 'screen-shuffleboard':'Shuffleboard', pinball:'Pinball', shuffleboard:'Shuffleboard' };
   function isPhone(){ try{ const s = Math.min(screen.width, screen.height); const touch = matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0; return touch && s < 600; }catch(e){ return false; } }
   function upright(){
     try{ if(screen.orientation && screen.orientation.type) return /portrait/.test(screen.orientation.type); }catch(e){}
     if(typeof window.orientation === 'number') return Math.abs(window.orientation) !== 90;
     return window.innerHeight > window.innerWidth;
   }
+  /* Which way round does the thing on screen want? A quick game opened from Fab Fox World counts first. */
+  function wanted(){
+    const ov = document.getElementById('fabOverlay');
+    if(ov && ov.dataset.game) return UPRIGHT[ov.dataset.game] ? { way:'upright', name:UPRIGHT[ov.dataset.game] } : { way:'sideways' };
+    const a = document.querySelector('.screen.active');
+    return a && UPRIGHT[a.id] ? { way:'upright', name:UPRIGHT[a.id] } : { way:'sideways' };
+  }
   let skipped = false; try{ skipped = sessionStorage.getItem('fab-upright') === '1'; }catch(e){}
+  let lastWay = '';
   function check(){
-    const on = !skipped && isPhone() && upright();
+    const w = wanted(), up = upright();
+    const on = !skipped && isPhone() && ((w.way === 'sideways' && up) || (w.way === 'upright' && !up));
     const was = document.body.classList.contains('rotate-me');
     document.body.classList.toggle('rotate-me', on);
+    document.body.classList.toggle('rotate-up', on && w.way === 'upright');
+    if(on && lastWay !== w.way + (w.name || '')){
+      lastWay = w.way + (w.name || '');
+      document.getElementById('rotateTitle').textContent = w.way === 'upright' ? 'Turn your phone upright' : 'Turn your phone sideways';
+      document.getElementById('rotateText').textContent = w.way === 'upright' ? w.name + ' plays best this way round, just like a real table.' : 'Fab Fox World, the Studio and your lessons fit much better this way round.';
+    }
     const app = document.querySelectorAll('body > :not(#rotateMe):not(script)');
     app.forEach(el => { try{ if(on) el.setAttribute('inert', ''); else el.removeAttribute('inert'); }catch(e){} });
     if(on && !was){ try{ if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); }catch(e){} try{ document.getElementById('rotateMe').focus({ preventScroll:true }); }catch(e){} }
@@ -2075,12 +2108,13 @@ const reducedMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-mo
 function fabOverlayGame(key){
   if(!FAB_GAMES[key]) return;
   closeFabOverlay(false);
-  const o = document.createElement('div'); o.id = 'fabOverlay';
+  const o = document.createElement('div'); o.id = 'fabOverlay'; o.dataset.game = key;
   o.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#FCE6B4;display:flex;flex-direction:column';
   o.setAttribute('role', 'dialog'); o.setAttribute('aria-label', 'Quick game');
   o.innerHTML = '<div style="padding:8px 12px"><button type="button" class="btn" id="fabOverlayBack">← Back to Fab Fox World</button></div>';
   const fr = document.createElement('iframe'); fr.title = 'Quick game'; fr.className = 'game-frame'; fr.style.cssText = 'flex:1;border:0;width:100%;min-height:0';
   fr.srcdoc = fabGameDoc(FAB_GAMES[key]); o.appendChild(fr); document.body.appendChild(o);
+  try{ window.fabRotateCheck && window.fabRotateCheck(); }catch(e){}
   o.querySelector('#fabOverlayBack').onclick = () => closeFabOverlay(true);
   o.querySelector('#fabOverlayBack').focus();
 }
@@ -2107,6 +2141,7 @@ document.addEventListener('fullscreenchange', () => {
 function closeFabOverlay(reward){
   const o = document.getElementById('fabOverlay'); if(!o) return;
   o.remove();
+  try{ window.fabRotateCheck && window.fabRotateCheck(); }catch(e){}
   if(reward){
     fabWorldAward(2);
     const w = document.querySelector('iframe[data-game="world"]');
@@ -2153,6 +2188,7 @@ function showScreen(id){
   document.body.classList.toggle('hub-wide', id === 'screen-learn');
   if(id !== 'screen-lesson') document.body.classList.remove('lp-wide', 'lp-path');
   fabGameMount(id);
+  try{ window.fabRotateCheck && window.fabRotateCheck(); }catch(e){}
   window.scrollTo({top:0, behavior: reducedMotion ? 'auto' : 'smooth'});
 }
 document.addEventListener('click', e => {
@@ -7920,7 +7956,7 @@ function pwChildHTML(s, st, id){
 }
 
 function pwOakLessonURL(slug){ return `https://www.thenational.academy/teachers/lessons/${encodeURIComponent(slug)}`; }
-function pwOakUnitURL(slug){ return `https://www.thenational.academy/teachers/curriculum/maths-primary/units/${encodeURIComponent(slug)}`; }
+function pwOakUnitURL(slug, subject){ return `https://www.thenational.academy/teachers/curriculum/${encodeURIComponent((subject || 'maths') + '-primary')}/units/${encodeURIComponent(slug)}`; }
 
 function pwGuideHTML(s){
   const rows = s.steps.map((stp, i) => {
@@ -7933,12 +7969,43 @@ function pwGuideHTML(s){
     return `<tr>
       <td><b>${i + 1}. ${esc(stp.name)}</b>${stp.stage ? `<br><span class="hint">${esc(stp.stage)}</span>` : ''}</td>
       <td>${nc.year ? `<b>${esc(stp.year || 'Y' + nc.year)}</b> ` : ''}${esc(nc.objective || '')}</td>
-      <td>${oak.unit ? `<a href="${esc(pwOakUnitURL(oak.unit))}" target="_blank" rel="noopener">${esc(oak.unitTitle || oak.unit)}</a>${oak.year ? ` <span class="hint">(Oak Year ${esc(String(oak.year))})</span>` : ''}` : ''}${lessons ? `<ul>${lessons}</ul>` : ''}</td>
-      <td>${stp.teach ? `<div class="pw-script"><b>I do:</b> ${esc(stp.teach.say || '')}</div>` : ''}${mis ? `<ul>${mis}</ul>` : ''}</td></tr>`;
+      <td>${oak.unit ? `<a href="${esc(pwOakUnitURL(oak.unit, oak.subject))}" target="_blank" rel="noopener">${esc(oak.unitTitle || oak.unit)}</a>${oak.year ? ` <span class="hint">(Oak Year ${esc(String(oak.year))})</span>` : ''}` : ''}${lessons ? `<ul>${lessons}</ul>` : ''}${oak.note ? `<p class="hint pw-oak-note">ℹ️ ${esc(oak.note)}</p>` : ''}</td>
+      <td>${stp.teach ? `<div class="pw-script"><b>I do:</b> ${esc(stp.teach.say || '')}</div>` : ''}${mis ? `<ul>${mis}</ul>` : ''}</td>
+      <td>${pwMediaHTML(stp, i)}</td></tr>`;
   }).join('');
-  return `<div class="pw-guide"><table><thead><tr><th>Step</th><th>National Curriculum</th><th>Oak unit and lessons</th><th>Your I do script, and what pupils often find tricky</th></tr></thead><tbody>${rows}</tbody></table>
+  return `<div class="pw-guide"><table><thead><tr><th>Step</th><th>National Curriculum</th><th>Oak unit and lessons</th><th>Your I do script, and what pupils often find tricky</th><th>Videos and extras</th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="hint">🎬 Videos and extras: Oak gives the sequence; BBC Bitesize and BBC Teach have great videos, games and pictures. We link to them rather than copy them. Watch a clip first, then share your screen in Pencil Spaces. Links you add are kept on this device.</p>
     ${s.attribution ? `<p class="pw-attrib">${esc(s.attribution)}</p>` : ''}</div>`;
 }
+
+/* ---------- Videos and extras for each step (teacher side) ----------
+   Oak gives the curriculum sequence; BBC Bitesize and BBC Teach have rich media. Their terms allow linking, not copying,
+   so each step offers a ready-made search of Bitesize and BBC Teach, any links built into the pack (stp.media), and links
+   the teacher adds (kept on this device). */
+function pwMediaKey(){ return 'fab-media-' + (Learn.pack ? Learn.pack.id : 'x'); }
+function pwMediaSaved(){ return store.getJSON(pwMediaKey(), {}) || {}; }
+function pwMediaHTML(stp, i){
+  const y = Number(String(stp.year || '').replace(/\D/g, '')) || 0, ks = y && y <= 2 ? 'KS1' : 'KS2';
+  const words = encodeURIComponent(String(stp.name || '').replace(/[’'“”"]/g, '') + ' ' + ks);
+  const find = (site, label) => `<li><a href="https://www.google.com/search?q=site%3A${site}+${words}" target="_blank" rel="noopener">🔎 ${label}</a></li>`;
+  const built = pwToArr(stp.media).filter(m => m && /^https:\/\//.test(m.url)).map(m => `<li><a href="${esc(m.url)}" target="_blank" rel="noopener">🎬 ${esc(m.title || m.url)}</a>${m.source ? ` <span class="hint">(${esc(m.source)})</span>` : ''}</li>`).join('');
+  const mine = (pwMediaSaved()[i] || []).map((m, k) => `<li><a href="${esc(m.u)}" target="_blank" rel="noopener">⭐ ${esc(m.t || m.u)}</a> <button type="button" class="btn small soft pw-med-rm" data-medrm="${i}:${k}" aria-label="Remove this link">✕</button></li>`).join('');
+  return `<ul class="pw-media">${built}${mine}${find('bbc.co.uk%2Fbitesize', 'Find on BBC Bitesize')}${find('bbc.co.uk%2Fteach', 'Find on BBC Teach')}</ul>
+    <details class="pw-med-more"><summary>➕ Add your own link</summary><div class="pw-med-add"><input type="url" placeholder="Paste a link (https://…)" aria-label="Paste a video or page link for this step" data-medurl="${i}"><input type="text" placeholder="Name it (optional)" aria-label="Name for the link" data-medname="${i}"><button type="button" class="btn small soft" data-medadd="${i}">Add</button></div></details>`;
+}
+document.addEventListener('click', e => {
+  const add = e.target.closest('[data-medadd]'), rm = e.target.closest('[data-medrm]');
+  if(!add && !rm) return;
+  const all = pwMediaSaved();
+  if(add){
+    const i = add.dataset.medadd, box = add.closest('td') || document;
+    const u = (box.querySelector(`[data-medurl="${i}"]`) || {}).value || '', t = (box.querySelector(`[data-medname="${i}"]`) || {}).value || '';
+    if(!/^https:\/\/[^\s]+$/.test(u.trim())){ const inp = box.querySelector(`[data-medurl="${i}"]`); if(inp){ inp.setCustomValidity('Please paste a full link starting with https://'); inp.reportValidity(); setTimeout(() => inp.setCustomValidity(''), 2500); } return; }
+    (all[i] = all[i] || []).push({ u:u.trim(), t:t.trim().slice(0, 80) });
+  } else { const [i, k] = rm.dataset.medrm.split(':'); if(all[i]) all[i].splice(Number(k), 1); }
+  store.setJSON(pwMediaKey(), all);
+  try{ learnRender(); }catch(err){}
+});
 
 function pwLinksHTML(){
   const open = pwLinksOpen;

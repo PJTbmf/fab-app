@@ -73,6 +73,10 @@
 
   /* ================= Screens ================= */
   const CSS = `
+.me-voices{ display:flex; flex-wrap:wrap; gap:8px; margin:6px 0; }
+.me-voices button{ border:3px solid var(--ink,#2B1A12); background:var(--cream,#FFF4E0); border-radius:14px; padding:8px 14px; font:inherit; font-weight:700; cursor:pointer; min-height:48px; }
+.me-voices button.on{ background:var(--sunshine,#FFD483); box-shadow:0 0 0 3px rgba(254,77,2,.35); }
+.me-voices small{ font-weight:400; opacity:.75; }
 .whobar{display:flex;justify-content:center;margin:2px 0 10px}
 .who-btn{border:0;border-radius:999px;background:#fff;padding:10px 18px;font:700 1.05rem Aleo,Georgia,serif;color:var(--ink,#314128);cursor:pointer;box-shadow:0 3px 0 rgba(43,26,18,.16);min-height:48px;display:inline-flex;align-items:center;gap:8px}
 .who-btn .dot{width:14px;height:14px;border-radius:50%;display:inline-block}
@@ -193,6 +197,7 @@
       <div class="me-card"><h3>🧺 My treasure</h3>${nTre ? `<div class="me-tre">${Object.keys(col).map(e => `<span>${h(e)} ×${Number(col[e]) || 0}</span>`).join('')}</div>` : '<p>No treasure yet. Win it in Learning and games, or find it in Fab Fox World.</p>'}</div>
       ${makes.length ? `<div class="me-card"><h3>🖼️ My art</h3><div class="me-art">${makes.slice(0, 8).map(m => `<img src="${h(m.d)}" alt="A picture you made">`).join('')}</div></div>` : ''}
       <div class="me-card"><h3>💛 Things I love</h3><p class="hint">Pick up to three. They help your teacher choose things you will enjoy.</p><div class="me-likes">${LIKES.map(l => `<button type="button" data-melike="${l}" class="${likes.indexOf(l) >= 0 ? 'on' : ''}" aria-pressed="${likes.indexOf(l) >= 0}">${l}</button>`).join('')}</div></div>
+      ${window.speechSynthesis ? `<div class="me-card"><h3>🗣️ My reading voice</h3>${voicePickerHTML()}</div>` : ''}
       <div class="me-card"><h3>🎨 My colour</h3><div class="me-cols">${COLOURS.map(c => `<button type="button" data-mecol="${c}" class="${c === me ? 'on' : ''}" style="background:${c}" aria-label="Choose this colour"></button>`).join('')}</div></div>
       <div class="me-foot">${fromUrl ? '<span class="hint">This link is just for you. Your teacher set it up.</span>' : '<button type="button" class="btn soft small" id="meSwitch">Not you? Use a different code</button><span class="hint">This device remembers your code. On a shared computer, press this when you finish.</span>'}</div>`;
     box.querySelectorAll('[data-me]').forEach(b => b.addEventListener('click', () => {
@@ -207,6 +212,7 @@
       if(L.indexOf(l) >= 0) L = L.filter(x => x !== l); else { L.push(l); if(L.length > 3) L = L.slice(-3); }
       ls.set('fab-likes-' + code, JSON.stringify(L)); tick(); renderMe();
     }));
+    wireVoices(box, () => { if(q1('#screen-me') && q1('#screen-me').classList.contains('active')) renderMe(); });
     box.querySelectorAll('[data-mecol]').forEach(b => b.addEventListener('click', () => { ls.set('fab-colour-' + code, b.dataset.mecol); tick(); renderMe(); renderWho(); }));
     const sw = box.querySelector('#meSwitch'); if(sw) sw.addEventListener('click', () => { ls.del('fab-me'); tick(); renderMe(); renderWho(); });
   }
@@ -240,6 +246,7 @@
           <label class="btn small soft" style="cursor:pointer">Add CSV from another device<input type="file" id="stFile" accept=".csv,text/csv" hidden></label>
           <button type="button" class="btn small soft" id="stClear">${clearArm ? 'Tap again to clear this device’s log' : 'Clear this device’s log'}</button></div>
         <p class="learn-msg" id="stMsg" aria-live="polite"></p></div>
+      ${window.speechSynthesis ? `<div class="me-card"><h2>🗣️ Reading voice on this device</h2><p>Read to me uses a voice built into the device. We pick the warmest British voice we can find. Tap one to hear it and choose it. On Microsoft Edge, look for <b>Maisie</b>, a young British voice.</p>${voicePickerHTML()}</div>` : ''}
       <div class="me-card st-note"><h2>How the soft impact log works</h2><ul>
         <li><b>Low-key and optional.</b> Once a day, after some play, Pip asks one gentle question when the child goes home in Fab Fox World: how they feel, how much they enjoyed Fab time, or how they feel about their learning. “Not today” is always there, and every answer earns a thank-you star.</li>
         <li><b>Positive by design.</b> The choices are all non-negative (for example “Still growing”, “Getting there”, “Feeling strong”). Low energy is shown as context, not as a problem.</li>
@@ -248,6 +255,7 @@
         <li><b>Pupil codes only.</b> No names, health information or free text are collected.</li>
         <li><b>Stays on the device.</b> Nothing is sent anywhere. To build a service-wide picture, download the CSV on each device and add it here, or move to a central database later.</li>
         <li><b>Before using with children:</b> include this in BMF's privacy notice, DPIA and AI and data policy, and tell families in plain words. This is a draft for BMF to check.</li></ul></div>`;
+    wireVoices(box, () => { if(q1('#screen-staff') && q1('#screen-staff').classList.contains('active')) renderStaff(); });
     box.querySelector('#stMake').addEventListener('click', () => { staffCodes = staffCodes.concat(typeof pupilMakeCodes === 'function' ? pupilMakeCodes(4) : []); tick(); renderStaff(); });
     box.querySelectorAll('[data-stcopy]').forEach(b => b.addEventListener('click', () => { const link = location.origin + location.pathname + '?learner=' + b.dataset.stcopy; try{ navigator.clipboard.writeText(link); b.textContent = 'Copied ✓'; }catch(e){ const i = b.parentNode.querySelector('input'); if(i) i.select(); b.textContent = 'Press Ctrl+C'; } }));
     const msg = box.querySelector('#stMsg');
@@ -268,11 +276,48 @@
     return '<div class="pw-how" role="group" aria-label="How did that feel?">How did that feel? <button type="button" data-pwhow="easy">😌 Easy</button><button type="button" data-pwhow="right">😊 Just right</button><button type="button" data-pwhow="tricky">🧗 Tricky, but I kept going</button></div>';
   };
 
-  /* ---- Read to me: every flightpath question (and reading passage) gets a speaker button. Uses the device's own voice. ---- */
-  function readAloud(text){
-    try{ const sp = window.speechSynthesis; if(!sp || !window.SpeechSynthesisUtterance) return false; sp.cancel();
-      const u = new SpeechSynthesisUtterance(text); u.lang = 'en-GB'; u.rate = .9; const v = (sp.getVoices() || []).find(x => /en[-_]GB/i.test(x.lang)); if(v) u.voice = v; sp.speak(u); return true; }catch(e){ return false; }
+  /* ---- Read to me: every flightpath question (and reading passage) gets a speaker button. Uses the device's own voice.
+     Devices offer very different voices, so we rank them: warm British voices first (Edge's young "Maisie", natural and
+     enhanced voices, then Libby, Sonia, Martha, Kate, Serena...), stern or novelty voices last. A child or teacher can pick
+     another in My Fab space or on the staff page; the choice is remembered on this device. Later, BMF's own recorded
+     voices can play instead (see the voice plan in the project notes). */
+  const VOICE_KEY = 'fab-voice';
+  function voiceScore(v){
+    const n = v.name || '', l = String(v.lang || '').replace('_', '-'); let s = 0;
+    if(/^en-GB/i.test(l)) s += 50; else if(/^en-(IE|AU|NZ)/i.test(l)) s += 25; else if(/^en/i.test(l)) s += 10; else return -999;
+    if(/Maisie/i.test(n)) s += 45;
+    if(/Natural|Neural|Premium|Enhanced/i.test(n)) s += 30;
+    if(/Libby|Sonia|Martha|Kate|Serena|Stephanie|Google UK English Female|Hazel|Susan|Fiona|Moira|Tessa|Karen|Mia|Bella|Holly|Abbi|Hollie|Olivia/i.test(n)) s += 18;
+    if(/Daniel|Arthur|Oliver|Ryan|Thomas|George|Male|Fred|Albert|Bahh|Bells|Boing|Bubbles|Cellos|Wobble|Whisper|Zarvox|Trinoids|Organ|Junior|Ralph|Jester|Superstar|Grandma|Grandpa|Rocko|Eddy|Flo|Reed|Sandy|Shelley|Bad News|Good News/i.test(n)) s -= 40;
+    if(v.localService === false) s += 4;
+    return s;
   }
+  function bestVoices(){ try{ const vs = (window.speechSynthesis && speechSynthesis.getVoices()) || []; return vs.map(v => ({ v, s:voiceScore(v) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s).map(x => x.v); }catch(e){ return []; } }
+  function chosenVoice(){ const vs = bestVoices(); let want = null; try{ want = localStorage.getItem(VOICE_KEY); }catch(e){} return vs.find(v => v.name === want) || vs[0] || null; }
+  function voiceLabel(v){ const n = String(v.name || 'Voice').replace(/^(Microsoft|Google|Apple)\s+/i, '').replace(/\s*[-(].*$/, '').replace(/\bOnline\b/i, '').trim(); return n || 'Voice'; }
+  function readAloud(text, voice){
+    try{ const sp = window.speechSynthesis; if(!sp || !window.SpeechSynthesisUtterance) return false; sp.cancel();
+      const u = new SpeechSynthesisUtterance(text), v = voice || chosenVoice();
+      if(v){ u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
+      u.rate = .9; u.pitch = v && /Maisie/i.test(v.name) ? 1 : 1.08;
+      sp.speak(u); return true; }catch(e){ return false; }
+  }
+  /* A small voice chooser: up to five of the best voices on this device, each one says hello when tapped. */
+  function voicePickerHTML(){
+    const vs = bestVoices().slice(0, 5); if(!vs.length) return '<p class="hint">This device has no reading voice. Read to me will not show.</p>';
+    const cur = chosenVoice();
+    return '<div class="me-voices">' + vs.map((v, i) => `<button type="button" data-voice="${h(v.name)}" class="${cur && cur.name === v.name ? 'on' : ''}">🗣️ ${h(voiceLabel(v))}${i === 0 ? ' <small>(our pick)</small>' : ''}</button>`).join('') + '</div><p class="hint">Tap a voice to hear it. Your choice is remembered on this device.</p>';
+  }
+  function wireVoices(root, rerender){
+    root.querySelectorAll('[data-voice]').forEach(b => b.addEventListener('click', () => {
+      try{ localStorage.setItem(VOICE_KEY, b.dataset.voice); }catch(e){}
+      const v = bestVoices().find(x => x.name === b.dataset.voice);
+      readAloud('Hello! I am going to read with you today.', v);
+      root.querySelectorAll('[data-voice]').forEach(x => x.classList.toggle('on', x === b));
+    }));
+    try{ if(window.speechSynthesis && !wireVoices.hooked){ wireVoices.hooked = true; speechSynthesis.addEventListener('voiceschanged', () => { try{ rerender && rerender(); }catch(e){} }); } }catch(e){}
+  }
+  window.FabVoice = { bestVoices, chosenVoice, voiceScore, voiceLabel };
   function sayBtn(label, fn){ const b = document.createElement('button'); b.type = 'button'; b.className = 'say-btn'; b.textContent = '🔊'; b.setAttribute('aria-label', label); b.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); fn(); }); return b; }
   function addSay(root){
     if(!window.speechSynthesis) return;
