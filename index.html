@@ -762,9 +762,14 @@ body.lp-wide main{ max-width:1240px; }
 body.lp-wide .lp-stage, body.lp-wide .lp-nav, body.lp-wide .lp-tips{ max-width:1120px; }
 body.lp-path main{ max-width:1560px; }
 body.lp-path .lp-stage, body.lp-path .lp-nav, body.lp-path .lp-tips{ max-width:1500px; }
-.pw-child.has-vis{ grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr) 230px; }
-@media (max-width:1180px){ .pw-child.has-vis{ grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); } .pw-child.has-vis .pw-side{ grid-column:1 / -1; } }
-@media (max-width:760px){ .pw-child.has-vis{ grid-template-columns:1fr; } .pw-child.has-vis .pw-vis{ order:-1; } }
+.pw-child.has-vis{ grid-template-columns:minmax(0, 1fr) minmax(0, 1fr) 230px; grid-template-rows:auto 1fr; align-items:stretch; }
+.pw-child.has-vis > .pw-main, .pw-child.has-vis > .pw-vis{ grid-row:1; }
+/* The learning side and the picture side are the same size: the picture panel stretches to match the question,
+   and the model inside scales to fit it, keeping its shape. */
+.pw-child.has-vis .pw-side{ align-self:start; grid-row:1 / span 2; }
+.pw-child.has-vis .pw-main{ display:flex; flex-direction:column; justify-content:safe center; }
+@media (max-width:1180px){ .pw-child.has-vis{ grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); grid-template-rows:auto; } .pw-child.has-vis .pw-side{ grid-column:1 / -1; grid-row:auto; } }
+@media (max-width:760px){ .pw-child.has-vis{ grid-template-columns:1fr; } .pw-child.has-vis > .pw-main, .pw-child.has-vis > .pw-vis{ grid-row:auto; } .pw-child.has-vis .pw-vis{ order:-1; } }
 .pw-main{ background:var(--white); border:3px solid var(--leaf); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px 20px; text-align:center; }
 .pw-side{ background:var(--cream); border:2px dashed var(--cream-deep); border-radius:var(--radius); padding:12px; }
 .pw-side .pw-rung{ font-size:.9rem; padding:6px 10px; }
@@ -958,12 +963,77 @@ body.in-world #screen-world .screen-top{ margin:6px 0 6px; }
 body.in-world #screen-world .game-frame{ height:calc(100vh - 66px); min-height:500px; }
 .game-frame.fab-full-frame, body.in-world #screen-world .game-frame.fab-full-frame{ position:fixed; inset:0; width:100vw; height:100vh !important; min-height:0 !important; z-index:9000; border-radius:0; background:#FCE6B4; }
 body.fab-world-full{ overflow:hidden; }
+.game-frame.fab-full-frame, body.in-world #screen-world .game-frame.fab-full-frame{ height:100dvh !important; }
+/* Phones held sideways and other short screens: the games fill the window, so every button can be reached. */
+@media (max-height:520px){
+  .bunting{ height:34px; }
+  .screen-top{ margin:2px 0 4px; gap:8px; }
+  .btn-back{ min-height:44px; padding:6px 14px; }
+  .game-frame{ height:calc(100vh - 90px); height:calc(100dvh - 90px); min-height:0; border-radius:12px; }
+  body.in-world #screen-world .game-frame{ height:calc(100vh - 56px); height:calc(100dvh - 56px); min-height:0; border-radius:12px; }
+}
+/* Phones held upright: ask the child to turn the phone sideways (like many game apps do). */
+#rotateMe{ display:none; }
+body.rotate-me{ overflow:hidden; }
+body.rotate-me #rotateMe{ display:flex; position:fixed; inset:0; z-index:2147483000; align-items:center; justify-content:center; padding:24px;
+  background:radial-gradient(circle at 50% 30%, #FFF4DC 0%, #FCE6B4 70%); text-align:center; color:var(--ink); }
+#rotateMe .rm-card{ max-width:340px; display:flex; flex-direction:column; align-items:center; gap:14px; }
+#rotateMe .rm-phone{ width:112px; height:184px; border:9px solid var(--ink); border-radius:26px; background:#FFFDF6; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 10px 24px rgba(43,26,18,.18); animation:rmturn 2.8s ease-in-out infinite; position:relative; }
+#rotateMe .rm-phone::after{ content:""; position:absolute; bottom:6px; width:26px; height:5px; border-radius:3px; background:rgba(43,26,18,.25); }
+#rotateMe .rm-phone .fab-char{ width:64px; animation:rmfox 2.8s ease-in-out infinite; }
+#rotateMe:focus{ outline:none; }
+#rotateMe .rm-arrow{ font-size:2.6rem; line-height:1; margin-top:-6px; }
+#rotateMe h2{ font-family:'Aleo',Georgia,serif; font-size:1.7rem; margin:0; line-height:1.2; }
+#rotateMe p{ margin:0; font-size:1.1rem; line-height:1.45; }
+#rotateMe .rm-small{ font-size:.95rem; opacity:.8; }
+#rotateMe .rm-skip{ margin-top:18px; border:0; background:none; color:var(--ink); opacity:.7; text-decoration:underline; font:inherit; font-size:.9rem; padding:12px; min-height:44px; cursor:pointer; }
+@keyframes rmturn{ 0%,18%{ transform:rotate(0); } 48%,78%{ transform:rotate(-90deg); } 100%{ transform:rotate(0); } }
+@keyframes rmfox{ 0%,18%{ transform:rotate(0); } 48%,78%{ transform:rotate(90deg); } 100%{ transform:rotate(0); } }
+@media (prefers-reduced-motion: reduce){ #rotateMe .rm-phone{ animation:none; transform:rotate(-90deg); } #rotateMe .rm-phone .fab-char{ animation:none; transform:rotate(90deg); } }
 
 .lp-wait{ text-align:center; font-weight:700; margin:8px 0; }
 .poll-opt.mine{ outline:3px solid var(--sunshine,#F0B913); }
 </style>
 </head>
 <body>
+<div id="rotateMe" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="rotateTitle" aria-describedby="rotateText">
+  <div class="rm-card">
+    <div class="rm-phone" aria-hidden="true"><span class="fab-char fab"></span></div>
+    <div class="rm-arrow" aria-hidden="true">↻</div>
+    <h2 id="rotateTitle">Turn your phone sideways</h2>
+    <p id="rotateText">Fab Fox World, the Studio and your lessons fit much better this way round.</p>
+    <p class="rm-small">Nothing happening? Check that the screen's rotation lock is off.</p>
+    <button type="button" class="rm-skip" id="rotateSkip">Grown-ups: tap here to carry on upright</button>
+  </div>
+</div>
+<script>
+/* Phones only (not tablets or computers): while the phone is upright, cover the app and ask the child to turn it.
+   A grown-up can skip it for this visit, for a child who is lying down or has the rotation lock on. */
+(function(){
+  function isPhone(){ try{ const s = Math.min(screen.width, screen.height); const touch = matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0; return touch && s < 600; }catch(e){ return false; } }
+  function upright(){
+    try{ if(screen.orientation && screen.orientation.type) return /portrait/.test(screen.orientation.type); }catch(e){}
+    if(typeof window.orientation === 'number') return Math.abs(window.orientation) !== 90;
+    return window.innerHeight > window.innerWidth;
+  }
+  let skipped = false; try{ skipped = sessionStorage.getItem('fab-upright') === '1'; }catch(e){}
+  function check(){
+    const on = !skipped && isPhone() && upright();
+    const was = document.body.classList.contains('rotate-me');
+    document.body.classList.toggle('rotate-me', on);
+    const app = document.querySelectorAll('body > :not(#rotateMe):not(script)');
+    app.forEach(el => { try{ if(on) el.setAttribute('inert', ''); else el.removeAttribute('inert'); }catch(e){} });
+    if(on && !was){ try{ if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); }catch(e){} try{ document.getElementById('rotateMe').focus({ preventScroll:true }); }catch(e){} }
+  }
+  window.fabRotateCheck = check;
+  window.addEventListener('resize', check);
+  window.addEventListener('orientationchange', () => setTimeout(check, 250));
+  try{ screen.orientation.addEventListener('change', check); }catch(e){}
+  document.getElementById('rotateSkip').addEventListener('click', () => { skipped = true; try{ sessionStorage.setItem('fab-upright', '1'); }catch(e){} check(); });
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', check); else check();
+})();
+</script>
 
 <div class="bunting" aria-hidden="true"></div>
 
@@ -2070,7 +2140,7 @@ function fabGameDoc(html){
     '.bunting,h1{display:none!important} html,body{background:transparent!important}' +
     "body,button,input,select,textarea,.btn,.lbl,.say,.sub,small{font-family:'Aleo',Georgia,serif!important}" +
     '.btn{font-weight:400!important;color:#4A2A18} .btn.go,.btn.on{font-weight:700!important}' +
-    '.wrap{padding-top:6px!important}</style>';
+    '.wrap{padding-top:6px!important} body.full .wrap{padding-top:0!important}</style>';
   return html.replace('</head>', css + '</head>');
 }
 function showScreen(id){
