@@ -1028,7 +1028,7 @@ body.fab-world-full{ overflow:hidden; }
 
 <section id="screen-world" class="screen" aria-label="Fab Fox World">
   <div class="screen-top"><button class="btn-back" data-go="screen-games">← Back</button><h1 class="screen-title">Fab Fox World</h1></div>
-  <iframe class="game-frame" data-game="world" title="Fab Fox World"></iframe>
+  <iframe class="game-frame" data-game="world" title="Fab Fox World" allow="fullscreen"></iframe>
 </section>
 
 <section id="screen-pairs" class="screen" aria-label="Fab Fox Pairs">
@@ -1838,6 +1838,7 @@ ${r.toString()}`)},wi=class{constructor(t){this.patterns=[],this.$state=t}if(t,r
 <script src="vis.js"></script>
 <script src="vis-dia.js"></script>
 <script src="games.js"></script>
+<script src="treasure.js"></script>
 <script>
 /* ============ Safe storage (falls back gracefully if unavailable) ============ */
 const store = {
@@ -1998,8 +1999,23 @@ function fabOverlayGame(key){
 /* Fab Fox World asks for the whole window; the frame simply fills it (no browser permission needed). */
 function fabWorldFull(on){
   const fr = document.querySelector('.game-frame[data-game="world"]'); if(!fr) return false;
-  fr.classList.toggle('fab-full-frame', !!on); document.body.classList.toggle('fab-world-full', !!on); return true;
+  fr.classList.toggle('fab-full-frame', !!on); document.body.classList.toggle('fab-world-full', !!on);
+  /* Also ask the browser for true full screen. If it says no (Pencil Spaces, some tablets), the filled window above still works. */
+  try{
+    if(on && !document.fullscreenElement && fr.requestFullscreen){ const p = fr.requestFullscreen(); if(p && p.catch) p.catch(()=>{}); }
+    else if(!on && document.fullscreenElement && document.exitFullscreen){ const p = document.exitFullscreen(); if(p && p.catch) p.catch(()=>{}); }
+  }catch(e){}
+  return true;
 }
+document.addEventListener('fullscreenchange', () => {
+  /* The child pressed Esc on the real full screen: put the world back to normal size too. */
+  if(document.fullscreenElement) return;
+  const fr = document.querySelector('.game-frame[data-game="world"]');
+  if(fr && fr.classList.contains('fab-full-frame')){
+    fr.classList.remove('fab-full-frame'); document.body.classList.remove('fab-world-full');
+    try{ fr.contentWindow.postMessage('fabworld-fs-exit', '*'); }catch(e){}
+  }
+});
 function closeFabOverlay(reward){
   const o = document.getElementById('fabOverlay'); if(!o) return;
   o.remove();
@@ -7709,11 +7725,19 @@ function pwLadderHTML(s, kid, pickable){
   }).reverse().join('')}</div>`;
 }
 
+/* Why this treasure matters: one short, concrete sentence from the shared treasure list (treasure.js). */
+function pwTreasureLine(e){
+  const T = (typeof FAB_TREASURE !== 'undefined') ? FAB_TREASURE : null, t = T && T.by[e];
+  if(!t) return 'It goes in your Treasure book in Fab Fox World.';
+  if(t.food) return 'It is ' + t.why + ' in Fab Fox World. Bring it home to feed Pip.';
+  if(t.spend) return 'It is worth stars to spend in My stuff in Fab Fox World.';
+  return 'Collect ' + t.need + ' in Fab Fox World to make ' + t.make + '.';
+}
 function pwMissionHTML(kid){
   const bd = pwBadge(kid.step);
-  if(kid.justFound) return `<div class="pw-found" role="status"><span class="big" aria-hidden="true">${bd.e}</span> <b>You found a ${esc(bd.n)}!</b> It's in Fab's treasure basket now. Keep going if you like, or take a rest whenever you want.</div>`;
+  if(kid.justFound) return `<div class="pw-found" role="status"><span class="big" aria-hidden="true">${bd.e}</span> <b>You won a ${esc(bd.n)}!</b> It is waiting in Fab Fox World. ${esc(pwTreasureLine(bd.e))} Keep going if you like, or take a rest whenever you want.</div>`;
   if(kid.phase === 'wedo' || pwToArr(kid.secured).includes(kid.step)) return '';
-  return `<div class="pw-mission">🎯 <b>Today's mission:</b> find the ${esc(bd.n)} ${bd.e} by getting 3 answers right. There's no timer, so take your time.</div>`;
+  return `<div class="pw-mission">🎯 <b>Today's mission:</b> win the ${esc(bd.n)} ${bd.e} for Fab Fox World by getting 3 answers right. ${esc(pwTreasureLine(bd.e))} There's no timer, so take your time.</div>`;
 }
 
 /* ---------- Pictures beside the question ----------
@@ -7871,7 +7895,7 @@ function pwCheck(s, kid, value){
     kid.last = 'right'; kid.msg = null; kid.tries = 0;
     const secured = pwToArr(kid.secured);
     kid.justFound = false;
-    if(kid.stepDone >= PW_STREAK_TO_OFFER && !secured.includes(kid.step)){ secured.push(kid.step); kid.secured = secured; kid.justFound = true; }
+    if(kid.stepDone >= PW_STREAK_TO_OFFER && !secured.includes(kid.step)){ secured.push(kid.step); kid.secured = secured; kid.justFound = true; fabWorldTreasure(pwBadge(kid.step).e); }
     if(kid.streak >= PW_STREAK_TO_OFFER && kid.step < s.steps.length - 1) kid.offer = true;
     kid.q = pwQuestion(step);
     Sound.jingle();
@@ -7900,6 +7924,15 @@ function fabWorldAward(n){
     const raw = (new URLSearchParams(location.search).get('learner') || '').toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,20);
     const k = 'fabworld-pending-' + (raw || 'local');
     localStorage.setItem(k, String((parseInt(localStorage.getItem(k), 10) || 0) + n));
+  }catch(e){}
+}
+/* A treasure won in Learning waits in a queue (per pupil code) and is added to the world's Treasure book next time it opens. */
+function fabWorldTreasure(emoji){
+  try{
+    const raw = (new URLSearchParams(location.search).get('learner') || '').toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,20);
+    const k = 'fabworld-treasure-' + (raw || 'local');
+    const a = JSON.parse(localStorage.getItem(k) || '[]'); a.push(emoji);
+    localStorage.setItem(k, JSON.stringify(a.slice(-40)));
   }catch(e){}
 }
 function pwClick(t, s, st){
