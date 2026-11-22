@@ -1006,6 +1006,7 @@ body.fab-world-full{ overflow:hidden; }
     <button class="tile" data-go="screen-battleships2"><span class="emoji">🚢</span><h2>Battleships</h2><p>Hide your fleet, then hunt for theirs — Gentle to Tricky</p></button>
     <button class="tile" data-go="screen-world"><span class="emoji">🌍</span><h2>Fab Fox World</h2><p>Build, collect and grow a cosy world with all the foxes</p></button>
     <button class="tile" data-go="screen-pairs"><span class="emoji">🃏</span><h2>Fab Fox Pairs</h2><p>Turn cards, remember, and match — times tables, words and more</p></button>
+    <button class="tile" data-go="screen-invaders"><span class="emoji">🚀</span><h2>Fab Fox Space Mission</h2><p>A gentle space game: sparkle grumpy clouds into rainbows. Times tables and number bonds too</p></button>
     <button class="tile" data-go="screen-pinball"><span class="emoji">🦊</span><h2>Fab Fox Pinball</h2><p>Bounce the ball off Fab Fox and the rainbows</p></button>
     <button class="tile" data-go="screen-shuffleboard"><span class="emoji">🥏</span><h2>Fab Fox Shuffleboard</h2><p>Tap to aim, tap for power, and slide into the 3</p></button>
     <button class="tile" data-go="screen-checkers"><span class="emoji">⚫⚪</span><h2>Checkers</h2><p>Jump, capture and crown a king</p></button>
@@ -1014,6 +1015,11 @@ body.fab-world-full{ overflow:hidden; }
     <button class="tile" data-go="screen-chat"><span class="emoji">💬</span><h2>Chatter Corner</h2><p>Five decks of talking games — new cards every day</p></button>
     <button class="tile" data-go="screen-fabfaves"><span class="emoji">🎡</span><h2>Fab Faves Wheel</h2><p>Spin to find out what you all love</p></button>
   </div>
+</section>
+
+<section id="screen-invaders" class="screen" aria-label="Fab Fox Space Mission">
+  <div class="screen-top"><button class="btn-back" data-go="screen-games">← Back</button><h1 class="screen-title">Fab Fox Space Mission</h1></div>
+  <iframe class="game-frame" data-game="invaders" title="Fab Fox Space Mission"></iframe>
 </section>
 
 <section id="screen-pinball" class="screen" aria-label="Fab Fox Pinball">
@@ -2038,7 +2044,7 @@ function closeFabOverlay(reward){
 }
 document.addEventListener('keydown', e => { if(e.key === 'Escape') closeFabOverlay(true); });
 function fabGameMount(id){
-  const map = { 'screen-pinball':'pinball', 'screen-shuffleboard':'shuffleboard', 'screen-battleships2':'battleships2', 'screen-pairs':'pairs', 'screen-world':'world' };
+  const map = { 'screen-pinball':'pinball', 'screen-shuffleboard':'shuffleboard', 'screen-battleships2':'battleships2', 'screen-pairs':'pairs', 'screen-world':'world', 'screen-invaders':'invaders' };
   if(id !== 'screen-world') fabWorldFull(false);
   document.querySelectorAll('.game-frame').forEach(fr => { if(!map[id] || fr.dataset.game !== map[id]) fr.removeAttribute('srcdoc'); });
   if(!map[id]) return;
@@ -2071,7 +2077,7 @@ function showScreen(id){
   // Battleships shows two full boards at once — give it more breathing room than the
   // article-width column other screens use, so the boards can sit side by side instead
   // of wrapping to stacked. Scoped to this one screen; nothing else is affected.
-  document.body.classList.toggle('bs-wide', id === 'screen-battleships' || id === 'screen-battleships2' || id === 'screen-pinball' || id === 'screen-shuffleboard' || id === 'screen-pairs' || id === 'screen-world');
+  document.body.classList.toggle('bs-wide', id === 'screen-battleships' || id === 'screen-battleships2' || id === 'screen-pinball' || id === 'screen-shuffleboard' || id === 'screen-pairs' || id === 'screen-world' || id === 'screen-invaders');
   document.body.classList.toggle('in-world', id === 'screen-world');
   document.body.classList.toggle('hub-wide', id === 'screen-learn');
   if(id !== 'screen-lesson') document.body.classList.remove('lp-wide', 'lp-path');
