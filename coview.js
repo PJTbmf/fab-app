@@ -22,6 +22,11 @@
   const live = () => { try{ return typeof Live !== 'undefined' && Live.on ? Live : null; }catch(e){ return null; } };
   const isHost = () => { const L = live(); return !L || L.isHost(); };
   /* A child's own link (?learner=…) or a non-host in a live Space can watch what is shared, but not paste links. */
+  /* Children (a child's own link, or not the teacher in a live Space) watch behind a shield: nothing inside a video player can be clicked. */
+  function guarded(){
+    const L = live(); if(L) return !L.isHost();
+    try{ return !!new URLSearchParams(location.search).get('learner'); }catch(e){ return false; }
+  }
   function canShare(){
     const L = live(); if(L) return L.isHost();
     try{ if(new URLSearchParams(location.search).get('learner')) return false; }catch(e){}
@@ -50,7 +55,7 @@
     } else if(host === 'youtu.be') yt = u.pathname.slice(1).split('/')[0];
     if(yt && /^[\w-]{6,20}$/.test(yt)){
       const st = parseInt(u.searchParams.get('t') || u.searchParams.get('start') || '0', 10) || 0;
-      const src = `https://www.youtube-nocookie.com/embed/${yt}?enablejsapi=1&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3${st ? '&start=' + st : ''}&origin=${encodeURIComponent(location.origin)}`;
+      const src = `https://www.youtube-nocookie.com/embed/${yt}?enablejsapi=1&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&fs=0&cc_load_policy=0${st ? '&start=' + st : ''}&origin=${encodeURIComponent(location.origin)}`;
       return { ok:true, kind:'youtube', url, src, title:title || 'YouTube video', vid:yt };
     }
     if(/(^|\.)vimeo\.com$/.test(host)){
@@ -93,6 +98,7 @@
         <button type="button" class="cv-btn" id="cvBack">← Back</button>
         <div class="cv-title"><span id="cvWho">🎬</span> <b id="cvTitle"></b></div>
         <div class="cv-tools">
+          <button type="button" class="cv-btn leaf" id="cvPlay" hidden>▶ <span>Play</span></button>
           <button type="button" class="cv-btn soft" id="cvSide" aria-pressed="false">◧ <span>Side by side</span></button>
           <a class="cv-btn soft" id="cvNewTab" target="_blank" rel="noopener">↗ <span>New tab</span></a>
           <button type="button" class="cv-btn flame" id="cvStop">⏹ <span>Stop showing</span></button>
@@ -110,6 +116,14 @@
     el.querySelector('#cvSide').addEventListener('click', () => setSide(!S.side));
     el.querySelector('#cvStop').addEventListener('click', () => stop());
     el.querySelector('#cvFootOpen').addEventListener('click', () => { if(S.view) window.open(S.view.url, '_blank', 'noopener'); });
+    el.querySelector('#cvPlay').addEventListener('click', () => { const playing = S.yt.state === 1 || S.vimeo.playing; if(S.frameKind === 'youtube') send('youtube', playing ? 'pauseVideo' : 'playVideo'); else if(S.frameKind === 'vimeo') send('vimeo', playing ? 'pause' : 'play'); });
+    el.addEventListener('click', e => {
+      const a = e.target.closest('[data-cvads]'); if(a){ adsChoice(a.dataset.cvads); return; }
+      const c = e.target.closest('[data-cvcover]'); if(!c) return;
+      if(c.dataset.cvcover === 'play'){ if(S.frameKind === 'youtube') send('youtube', 'playVideo'); else send('vimeo', 'play'); }
+      if(c.dataset.cvcover === 'again'){ if(S.frameKind === 'youtube'){ send('youtube', 'seekTo', 0); send('youtube', 'playVideo'); } else { send('vimeo', 'setCurrentTime', 0); send('vimeo', 'play'); } }
+      if(c.dataset.cvcover === 'close') closeLocal();
+    });
     document.addEventListener('keydown', e => { if(e.key === 'Escape' && !el.hidden && !document.querySelector('.cvl-wrap:not([hidden])')) closeLocal(); });
     window.addEventListener('message', onPlayerMessage);
   }
@@ -147,7 +161,7 @@
         ${fromTeacher ? '' : `<button type="button" class="cv-btn soft" data-cvcopy="${esc(v.url)}">📋 Copy the link</button>`}</div>
         ${fromTeacher ? '' : `<ul class="cv-tips">
           <li><b>In Pencil Spaces:</b> paste the link into a Web Viewer on the board so everyone sees it.</li>
-          ${bbc ? '<li><b>BBC clips:</b> if the clip has a Share or Embed button, copy the embed code and paste it here. It will show inside the app.</li><li>BBC Teach puts many clips on YouTube. A YouTube link shows inside, and play and pause follow you.</li>' : '<li>Or share your screen while it plays.</li>'}
+          ${bbc ? '<li><b>BBC clips:</b> if the clip has a Share or Embed button, copy the embed code and paste it here. It will show inside the app.</li><li>BBC Teach puts many clips on YouTube. A YouTube link shows inside, with safety guards, but YouTube may show an advert.</li>' : '<li>Or share your screen while it plays.</li>'}
         </ul>`}
       </div>`;
       return;
@@ -161,15 +175,61 @@
       f.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
       f.setAttribute('allowfullscreen', '');
       f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
-      f.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-forms allow-popups');
-      if(v.kind === 'youtube' || v.kind === 'vimeo') f.className = 'cv-video';
+      const video = v.kind === 'youtube' || v.kind === 'vimeo';
+      f.setAttribute('sandbox', video ? 'allow-scripts allow-same-origin allow-presentation' : 'allow-scripts allow-same-origin allow-presentation allow-forms' + (guarded() ? '' : ' allow-popups'));
+      if(video){ f.className = 'cv-video'; f.removeAttribute('allowfullscreen'); f.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture'); }
       f.addEventListener('load', () => onFrameLoad(v.kind));
       body.appendChild(f);
+      if(video){
+        const cover = document.createElement('div'); cover.id = 'cvCover'; cover.className = 'cv-cover'; cover.hidden = true; body.appendChild(cover);
+        if(guarded()){ const sh = document.createElement('div'); sh.id = 'cvShield'; sh.className = 'cv-shield'; sh.setAttribute('aria-hidden', 'true'); body.appendChild(sh); }
+      }
       S.frameSrc = v.src; S.frameKind = v.kind;
       S.yt = { state:-1, t:0, lastT:0, lastAt:0 }; S.vimeo = { playing:false, t:0 };
     }
     foot.hidden = !(v.kind === 'page' && v.maybe);
-    applyPlay();
+    el.querySelector('#cvPlay').hidden = !(guarded() && !live() && (v.kind === 'youtube' || v.kind === 'vimeo'));
+    applyPlay(); paintCover();
+  }
+  /* When a video is paused or finishes, our own card covers the player, so YouTube's "more videos" never shows. */
+  function paintCover(){
+    const c = document.getElementById('cvCover'); if(!c) return;
+    const st = S.frameKind === 'youtube' ? S.yt.state : (S.vimeo.ended ? 0 : S.vimeo.started && !S.vimeo.playing ? 2 : -1);
+    const kid = guarded(), teacherLive = !!live() && !isHost();
+    let html = '';
+    if(st === 2) html = `<div class="cv-cover-in"><p class="cv-big">⏸</p><h2>${teacherLive ? 'Your teacher has paused the video' : 'Paused'}</h2>${teacherLive ? '' : '<div class="cv-row"><button type="button" class="cv-btn leaf" data-cvcover="play">▶ Carry on</button><button type="button" class="cv-btn soft" data-cvcover="close">✕ Close</button></div>'}</div>`;
+    else if(st === 0) html = `<div class="cv-cover-in"><p class="cv-big">🎬</p><h2>That’s the end</h2>${teacherLive ? '' : '<div class="cv-row"><button type="button" class="cv-btn leaf" data-cvcover="again">↺ Watch again</button><button type="button" class="cv-btn soft" data-cvcover="close">✕ Close</button></div>'}</div>`;
+    c.hidden = !html; c.innerHTML = html;
+    const pb = S.el && S.el.querySelector('#cvPlay'); if(pb && !pb.hidden){ const playing = st === 1; pb.innerHTML = playing ? '⏸ <span>Pause</span>' : '▶ <span>Play</span>'; }
+    void kid;
+  }
+  /* YouTube can show adverts that no website can switch off. Before a YouTube video is shown, the teacher chooses. */
+  function adsCard(p, opts){
+    build();
+    S.pending = { p, opts };
+    const el = S.el; el.hidden = false; document.body.classList.add('cv-open');
+    el.querySelector('#cvTitle').textContent = p.title || 'YouTube video';
+    ['#cvSide', '#cvNewTab', '#cvPlay'].forEach(q => { el.querySelector(q).hidden = true; });
+    el.querySelector('#cvStop').hidden = true; el.querySelector('#cvFoot').hidden = true;
+    el.querySelector('#cvBack').textContent = '← Back';
+    unloadFrame();
+    el.querySelector('#cvBody').innerHTML = `<div class="cv-outside cv-ads">
+      <div class="cv-big">⚠️</div>
+      <h2>YouTube may show an advert</h2>
+      <p>YouTube can play adverts before or during any video, and no website can switch them off.</p>
+      <ul class="cv-tips">
+        <li>✅ <b>Safety guards are on:</b> children can’t click anything in the video (adverts, links or “more videos”), nothing can open a new tab, and our own card covers the screen when the video is paused or ends.</li>
+        <li>💡 <b>No adverts:</b> Vimeo, a BBC embed code (in the UK), or a video you’ve put in Google Drive or OneDrive.</li>
+      </ul>
+      <div class="cv-row"><button type="button" class="cv-btn leaf" data-cvads="yes">▶ Show it with the guards on</button><button type="button" class="cv-btn soft" data-cvads="no">Choose an ad-free video</button></div>
+    </div>`;
+    return { ok:true, kind:'youtube', pending:true };
+  }
+  function adsChoice(c){
+    const pd = S.pending; S.pending = null;
+    if(c === 'yes' && pd){ ['#cvSide', '#cvNewTab'].forEach(q => { S.el.querySelector(q).hidden = false; }); open(pd.p.url, Object.assign({}, pd.opts, { adsOk:true })); return; }
+    S.el.hidden = true; document.body.classList.remove('cv-open');
+    if(c === 'no') launcher({ msg:'Ad-free choices: Vimeo, a BBC embed code (Share → Embed), or your own video in Google Drive or OneDrive.' });
   }
   function unloadFrame(){ const f = document.getElementById('cvFrame'); if(f) f.remove(); S.frameSrc = null; S.frameKind = null; }
 
@@ -180,6 +240,8 @@
     if(!p.ok) return p;
     const L = live();
     if(L && !L.isHost()) return { ok:false, why:'Only the teacher can share a link in a live session.' };
+    if(p.kind === 'youtube' && !opts.adsOk) return adsCard(p, opts);
+    ['#cvSide', '#cvNewTab'].forEach(q => { if(S.el) S.el.querySelector(q).hidden = false; });
     S.rev = Math.max(S.rev, (S.view && S.view.rev) || 0) + 1;
     S.view = { rev:S.rev, open:true, url:p.url, src:p.src, kind:p.kind, title:(opts.title || p.title || '').slice(0, 90), site:p.site || '', maybe:!!p.maybe, by:L ? L.me : null, play:{ s:'pause', t:0, r:0 } };
     S.appliedPlay = 0; S.localClosed = false;
@@ -190,6 +252,7 @@
     return { ok:true, kind:p.kind };
   }
   function closeLocal(){
+    if(S.pending && (!S.view || !S.view.open)){ adsChoice('back'); return; }
     if(!S.view) return;
     if(live() && !isHost()){ S.localClosed = true; render(); return; }
     stop();
@@ -240,7 +303,7 @@
         w.postMessage(JSON.stringify({ event:'listening', id:'fabcv', channel:'widget' }), 'https://www.youtube-nocookie.com');
         w.postMessage(JSON.stringify({ event:'command', func:'addEventListener', args:['onStateChange'], id:'fabcv', channel:'widget' }), 'https://www.youtube-nocookie.com');
       } else if(kind === 'vimeo'){
-        ['play', 'pause', 'seeked', 'timeupdate'].forEach(e => w.postMessage({ method:'addEventListener', value:e }, 'https://player.vimeo.com'));
+        ['play', 'pause', 'seeked', 'timeupdate', 'ended', 'finish'].forEach(e => w.postMessage({ method:'addEventListener', value:e }, 'https://player.vimeo.com'));
       }
     }catch(e){}
     setTimeout(() => { S.appliedPlay = 0; applyPlay(); }, 900);
@@ -274,14 +337,15 @@
       let st = null;
       if(d.event === 'onStateChange') st = d.info;
       else if(typeof info.playerState === 'number') st = info.playerState;
-      if(st != null && st !== S.yt.state){ S.yt.state = st; if(st === 1) hostPlayer('play', S.yt.t); else if(st === 2) hostPlayer('pause', S.yt.t); }
+      if(st != null && st !== S.yt.state){ S.yt.state = st; if(st === 1) hostPlayer('play', S.yt.t); else if(st === 2) hostPlayer('pause', S.yt.t); paintCover(); }
       else if(S.yt.state === 1 && typeof info.currentTime === 'number' && Math.abs(info.currentTime - S.yt.lastT) > 3) hostPlayer('play', info.currentTime);
     } else if(S.frameKind === 'vimeo' && e.origin === 'https://player.vimeo.com'){
       let d; try{ d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; }catch(err){ return; }
       if(!d || !d.event) return;
       const sec = d.data && typeof d.data.seconds === 'number' ? d.data.seconds : S.vimeo.t;
-      if(d.event === 'play'){ S.vimeo.playing = true; S.vimeo.t = sec; hostPlayer('play', sec); }
-      else if(d.event === 'pause'){ S.vimeo.playing = false; S.vimeo.t = sec; hostPlayer('pause', sec); }
+      if(d.event === 'play'){ S.vimeo.playing = true; S.vimeo.started = true; S.vimeo.ended = false; S.vimeo.t = sec; hostPlayer('play', sec); paintCover(); }
+      else if(d.event === 'pause'){ S.vimeo.playing = false; S.vimeo.t = sec; hostPlayer('pause', sec); paintCover(); }
+      else if(d.event === 'ended' || d.event === 'finish'){ S.vimeo.playing = false; S.vimeo.ended = true; paintCover(); }
       else if(d.event === 'seeked'){ S.vimeo.t = sec; hostPlayer(S.vimeo.playing ? 'play' : 'pause', sec); }
       else if(d.event === 'timeupdate'){ if(Math.abs(sec - S.vimeo.t) > 3) hostPlayer(S.vimeo.playing ? 'play' : 'pause', sec); S.vimeo.t = sec; }
     }
@@ -297,7 +361,7 @@
       w.innerHTML = `<div class="cvl" role="dialog" aria-modal="true" aria-labelledby="cvlTitle">
         <button type="button" class="cvl-x" aria-label="Close">✕</button>
         <h2 id="cvlTitle">🎬 Show a link</h2>
-        <p class="cvl-sub">Paste a link or an embed code. YouTube (including BBC Teach), Vimeo, Google Slides and many learning sites open inside the app.</p>
+        <p class="cvl-sub">Paste a link or an embed code. Vimeo, Google Slides, Drive and OneDrive videos, BBC embed codes and many learning sites open inside the app. YouTube does too, with safety guards, but it may show adverts.</p>
         <div class="cvl-row"><input id="cvlUrl" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://… or <iframe …>" aria-label="Link or embed code to show">
           <button type="button" class="cv-btn leaf" id="cvlGo">Show it</button></div>
         <label class="cvl-check"><input type="checkbox" id="cvlSide"> Show it beside the lesson or board</label>
@@ -330,7 +394,7 @@
     const links = (opts.links || []).filter(l => l && /^https:\/\//.test(l.u));
     step.innerHTML = links.length ? `<h3>For this step</h3><div class="cvl-list">${links.map(l => `<button type="button" class="cvl-item" data-cvrecent="${esc(l.u)}">▶ ${esc(l.t || l.u)}</button>`).join('')}</div>` : '';
     paintRecent();
-    w.querySelector('#cvlMsg').textContent = '';
+    w.querySelector('#cvlMsg').textContent = opts.msg || ''; w.querySelector('#cvlMsg').className = 'cvl-msg';
     if(!canShare()){ w.querySelector('#cvlMsg').textContent = 'Only a grown-up can share links.'; }
     w.hidden = false;
     setTimeout(() => { try{ w.querySelector('#cvlUrl').focus(); }catch(e){} }, 30);
@@ -352,5 +416,5 @@
 
   try{ S.side = localStorage.getItem('fab-coview-side') === '1'; }catch(e){}
   window.CoView = { parse, open, stop, closeLocal, launcher, canShare, shared, fromShared, setSide,
-    state:() => S.view, _hostPlayer:hostPlayer, _sent:() => S.sent.slice() };
+    state:() => S.view, _hostPlayer:hostPlayer, _sent:() => S.sent.slice(), _ytState:st => { S.yt.state = st; paintCover(); }, guarded };
 })();

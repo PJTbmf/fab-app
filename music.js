@@ -99,6 +99,109 @@
     return s;
   }
   SONGS.forEach(compile);
+
+  /* ---------- the Music flightpath ----------
+     Like the other flightpaths: stages of small steps, each with I do (👂), we do (💡) and you do (⭐).
+     It starts with getting to know the keyboard, then builds each song up a part at a time.
+     Step kinds: find (find keys), tune (a short practice tune), part (part of a song), song (the whole song). */
+  const SETS = {
+    low:[60, 61, 62, 63, 64], high:[76, 77, 78, 79, 80, 81, 82, 83, 84],
+    two:[49, 51, 61, 63, 73, 75, 85, 87], three:[54, 56, 58, 66, 68, 70, 78, 80, 82, 90, 92, 94]
+  };
+  const OAK = (unit, title, year, lessons, sec) => ({ url:`https://www.thenational.academy/teachers/curriculum/music-${sec ? 'secondary' : 'primary'}/units/${unit}`, title, year, lessons:(lessons || []).map(([slug, t]) => ({ url:`https://www.thenational.academy/teachers/lessons/${slug}`, t })) });
+  const PATH = [
+    { id:'keys', title:'Meet the keyboard', icon:'🎹', about:'Low and high, the black keys, and where to find C.',
+      oak:OAK('compose-and-create-exploring-pitch-through-call-and-response', 'Compose and create: high and low melodic responses', 'Year 1', [['identifying-high-and-low-notes', 'Identifying high and low notes']]),
+      steps:[
+        { id:'low-high', kind:'find', name:'Low and high', goal:'I can play a low note and a high note', tell:'Keys on the left sound low, like a bear. Keys on the right sound high, like a bird.', targets:[{ label:'a low note 🐻', set:'low' }, { label:'a high note 🐦', set:'high' }] },
+        { id:'twos-threes', kind:'find', name:'Twos and threes', goal:'I can find the black keys in twos and in threes', tell:'The black keys come in little groups: two together, then three together.', targets:[{ label:'a black key in a group of two', set:'two' }, { label:'a black key in a group of three', set:'three' }] },
+        { id:'middle-c', kind:'find', name:'Find middle C', goal:'I can find middle C', tell:'Middle C is the white key just to the left of the two black keys in the middle. It has a ★ on it.', targets:[{ label:'middle C ★', m:[60] }], show:['C4'] },
+        { id:'all-cs', kind:'find', name:'Every C', goal:'I can find every C', tell:'Every C sits just to the left of a group of two black keys. Find them all, in any order.', targets:'all-c', any:true, show:['C4', 'C5'] }
+      ] },
+    { id:'cde', title:'C, D and E', icon:'🎵', about:'Three notes side by side, and your first song.',
+      oak:OAK('music-and-movement-using-symbols-to-represent-pitch', 'Music and movement: using symbols to represent pitch', 'Year 2', [['notating-high-and-low-notes-on-a-simplified-musical-stave', 'High and low notes on a stave'], ['notating-three-notes-on-a-simplified-musical-stave', 'Three notes on a stave']]),
+      steps:[
+        { id:'find-de', kind:'find', name:'Find D and E', goal:'I can find D and E', tell:'D is in the middle of the two black keys. E is just to the right of them.', targets:[{ label:'D', m:[62] }, { label:'E', m:[64] }], show:['D4', 'E4'] },
+        { id:'tune-cde', kind:'tune', name:'Up and down: C D E', goal:'I can play C D E, and back down', bars:['C4q D4q E4h', 'E4q D4q C4h'], lines:[2] },
+        { id:'hcb-1', kind:'part', name:'Hot Cross Buns: part 1', goal:'I can play “Hot cross buns”', song:'hot-cross-buns', bars:[0, 2] },
+        { id:'hcb', kind:'song', name:'Hot Cross Buns: the whole song', goal:'I can play Hot Cross Buns', song:'hot-cross-buns' }
+      ] },
+    { id:'five', title:'Five notes: C to G', icon:'🖐️', about:'One finger for each note, from C up to G.',
+      oak:OAK('compose-and-create-composing-a-major-melody-on-a-stave', 'Compose and create: composing a major melody on a stave', 'Year 4', [['major-melodies-and-the-major-pentachord', 'Major melodies and the five-note pentachord'], ['reading-the-five-note-major-pentachord-scale', 'Reading the five-note scale']]),
+      steps:[
+        { id:'find-fg', kind:'find', name:'Find F and G', goal:'I can find F and G', tell:'F is just to the left of the three black keys. G is next to F.', targets:[{ label:'F', m:[65] }, { label:'G', m:[67] }], show:['F4', 'G4'] },
+        { id:'tune-walk', kind:'tune', name:'Walk up and down', goal:'I can walk from C up to G and back', bars:['C4q D4q E4q F4q', 'G4w', 'G4q F4q E4q D4q', 'C4w'], lines:[2, 2] },
+        { id:'mary-1', kind:'part', name:'Mary Had a Little Lamb: part 1', goal:'I can play the first part of Mary Had a Little Lamb', song:'mary-lamb', bars:[0, 4] },
+        { id:'mary', kind:'song', name:'Mary Had a Little Lamb: the whole song', goal:'I can play Mary Had a Little Lamb', song:'mary-lamb' },
+        { id:'ode-1', kind:'part', name:'Ode to Joy: part 1', goal:'I can play the first part of Ode to Joy', song:'ode-to-joy', bars:[0, 4] },
+        { id:'ode', kind:'song', name:'Ode to Joy: the whole tune', goal:'I can play Ode to Joy', song:'ode-to-joy',
+          oak:OAK('keyboard-fundamentals', 'Keyboard fundamentals', 'Year 7', [['playing-the-melody-ode-to-joy', 'Playing the melody: Ode to Joy']], true) }
+      ] },
+    { id:'jingle', title:'Jingle Bells', icon:'🎄', about:'The chorus, a part at a time. All five notes from C to G.',
+      oak:OAK('compose-and-create-composing-a-major-melody-on-a-stave', 'Compose and create: composing a major melody on a stave', 'Year 4', [['reading-and-playing-major-melodies', 'Reading and playing major melodies']]),
+      steps:[
+        { id:'jb-1', kind:'part', name:'Jingle Bells: “Jingle bells… all the way”', goal:'I can play the first part of Jingle Bells', song:'jingle-bells', bars:[0, 4] },
+        { id:'jb-2', kind:'part', name:'Jingle Bells: “Oh what fun…”', goal:'I can play the second part of Jingle Bells', song:'jingle-bells', bars:[4, 8] },
+        { id:'jb', kind:'song', name:'Jingle Bells: the whole chorus', goal:'I can play the Jingle Bells chorus', song:'jingle-bells' }
+      ] },
+    { id:'twinkle', title:'Twinkle Twinkle', icon:'⭐', about:'A new note, A, and a big jump from C to G.',
+      oak:OAK('keyboard-fundamentals', 'Keyboard fundamentals', 'Year 7', [['playing-a-melody-in-the-c-position-on-the-keyboard', 'Playing a melody in the C position']], true),
+      steps:[
+        { id:'find-a', kind:'find', name:'Find A', goal:'I can find A', tell:'A is inside the group of three black keys, between the second and third black key.', targets:[{ label:'A', m:[69] }], show:['A4'] },
+        { id:'tune-jump', kind:'tune', name:'Jump and step', goal:'I can jump from C to G, then step up to A', bars:['C4h G4h', 'C4h G4h', 'G4q A4q G4h'], lines:[3] },
+        { id:'tw-1', kind:'part', name:'Twinkle: “Twinkle twinkle little star”', goal:'I can play “Twinkle twinkle little star”', song:'twinkle', bars:[0, 2] },
+        { id:'tw-2', kind:'part', name:'Twinkle: “How I wonder what you are”', goal:'I can play “How I wonder what you are”', song:'twinkle', bars:[2, 4] },
+        { id:'tw-3', kind:'part', name:'Twinkle: “Up above the world so high…”', goal:'I can play the middle part of Twinkle Twinkle', song:'twinkle', bars:[4, 8] },
+        { id:'tw', kind:'song', name:'Twinkle Twinkle: the whole song', goal:'I can play Twinkle Twinkle Little Star', song:'twinkle' }
+      ] },
+    { id:'higher', title:'Higher notes', icon:'🪜', about:'B and high C, then songs that climb higher.',
+      oak:OAK('keyboard-fundamentals', 'Keyboard fundamentals', 'Year 7', [['playing-a-melody-in-the-c-position-on-the-keyboard', 'Playing a melody in the C position']], true),
+      steps:[
+        { id:'london', kind:'song', name:'London Bridge', goal:'I can play London Bridge', song:'london-bridge' },
+        { id:'find-bc', kind:'find', name:'Find B and high C', goal:'I can find B and high C', tell:'B is just to the right of the three black keys. High C is next to B, just to the left of the next two black keys.', targets:[{ label:'B', m:[71] }, { label:'high C', m:[72] }], show:['B4', 'C5'] },
+        { id:'row-1', kind:'part', name:'Row Your Boat: part 1', goal:'I can play “Row, row, row your boat, gently down the stream”', song:'row-your-boat', bars:[0, 4] },
+        { id:'row', kind:'song', name:'Row, Row, Row Your Boat: the whole song', goal:'I can play Row, Row, Row Your Boat', song:'row-your-boat' },
+        { id:'ays-1', kind:'part', name:'Are You Sleeping?: part 1', goal:'I can play “Are you sleeping, Brother John?”', song:'are-you-sleeping', bars:[0, 4] },
+        { id:'ays', kind:'song', name:'Are You Sleeping?: the whole song', goal:'I can play Are You Sleeping?', song:'are-you-sleeping' }
+      ] },
+    { id:'bigger', title:'Bigger songs', icon:'🎉', about:'Old MacDonald, then a Christmas carol that goes up to high F.',
+      oak:OAK('compose-and-create-composing-a-major-melody-on-a-stave', 'Compose and create: composing a major melody on a stave', 'Year 4', [['reading-and-performing-major-melodies', 'Reading and performing major melodies']]),
+      steps:[
+        { id:'oldmac', kind:'song', name:'Old MacDonald Had a Farm', goal:'I can play Old MacDonald', song:'old-macdonald' },
+        { id:'find-top', kind:'find', name:'High D, E and F', goal:'I can find high D, E and F', tell:'Go up from high C: D is between the next two black keys, then E, then F just before the next three black keys.', targets:[{ label:'high D', m:[74] }, { label:'high E', m:[76] }, { label:'high F', m:[77] }], show:['D5', 'E5', 'F5'] },
+        { id:'ww-1', kind:'part', name:'We Wish You a Merry Christmas: part 1', goal:'I can play the first part of We Wish You a Merry Christmas', song:'merry-christmas', bars:[0, 5] },
+        { id:'ww', kind:'song', name:'We Wish You a Merry Christmas: the whole song', goal:'I can play We Wish You a Merry Christmas', song:'merry-christmas' }
+      ] }
+  ];
+  const STEPS = []; PATH.forEach(st => st.steps.forEach(x => { x.stage = st.id; x.n = STEPS.length + 1; STEPS.push(x); }));
+  /* a step that plays: a short practice tune, part of a song, or the whole song */
+  function stepSong(x){
+    if(x.kind === 'song') return SONGS.find(s => s.id === x.song);
+    if(x.kind === 'tune') return compile({ id:'step-' + x.id, title:x.name, time:[4, 4], bpm:92, lines:x.lines, bars:x.bars, noWords:true });
+    const base = SONGS.find(s => s.id === x.song), [a, b] = x.bars, lines = []; let at = 0;
+    base.lines.forEach(n => { const lo = Math.max(at, a), hi = Math.min(at + n, b); if(hi > lo) lines.push(hi - lo); at += n; });
+    return compile({ id:'step-' + x.id, title:base.title, time:base.time, bpm:base.bpm, pickup:a === 0 ? base.pickup : 0, lines, bars:base.bars.slice(a, b), noWords:base.noWords, part:true });
+  }
+  function stepTargets(x){
+    if(x.targets === 'all-c') return K.whites.filter(m => m % 12 === 0).map(m => ({ label:{ 48:'low C', 60:'middle C ★', 72:'high C', 84:'top C' }[m] || nameOf(m), m:[m] }));
+    return x.targets.map(t => ({ label:t.label, m:t.m || SETS[t.set] }));
+  }
+  function stepProg(id){ const p = prog(); return (p.steps && p.steps[id]) || {}; }
+  function stepStars(id){ const s = stepProg(id); return (s.listen ? 1 : 0) + (s.follow ? 1 : 0) + (s.own ? 1 : 0); }
+  function suggested(){ return STEPS.find(x => !stepProg(x.id).own) || STEPS[STEPS.length - 1]; }
+  /* used by the tests: every step plays, every part fits its song, find steps only ask for keys on the keyboard */
+  function checkPath(){
+    const out = [], ids = new Set();
+    STEPS.forEach(x => {
+      if(ids.has(x.id)) out.push('two steps called ' + x.id); ids.add(x.id);
+      if(!x.goal || !/^I can /.test(x.goal)) out.push(x.id + ': goal should start “I can”');
+      if(x.kind === 'find'){ if(x.targets !== 'all-c' && !x.targets.every(t => (t.m && t.m.length) || SETS[t.set])) out.push(x.id + ': bad target'); return; }
+      const so = stepSong(x); if(!so || !so.notes.length){ out.push(x.id + ': no notes'); return; }
+      if(so.lo < 60 || so.hi > 77) out.push(x.id + ': notes outside C4 to F5');
+      if(x.kind === 'part'){ const base = SONGS.find(s => s.id === x.song); if(x.bars[1] > base.bars.length) out.push(x.id + ': part goes past the end'); if(so.lines.reduce((p, q) => p + q, 0) !== so.bars.length) out.push(x.id + ': lines do not cover the part'); }
+    });
+    return out;
+  }
   /* used by the tests: every bar adds up, lines cover every bar, the range fits the keyboard and there are no black keys */
   function checkSongs(){
     const out = [];
@@ -170,7 +273,7 @@
 
   /* ---------- state ---------- */
   const M = {
-    el:null, song:null, mode:'free', pos:0, miss:0, helps:0, slow:false,
+    el:null, song:null, step:null, find:null, mode:'free', pos:0, miss:0, helps:0, slow:false, firstOpen:true,
     opt:{ names:true, colours:true, words:true }, oct:0, free:[], listen:null, lastLine:-1,
     rec:null, play:null, panel:null
   };
@@ -196,7 +299,7 @@
     el.innerHTML = `<div class="mu-top">
         <div class="mu-grp mu-nav">
           <button type="button" class="mu-btn back" id="muBack" aria-label="Back">←<span class="mu-lbl"> Back</span></button>
-          <button type="button" class="mu-btn" id="muSongsBtn" aria-label="Songs">🎵<span class="mu-lbl"> Songs</span></button>
+          <button type="button" class="mu-btn" id="muSongsBtn" aria-label="Music steps">🗺️<span class="mu-lbl"> Steps</span></button>
           <h1 class="mu-title" id="muTitle">Free play</h1>
         </div>
         <i class="mu-break" aria-hidden="true"></i>
@@ -234,13 +337,13 @@
       </div>
       <div class="mu-panel" id="muPanel" hidden></div>`;
     $m('#muBack').addEventListener('click', leave);
-    $m('#muSongsBtn').addEventListener('click', () => openPanel('songs'));
+    $m('#muSongsBtn').addEventListener('click', () => openPanel('path'));
     $m('#muMineBtn').addEventListener('click', () => openPanel('mine'));
     el.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
-    $m('#muPlay').addEventListener('click', () => { if(M.listen) stopListen(true); else listenPlay(); });
+    $m('#muPlay').addEventListener('click', () => { if(M.find){ if(M.show){ stopShow(); paintAll(); } else findShow(); return; } if(M.listen) stopListen(true); else listenPlay(); });
     $m('#muHelp').addEventListener('click', fabHelps);
     $m('#muSlow').addEventListener('click', () => { M.slow = !M.slow; paintBar(); if(M.listen){ stopListen(true); listenPlay(); } });
-    $m('#muAgain').addEventListener('click', () => { stopListen(true); M.pos = 0; M.miss = 0; M.helps = 0; M.lastLine = 0; paintAll(); toast(''); });
+    $m('#muAgain').addEventListener('click', () => { if(M.find){ setMode(M.mode); return; } stopListen(true); M.pos = 0; M.miss = 0; M.helps = 0; M.lastLine = 0; paintAll(); toast(''); });
     $m('#muClear').addEventListener('click', () => { M.free = []; renderSheet(); });
     $m('#muInst').addEventListener('click', () => { const ks = Object.keys(INST); A.inst = ks[(ks.indexOf(A.inst) + 1) % ks.length]; saveOpts(); paintBar(); const c = audio(); if(c) voice(c, A.out, 67, c.currentTime + .01, A.inst, .7, .4); });
     $m('#muRec').addEventListener('click', () => { if(M.rec) stopRec(); else openPanel('record'); });
@@ -263,23 +366,41 @@
   function open(songId){
     build();
     if(typeof showScreen === 'function') showScreen('screen-music');
-    if(songId) loadSong(songId); else if(!M.song) loadSong(null);
-    requestAnimationFrame(() => { buildKb(); paintAll(); });
+    if(songId) loadSong(songId); else if(!M.song && !M.step) loadSong(null);
+    requestAnimationFrame(() => { buildKb(); paintAll(); if(M.firstOpen && !songId){ M.firstOpen = false; openPanel('path'); } });
   }
   function leave(){
-    stopListen(true); stopPlayback(); if(M.rec) stopRec();
+    stopListen(true); stopShow(); stopPlayback(); if(M.rec) stopRec();
     [...held.keys()].forEach(noteOff); closePanel();
     if(typeof showScreen === 'function') showScreen('screen-learn');
     try{ learnRenderList(); }catch(e){}
   }
+  function loadStep(id){
+    const x = STEPS.find(q => q.id === id); if(!x) return;
+    stopListen(true); stopShow(); if(M.panel) closePanel();
+    M.step = x; M.oct = 0;
+    if(x.kind === 'find'){ M.song = null; M.find = { idx:0, found:[], targets:[] }; }
+    else { M.find = null; M.song = stepSong(x); }
+    M.mode = 'listen'; M.pos = 0; M.miss = 0; M.helps = 0; M.lastLine = 0; M.clue = null; M.lit = null;
+    if(M.el){ buildKb(); }
+    if(M.find) M.find.targets = stepTargets(x);
+    toast(`${x.goal}. ${x.kind === 'find' ? 'Tap 👂 Show me first.' : 'Tap ▶ Play to hear it first.'}`);
+    if(M.el) paintAll();
+  }
   function loadSong(id){
-    stopListen(true);
+    stopListen(true); stopShow(); if(M.panel && M.panel !== 'cele') closePanel();
+    M.step = null; M.find = null;
     M.song = id ? SONGS.find(s => s.id === id) || null : null;
     M.mode = M.song ? 'listen' : 'free'; M.pos = 0; M.miss = 0; M.helps = 0; M.lastLine = 0; M.oct = 0;
     if(M.song) toast('Tap ▶ Play to hear it first. Then try 💡 Follow the lights.'); else toast('Free play: play anything you like. Your notes appear on the music.');
     if(M.el){ buildKb(); paintAll(); }
   }
   function setMode(mode){
+    if(M.find){
+      stopShow(); M.mode = mode; M.find.idx = 0; M.find.found = []; M.miss = 0; M.clue = null; M.lit = null;
+      toast(mode === 'listen' ? 'Watch and listen: Fab shows you where the keys are.' : mode === 'follow' ? 'Press the keys that are glowing.' : 'Your turn! Find them yourself. A clue comes if you want one.');
+      paintAll(); if(mode === 'listen') findShow(); return;
+    }
     if(!M.song) return;
     stopListen(true);
     M.mode = mode; M.pos = 0; M.miss = 0; M.helps = 0; M.lastLine = 0;
@@ -290,15 +411,17 @@
   function paintAll(){ paintBar(); paintKeys(); renderSheet(); }
   function paintBar(){
     if(!M.el) return;
-    const song = M.song;
-    $m('#muTitle').textContent = song ? song.title : 'Free play';
+    const song = M.song || (M.find ? { noWords:true, find:true } : null);
+    $m('#muTitle').textContent = M.step ? `Step ${M.step.n}: ${M.step.name}` : M.song ? M.song.title : 'Free play';
     M.el.classList.toggle('mu-free', !song);
+    const lb = M.el.querySelector('[data-mode="listen"]'); lb.innerHTML = M.find ? '👂<span class="mu-lbl"> Show me</span>' : '👂<span class="mu-lbl"> Listen</span>'; lb.setAttribute('aria-label', M.find ? 'Show me' : 'Listen');
     M.el.querySelectorAll('[data-mode]').forEach(b => { const on = b.dataset.mode === M.mode; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     const play = $m('#muPlay');
     play.hidden = !song || M.mode !== 'listen';
-    play.innerHTML = M.listen ? '⏹<span class="mu-lbl"> Stop</span>' : '▶<span class="mu-lbl"> Play</span>'; play.setAttribute('aria-label', M.listen ? 'Stop' : 'Play');
+    const busy = M.listen || M.show;
+    play.innerHTML = busy ? '⏹<span class="mu-lbl"> Stop</span>' : (M.find ? '▶<span class="mu-lbl"> Show me</span>' : '▶<span class="mu-lbl"> Play</span>'); play.setAttribute('aria-label', busy ? 'Stop' : M.find ? 'Show me' : 'Play');
     $m('#muHelp').hidden = !song || M.mode === 'listen';
-    $m('#muSlow').hidden = !song || M.mode !== 'listen';
+    $m('#muSlow').hidden = !M.song || M.mode !== 'listen';
     $m('#muSlow').setAttribute('aria-pressed', M.slow ? 'true' : 'false'); $m('#muSlow').classList.toggle('on', M.slow);
     $m('#muAgain').hidden = !song || M.mode === 'listen';
     $m('#muClear').hidden = !!song;
@@ -320,7 +443,7 @@
     const w = kb.clientWidth || 600;
     let n = clamp(Math.floor(w / 56), 8, 15);
     let start = 60 + 12 * M.oct;
-    if(M.song){ start = 60; n = Math.max(n, 11); }
+    if(M.song || M.find){ start = 60; n = Math.max(n, 11); }
     const whites = []; let m = start;
     while(whites.length < n){ if(!sharp(m)) whites.push(m); m++; }
     const keys = []; const ww = 100 / n, bw = ww * .62;
@@ -342,7 +465,13 @@
     kb.querySelectorAll('.mu-key.white').forEach(k => { const L = letterOf(+k.dataset.m); k.style.setProperty('--c', COL[L]); k.style.setProperty('--ci', COL_INK[L]); });
     const next = M.song && M.mode === 'follow' && !M.listen && M.pos < M.song.notes.length ? M.song.notes[M.pos].m : null;
     const clue = M.clue != null ? M.clue : null;
-    kb.querySelectorAll('.mu-key').forEach(k => { const m = +k.dataset.m; k.classList.toggle('next', m === next || m === clue); k.classList.toggle('down', held.has(m) || m === M.lit); });
+    const glow = new Set(), found = new Set();
+    if(M.find){
+      M.find.found.forEach(m => found.add(m));
+      if(M.mode === 'follow' && !M.show) findLeft().forEach(t => t.m.forEach(m => glow.add(m)));
+      if(Array.isArray(clue)) clue.forEach(m => glow.add(m));
+    }
+    kb.querySelectorAll('.mu-key').forEach(k => { const m = +k.dataset.m; k.classList.toggle('next', m === next || m === clue || glow.has(m)); k.classList.toggle('found', found.has(m)); k.classList.toggle('down', held.has(m) || m === M.lit); });
   }
   function keyEl(m){ return $m(`#muKb [data-m="${m}"]`); }
   function kbDown(e){
@@ -386,7 +515,46 @@
   }
 
   /* ---------- following a song ---------- */
+  /* find steps: which targets are still to find (in order, or any order) */
+  function findLeft(){
+    const f = M.find; if(!f) return [];
+    if(M.step.any) return f.targets.filter(t => !t.m.some(m => f.found.includes(m)));
+    return f.idx < f.targets.length ? [f.targets[f.idx]] : [];
+  }
+  function findPlayed(m){
+    const f = M.find; if(M.mode === 'listen' || M.show) return;
+    const left = findLeft(); if(!left.length) return;
+    const hit = left.find(t => t.m.includes(m));
+    if(hit){
+      f.found.push(m); f.idx++; M.miss = 0; M.clue = null;
+      const done = !findLeft().length;
+      toast(done ? '' : `Yes! That’s ${hit.label}. ${M.step.any ? `${findLeft().length} more to find.` : `Now find ${findLeft()[0].label}.`}`);
+      paintKeys(); renderSheet();
+      if(done) setTimeout(() => finish(M.mode), 500);
+      return;
+    }
+    M.miss++;
+    if(M.mode === 'own' && M.miss >= 3 && M.clue == null){ M.clue = left[0].m.slice(); paintKeys(); toast(`Here’s a clue: ${left[0].label} is glowing.`); }
+  }
+  /* 👂 Show me: Fab lights each key in turn and plays it */
+  function findShow(){
+    stopShow();
+    const f = M.find; if(!f) return;
+    const ctx = audio();
+    const list = f.targets.map(t => { const on = t.m.find(m => keyEl(m)); return on != null ? on : t.m[0]; });
+    M.show = { timers:[] }; f.found = []; paintBar();
+    list.forEach((m, i) => {
+      M.show.timers.push(setTimeout(() => {
+        if(!M.show) return;
+        M.lit = m; f.found.push(m); if(ctx) voice(ctx, A.out, m, ctx.currentTime + .01, A.inst, .85, .6);
+        toast(`This is ${f.targets[i].label}.`); paintKeys(); renderSheet();
+      }, 500 + i * 1100));
+    });
+    M.show.timers.push(setTimeout(() => { if(!M.show) return; M.show = null; M.lit = null; f.found = []; paintAll(); finish('listen'); }, 500 + list.length * 1100 + 400));
+  }
+  function stopShow(){ if(!M.show) return; M.show.timers.forEach(clearTimeout); M.show = null; M.lit = null; if(M.find) M.find.found = []; }
   function played(m){
+    if(M.find){ findPlayed(m); return; }
     if(!M.song){ M.free.push(m); if(M.free.length > 24) M.free.shift(); renderSheet(); return; }
     if(M.listen || M.mode === 'listen' || M.pos >= M.song.notes.length) return;
     const want = M.song.notes[M.pos];
@@ -441,22 +609,25 @@
 
   /* ---------- finishing, rewards and certificates ---------- */
   function finish(mode){
-    const s = M.song; if(!s) return;
-    const p = prog(); p.songs = p.songs || {}; const sp = p.songs[s.id] = p.songs[s.id] || {};
-    const first = !sp[mode];
-    sp[mode] = (sp[mode] || 0) + 1;
-    if(mode === 'own') sp.ownDate = new Date().toISOString().slice(0, 10);
+    const x = M.step, s = M.song || (x ? { id:'step-' + x.id, title:x.name } : null); if(!s) return;
+    const p = prog(); p.songs = p.songs || {}; p.steps = p.steps || {};
+    const whole = !x || x.kind === 'song';
+    let first = false;
+    if(x){ const sp = p.steps[x.id] = p.steps[x.id] || {}; first = !sp[mode]; sp[mode] = (sp[mode] || 0) + 1; }
+    if(whole){ const sp = p.songs[s.id] = p.songs[s.id] || {}; if(!x) first = !sp[mode]; else if(!sp[mode]) first = true; sp[mode] = (sp[mode] || 0) + 1; if(mode === 'own') sp.ownDate = new Date().toISOString().slice(0, 10); }
     saveProg(p);
+    if(x && !whole) return finishStep(mode, first);
     const gift = [];
     if(mode === 'listen' && first){ award(1); gift.push('✨ 1 sparkle for Fab Fox World'); }
     if(mode === 'follow'){ award(2); gift.push('✨ 2 sparkles for Fab Fox World'); }
     if(mode === 'own'){ award(3); gift.push('✨ 3 sparkles for Fab Fox World'); if(first){ treasure('🔔'); gift.push('🔔 A Bluebell for your Treasure book. Collect 3 to make Bluebell chimes!'); } }
     try{ Sound && Sound.win && Sound.win(); }catch(e){}
-    const st = starsOf(s.id);
+    const st = x ? stepStars(x.id) : starsOf(s.id);
+    const nx = x ? STEPS[STEPS.indexOf(x) + 1] : null;
     const head = mode === 'listen' ? 'That’s how it goes!' : mode === 'follow' ? 'You followed the lights all the way!' : 'You played it all by yourself!';
     const next = mode === 'listen' ? '<button type="button" class="mu-btn go" data-act="mode:follow">💡 Now follow the lights</button>'
       : mode === 'follow' ? '<button type="button" class="mu-btn go" data-act="mode:own">⭐ Try it on your own</button>'
-      : '<button type="button" class="mu-btn go" data-act="cert">🏅 My certificate</button>';
+      : '<button type="button" class="mu-btn go" data-act="cert">🏅 My certificate</button>' + (nx ? `<button type="button" class="mu-btn go" data-act="step:${nx.id}">➡️ Next step: ${esc(nx.name)}</button>` : '');
     showPanel(`<div class="mu-card mu-cele">
         <p class="mu-big" aria-hidden="true">🎉</p>
         <h2>${head}</h2>
@@ -464,7 +635,30 @@
         <p class="mu-stars" aria-label="${st} of 3 stars for this song">${'★'.repeat(st)}<span>${'★'.repeat(3 - st)}</span></p>
         ${gift.map(g => `<p class="mu-gift">${esc(g)}</p>`).join('')}
         <p class="mu-hint">You can stop here, or keep playing.</p>
-        <div class="mu-row">${next}<button type="button" class="mu-btn" data-act="again">↺ Play it again</button><button type="button" class="mu-btn" data-act="record">⏺ Record it</button><button type="button" class="mu-btn" data-act="songs">🎵 Another song</button></div>
+        <div class="mu-row">${next}<button type="button" class="mu-btn" data-act="again">↺ Play it again</button><button type="button" class="mu-btn" data-act="record">⏺ Record it</button><button type="button" class="mu-btn" data-act="${x ? 'path' : 'songs'}">${x ? '🗺️ All steps' : '🎵 Another song'}</button></div>
+      </div>`, 'cele');
+  }
+  /* a step that isn't a whole song: sparkles, stars and the next step */
+  function finishStep(mode, first){
+    const x = M.step, gift = [];
+    if(mode === 'listen' && first){ award(1); gift.push('✨ 1 sparkle for Fab Fox World'); }
+    if(mode === 'follow' && first){ award(1); gift.push('✨ 1 sparkle for Fab Fox World'); }
+    if(mode === 'own'){ award(first ? 2 : 1); gift.push(`✨ ${first ? 2 : 1} sparkle${first ? 's' : ''} for Fab Fox World`); }
+    try{ Sound && Sound.win && Sound.win(); }catch(e){}
+    const st = stepStars(x.id), nx = STEPS[STEPS.indexOf(x) + 1];
+    const head = mode === 'listen' ? (x.kind === 'find' ? 'Now you know where they are!' : 'That’s how it goes!') : mode === 'follow' ? 'You followed the lights!' : 'You did it all by yourself!';
+    const next = mode === 'listen' ? '<button type="button" class="mu-btn go" data-act="mode:follow">💡 Now follow the lights</button>'
+      : mode === 'follow' ? '<button type="button" class="mu-btn go" data-act="mode:own">⭐ Try it on your own</button>'
+      : nx ? `<button type="button" class="mu-btn go" data-act="step:${nx.id}">➡️ Next step: ${esc(nx.name)}</button>` : '<button type="button" class="mu-btn go" data-act="path">🗺️ All steps</button>';
+    showPanel(`<div class="mu-card mu-cele">
+        <p class="mu-big" aria-hidden="true">🎉</p>
+        <h2>${head}</h2>
+        <p class="mu-song">Step ${x.n}: ${esc(x.name)}</p>
+        <p class="mu-goal">✅ ${esc(x.goal)}</p>
+        <p class="mu-stars" aria-label="${st} of 3 stars for this step">${'★'.repeat(st)}<span>${'★'.repeat(3 - st)}</span></p>
+        ${gift.map(g => `<p class="mu-gift">${esc(g)}</p>`).join('')}
+        <p class="mu-hint">You can stop here, or keep going.</p>
+        <div class="mu-row">${next}<button type="button" class="mu-btn" data-act="again">↺ Again</button><button type="button" class="mu-btn" data-act="path">🗺️ All steps</button></div>
       </div>`, 'cele');
   }
   function award(n){ try{ if(typeof fabWorldAward === 'function') fabWorldAward(n); }catch(e){} }
@@ -508,6 +702,7 @@
   function renderSheet(){
     const box = $m('#muSheet'); if(!box) return;
     const W = Math.max(200, box.clientWidth - 8), H = Math.max(80, box.clientHeight - 6);
+    if(M.find){ box.innerHTML = findSheet(W, H); return; }
     if(!M.song){ box.innerHTML = freeSheet(W, H); return; }
     const L = layout(W, H), s = M.song, o = L.o, S = L.s;
     const curNote = s.notes[Math.min(M.pos, s.notes.length - 1)];
@@ -622,13 +817,46 @@
     return `<svg class="mu-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="The notes you played: ${list.map(nameOf).join(', ') || 'none yet'}"><g>${lines}${body}${hint}</g></svg>`;
   }
 
-  /* ---------- panels: songs, my music, recording, celebration ---------- */
+  /* the card for a find step: what to find, a tick for each one found, and the notes on a stave */
+  function findSheet(W, H){
+    const x = M.step, f = M.find, any = !!x.any;
+    const chips = f.targets.map((t, i) => { const got = any ? t.m.some(m => f.found.includes(m)) : i < f.idx || (M.show && f.found.length > i); const cur = !any && i === f.idx && !M.show; return `<span class="mu-chip${got ? ' got' : ''}${cur ? ' cur' : ''}">${got ? '✓' : (i + 1)} ${esc(t.label)}</span>`; }).join('');
+    let stave = '';
+    if(x.show && x.show.length){
+      const o = { names:M.opt.names, colours:M.opt.colours, words:false };
+      const S = 16;
+      const w = (5 + x.show.length * 3.4) * S, h = LINE_H(o) * S, sTop = 1.9 * S, sBot = sTop + 4 * S;
+      let lines = ''; for(let i = 0; i < 5; i++) lines += `<line x1="0" y1="${sTop + i * S}" x2="${w}" y2="${sTop + i * S}" class="mu-line" stroke-width="${Math.max(1, .09 * S)}"/>`;
+      const savePos = M.pos; M.pos = -100;
+      let body = clef(.3 * S, sTop, S);
+      x.show.forEach((n, i) => { body += noteSvg({ n:{ m:midiOf(n), b:4, d:'w', i:-1 }, x:4.6 * S + i * 3.4 * S + 1.7 * S }, sTop, sBot, S, o); });
+      M.pos = savePos;
+      stave = `<svg class="mu-svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="On the music: ${x.show.map(n => n.replace(/(\d)/, ' $1')).join(', ')}"><g>${lines}${body}</g></svg>`;
+    }
+    return `<div class="mu-find"><div class="mu-find-txt"><p class="mu-find-goal">${esc(x.goal)}</p><p class="mu-find-tell">${esc(x.tell)}</p><div class="mu-chips" aria-label="What to find">${chips}</div></div>${stave}</div>`;
+  }
+
+  /* ---------- panels: steps, songs, my music, recording, celebration ---------- */
   function showPanel(html, kind){
     const p = $m('#muPanel'); p.innerHTML = `<div class="mu-panel-in">${html}</div>`; p.hidden = false; M.panel = kind;
     const f = p.querySelector('.mu-btn.go, button'); if(f) try{ f.focus({ preventScroll:true }); }catch(e){}
   }
   function closePanel(){ const p = $m('#muPanel'); if(p){ p.hidden = true; p.innerHTML = ''; } M.panel = null; }
   function openPanel(kind){
+    if(kind === 'path'){
+      const sug = suggested(), grown = !(new URLSearchParams(location.search).get('learner'));
+      const stages = PATH.map(st => {
+        const oak = grown && st.oak ? `<p class="mu-oak">For grown-ups, Oak (${esc(st.oak.year)}): <a href="${esc(st.oak.url)}" target="_blank" rel="noopener">${esc(st.oak.title)}</a>${st.oak.lessons.map(l => ` · <a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.t)}</a>`).join('')}</p>` : '';
+        const cards = st.steps.map(x => { const n = stepStars(x.id), me = x === sug; return `<button type="button" class="mu-stepcard${me ? ' next' : ''}${n === 3 ? ' done' : ''}" data-step="${x.id}"><span class="mu-stepn">${x.n}</span><b>${esc(x.name)}</b><span class="mu-uses">${esc(x.goal)}</span><span class="mu-stars" aria-label="${n} of 3 stars">${'★'.repeat(n)}<span>${'★'.repeat(3 - n)}</span></span>${me ? '<i class="mu-nexttag">Next</i>' : ''}</button>`; }).join('');
+        return `<section class="mu-stage"><h3><span aria-hidden="true">${st.icon}</span> ${esc(st.title)}</h3><p class="mu-hint">${esc(st.about)}</p><div class="mu-steps">${cards}</div>${oak}</section>`;
+      }).join('');
+      showPanel(`<div class="mu-card mu-wide"><div class="mu-ph"><h2>🗺️ Music steps</h2><button type="button" class="mu-btn" data-act="close" aria-label="Close">✕<span class="mu-lbl"> Close</span></button></div>
+        <p class="mu-hint">Start with the keyboard, then build each song a part at a time. Every step has 👂 listen, 💡 follow the lights and ⭐ your turn. Pick any step you like.</p>
+        <div class="mu-row wrap"><button type="button" class="mu-btn go" data-step="${sug.id}">➡️ Carry on: Step ${sug.n}</button><button type="button" class="mu-btn" data-song="">🎹 Free play</button><button type="button" class="mu-btn" data-act="songs">🎵 All songs</button></div>
+        ${stages}</div>`, 'path');
+      const nb = M.el.querySelector('.mu-stepcard.next'); if(nb) try{ nb.scrollIntoView({ block:'center' }); }catch(e){}
+      return;
+    }
     if(kind === 'songs'){
       const groups = [1, 2, 3].map(lv => `<h3>${LEVELS[lv]}</h3><div class="mu-songs">${SONGS.filter(s => s.level === lv).map(s => {
         const st = starsOf(s.id);
@@ -666,13 +894,16 @@
       <p class="mu-hint mu-about">Your music is kept on this device with your Fab code. MP3 files are made with LAME (<a href="https://lame.sourceforge.net" target="_blank" rel="noopener">lame.sourceforge.net</a>), using lamejs.</p></div>`, 'mine');
   }
   async function panelClick(e){
-    const b = e.target.closest('[data-act],[data-song]'); if(!b) return;
+    const b = e.target.closest('[data-act],[data-song],[data-step]'); if(!b) return;
+    if(b.dataset.step && !b.dataset.act){ closePanel(); loadStep(b.dataset.step); return; }
     if(b.dataset.song != null && !b.dataset.act){ closePanel(); loadSong(b.dataset.song || null); return; }
     const [act, arg] = b.dataset.act.split(':');
     if(act === 'close'){ closePanel(); return; }
     if(act === 'mode'){ closePanel(); setMode(arg); return; }
     if(act === 'again'){ closePanel(); setMode(M.mode === 'listen' ? 'listen' : M.mode); return; }
     if(act === 'songs'){ openPanel('songs'); return; }
+    if(act === 'path'){ openPanel('path'); return; }
+    if(act === 'step'){ closePanel(); loadStep(arg); return; }
     if(act === 'record'){ closePanel(); if(M.song && M.mode === 'listen') setMode('follow'); else { M.pos = 0; paintAll(); } openPanel('record'); return; }
     if(act === 'rec'){ closePanel(); startRec(arg === 'voice'); return; }
     if(act === 'cert'){ const id = arg || (M.song && M.song.id); if(id) certificate(id); return; }
@@ -924,7 +1155,7 @@
   document.addEventListener('click', e => { const b = e.target.closest('[data-music-open]'); if(b){ e.preventDefault(); open(b.dataset.musicOpen || null); } });
 
   window.FabMusic = {
-    open, leave, songs:SONGS, checkSongs, state:() => M, keys:() => K,
+    open, leave, songs:SONGS, checkSongs, path:PATH, steps:STEPS, checkPath, loadStep, stepSong, suggested, state:() => M, keys:() => K,
     noteOn, noteOff, setMode, loadSong, fabHelps, listenPlay, stopListen, startRec, stopRec,
     db:DB, recLength, renderRec, makeMp3, certificatePdf, certificateCanvas, COL, COL_INK, midiOf, nameOf, stepOf
   };

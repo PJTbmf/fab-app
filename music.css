@@ -112,6 +112,38 @@
 .mu-empty{ color:var(--ink-soft); padding:8px 0; }
 .mu-row.wrap{ flex-wrap:wrap; }
 
+/* find-the-key steps */
+.mu-find{ width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:12px 20px; text-align:center; overflow:auto; }
+.mu-find-txt{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+.mu-find .mu-svg{ height:clamp(80px, 42%, 230px); width:auto; flex:none; }
+.mu-find-goal{ margin:0; font:700 clamp(1.4rem, 2.6vw, 2.2rem) var(--disp); color:var(--ink); }
+.mu-find-tell{ margin:0; max-width:760px; font:500 clamp(1.05rem, 1.6vw, 1.3rem) var(--body); color:var(--ink); line-height:1.4; }
+.mu-chips{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+.mu-chip{ min-height:44px; display:inline-flex; align-items:center; gap:6px; padding:6px 16px; border-radius:999px; background:#fff; box-shadow:inset 0 0 0 2px var(--cream-deep); font:700 1.1rem var(--disp); color:var(--ink); }
+.mu-chip.cur{ background:#FFF3C4; box-shadow:inset 0 0 0 3px var(--salmon); }
+.mu-chip.got{ background:#2E7D32; color:#fff; box-shadow:none; }
+.mu-key.white.found{ box-shadow:inset 0 0 0 5px #2E7D32, inset 0 -10px 0 rgba(0,0,0,.06); }
+.mu-key.black.found{ box-shadow:0 0 0 4px #2E7D32; }
+.mu-key.found::after{ content:'✓'; position:absolute; top:34%; left:50%; transform:translateX(-50%); font:700 1.4rem var(--disp); color:#2E7D32; }
+.mu-key.black.found::after{ color:#9be59f; top:40%; }
+/* the steps map */
+.mu-stage{ margin-top:16px; padding-top:6px; border-top:2px dashed var(--cream-deep); }
+.mu-stage h3{ margin:8px 0 2px; }
+.mu-stage .mu-hint{ margin:0 0 10px; }
+.mu-steps{ display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:10px; }
+.mu-stepcard{ position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:4px; min-height:110px; padding:12px 16px 12px 58px; border:0; border-radius:20px; background:#fff; color:var(--ink); text-align:left;
+  box-shadow:inset 0 0 0 2px var(--cream-deep), 0 3px 0 rgba(49,65,40,.12); cursor:pointer; font:600 1.05rem var(--body); }
+.mu-stepcard b{ font:700 1.15rem var(--disp); }
+.mu-stepcard:hover{ box-shadow:inset 0 0 0 3px var(--salmon), 0 3px 0 rgba(49,65,40,.12); }
+.mu-stepcard.next{ background:#FFF3C4; box-shadow:inset 0 0 0 3px var(--salmon), 0 3px 0 rgba(49,65,40,.12); }
+.mu-stepcard.done{ background:#f1f7ec; }
+.mu-stepcard .mu-stars{ font-size:1.3rem; }
+.mu-stepn{ position:absolute; left:12px; top:12px; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--sky); color:#fff; font:700 1.05rem var(--disp); }
+.mu-nexttag{ position:absolute; right:10px; top:10px; padding:2px 10px; border-radius:999px; background:var(--flame); color:#fff; font:700 1.05rem var(--disp); font-style:normal; }
+.mu-oak{ margin:10px 0 0 !important; font-size:1.05rem; color:var(--ink-soft); }
+.mu-oak a{ color:var(--sky); }
+.mu-goal{ font-weight:700; }
+
 /* free play: no song controls */
 #screen-music.mu-free .mu-modes{ display:none; }
 
@@ -140,6 +172,11 @@
   .mu-msg{ font-size:1.05rem; padding:4px 10px; }
   .mu-key.next::before{ font-size:1.1rem; top:4px; }
   .mu-card{ max-height:calc(100vh - 16px); padding:14px; }
+  .mu-find{ flex-direction:row; gap:16px; padding:8px 12px; }
+  .mu-find-txt{ flex:1; min-width:0; gap:6px; }
+  .mu-find .mu-svg{ height:min(150px, 90%); }
+  .mu-find-goal{ font-size:1.25rem; }
+  .mu-chip{ min-height:40px; padding:4px 12px; }
   .mu-panel{ padding:8px; }
 }
 @media (max-width:700px){ .mu-show .mu-lbl{ display:none; } }
