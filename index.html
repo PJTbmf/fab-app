@@ -7818,7 +7818,7 @@ function pwIdoHTML(s, kid, stp){
   } else {
     ex = `<p class="pw-ask">${esc(q.ask)}</p>${pwVisHTML(q)}<div class="pw-answer model">${kid.idoStage >= 2 ? esc(pwShow(q.ans)) : '<span class="pw-ph">?</span>'}</div>`;
   }
-  const think = kid.idoStage >= 1 ? `<div class="pw-fb try"><div class="fab-say doc"><span class="fab-char doc" role="img" aria-label="Doc Fox"></span><div class="bubble"><b>My thinking</b>${esc(worked)}</div></div></div>` : '';
+  const think = kid.idoStage >= 1 ? `<div class="pw-fb try"><div class="fab-say doc"><span class="fab-char doc" role="img" aria-label="Doctor McPhee"></span><div class="bubble"><b>My thinking</b>${esc(worked)}</div></div></div>` : '';
   const ans = kid.idoStage >= 2 ? `<div class="pw-fb good">${esc(answerLine)} ✔</div>` : '';
   const btn = kid.idoStage === 0 ? ['Show my thinking', 'idonext'] : kid.idoStage === 1 ? ['Show the answer', 'idonext'] : ['Now we try one together ➡️', 'wedo'];
   return `<div class="pw-teach"><div class="pw-phase"><span class="pw-phase-tag">👀 I do</span> Watch first. You can make a guess, but nothing is marked.</div>
@@ -7826,7 +7826,7 @@ function pwIdoHTML(s, kid, stp){
     <div class="choice-row"><button class="btn leaf" data-pwact="${btn[1]}">${btn[0]}</button></div></div>`;
 }
 function pwReadyHTML(stp){
-  return `<div class="pw-teach"><div class="fab-say"><span class="fab-char yellow" role="img" aria-label="Fab Fox cheering"></span><div class="bubble"><b>You've got it!</b>Now it's your turn to try on your own. Hints are always there if you need them.</div></div>
+  return `<div class="pw-teach"><div class="fab-say"><span class="fab-char yellow" role="img" aria-label="Bramble cheering"></span><div class="bubble"><b>You've got it!</b>Now it's your turn to try on your own. Hints are always there if you need them.</div></div>
     <div class="choice-row"><button class="btn leaf" data-pwact="practise">Start my practice ➡️</button><button class="btn soft" data-pwact="reteach">Show me again</button></div></div>`;
 }
 function pwCheckWe(s, kid, value){
@@ -7945,7 +7945,7 @@ function pwChildHTML(s, st, id){
   if(!kid) return `<p class="lp-intro">${esc(s.intro || 'Choose a step to start. Your teacher might suggest one too.')}</p>
     <div class="pw-pick">${pwLadderHTML(s, null, true)}</div>`;
   const stp = s.steps[kid.step];
-  if(kid.rest) return `<div class="lp-stop"><div class="fab-say"><span class="fab-char nurse" role="img" aria-label="Nurse Fox"></span><div class="bubble"><b>Have a lovely rest.</b>Taking a break is a great idea. Come back whenever you're ready.</div></div>
+  if(kid.rest) return `<div class="lp-stop"><div class="fab-say"><span class="fab-char nurse" role="img" aria-label="Nurse Willow"></span><div class="bubble"><b>Have a lovely rest.</b>Taking a break is a great idea. Come back whenever you're ready.</div></div>
     <div class="choice-row"><button class="btn leaf" data-pwact="back">I'm ready</button></div></div>`;
   let body;
   if(kid.phase === 'ido' || kid.phase === 'ready'){
@@ -7953,11 +7953,11 @@ function pwChildHTML(s, st, id){
     return `<div class="pw-child ${vis ? 'has-vis' : ''}"><div class="pw-main">
       <div class="pw-stephead"><span class="pw-steptag">Step ${kid.step + 1}</span> ${esc(stp.name)}</div>
       ${kid.phase === 'ido' ? pwIdoHTML(s, kid, stp) : pwReadyHTML(stp)}
-      <div class="pw-flags">${kid.phase === 'ido' ? '<button class="btn small soft" data-pwact="practise">⏭️ Skip to practice</button>' : ''}<button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '🙋 Nurse Fox is on the way' : "🙋 I'd like help"}</button><button class="btn small soft" data-pwact="rest">😴 I need a break</button></div>
+      <div class="pw-flags">${kid.phase === 'ido' ? '<button class="btn small soft" data-pwact="practise">⏭️ Skip to practice</button>' : ''}<button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '🙋 Nurse Willow is on the way' : "🙋 I'd like help"}</button><button class="btn small soft" data-pwact="rest">😴 I need a break</button></div>
     </div>${vis}<aside class="pw-side">${pwBoardHTML(stp)}<div class="pw-side-title">My flightpath</div>${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside></div>`;
   }
   if(kid.offer){
-    body = `<div class="pw-offer"><span class="fab-char yellow" role="img" aria-label="Fab Fox’s friend cheering" style="width:96px;margin:0 auto"></span><p class="pw-ask">Brilliant! Three in a row.</p>
+    body = `<div class="pw-offer"><span class="fab-char yellow" role="img" aria-label="Bramble, Fab’s best friend, cheering" style="width:96px;margin:0 auto"></span><p class="pw-ask">Brilliant! Three in a row.</p>
       <p>Would you like to try the next step, <b>${esc(s.steps[kid.step + 1].name)}</b>?</p>
       <div class="choice-row"><button class="btn leaf" data-pwact="up">Yes, let's try it ➡️</button><button class="btn soft" data-pwact="stay">I'll stay here</button></div></div>`;
   } else {
@@ -7970,13 +7970,13 @@ function pwChildHTML(s, st, id){
       const keys = q.mode === 'rem' ? [...PW_KEYS.slice(0, 9), 'r', '0', '⌫', '✓'] : PW_KEYS;
       pad = `<div class="pw-keys ${q.mode === 'rem' ? 'rem' : ''}">${keys.map(k => `<button class="pw-key ${k === '✓' ? 'go' : ''}" data-pwkey="${k}" aria-label="${k === '⌫' ? 'Delete' : k === '✓' ? 'Check' : k === 'r' ? 'remainder' : k}">${k}</button>`).join('')}</div>`;
     }
-    const docSay = (head, msg) => `<div class="pw-fb try"><div class="fab-say doc"><span class="fab-char doc" role="img" aria-label="Doc Fox"></span><div class="bubble"><b>${head}</b>${esc(msg || '')}</div></div></div>`;
+    const docSay = (head, msg) => `<div class="pw-fb try"><div class="fab-say doc"><span class="fab-char doc" role="img" aria-label="Doctor McPhee"></span><div class="bubble"><b>${head}</b>${esc(msg || '')}</div></div></div>`;
     const fb = kid.last === 'right' ? '<div class="pw-fb good">Yes! Well done 🌟</div>'
       : kid.last === 'try' ? docSay(kid.phase === 'wedo' ? 'Nearly there.' : 'Good try! Let’s fix it together.', kid.msg)
       : kid.last === 'reveal' ? docSay('Here’s how it goes.', kid.msg) : '<div class="pw-fb"></div>';
     const modeBtn = q.mode === 'num' || q.mode === 'rem'
       ? `<button class="btn small soft" data-pwact="mode">${kid.tap ? '⌨️ Type my answer' : '✋ Tap an answer'}</button>` : '';
-    const we = kid.phase === 'wedo' ? `<div class="pw-phase"><span class="pw-phase-tag">🤝 We do</span> ${esc((stp.teach && stp.teach.we) || 'Let’s try one together. No scores, and the hint is open.')}</div><div class="pw-fb try"><div class="fab-say doc"><span class="fab-char doc" role="img" aria-label="Doc Fox"></span><div class="bubble"><b>Hint</b>${esc(pwFindHint(stp, q, null).text)}</div></div></div>` : '';
+    const we = kid.phase === 'wedo' ? `<div class="pw-phase"><span class="pw-phase-tag">🤝 We do</span> ${esc((stp.teach && stp.teach.we) || 'Let’s try one together. No scores, and the hint is open.')}</div><div class="pw-fb try"><div class="fab-say doc"><span class="fab-char doc" role="img" aria-label="Doctor McPhee"></span><div class="bubble"><b>Hint</b>${esc(pwFindHint(stp, q, null).text)}</div></div></div>` : '';
     body = `${we}<div class="pw-q">${pwQuestionHTML(q, kid)}</div>${fb}${pad}<div class="pw-modes">${modeBtn}</div>`;
   }
   const vis2 = kid.offer ? '' : pwVisPanel(stp, kid.q, 'focus');
@@ -7988,7 +7988,7 @@ function pwChildHTML(s, st, id){
       ${kid.phase !== 'wedo' && (kid.done || 0) > 0 ? `<div class="pw-sparkles">🦊 Your learning has earned <b>${kid.done}</b> sparkle${kid.done === 1 ? '' : 's'} for Fab Fox World today. Thank you!</div>` : ''}
       ${body}
       <div class="pw-flags">
-        <button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '🙋 Nurse Fox is on the way' : "🙋 I'd like help"}</button>
+        <button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '🙋 Nurse Willow is on the way' : "🙋 I'd like help"}</button>
         <button class="btn small soft" data-pwact="rest">😴 I need a break</button>
         ${kid.step > 0 && !kid.offer ? '<button class="btn small soft" data-pwact="down">⬇️ An easier step</button>' : ''}
       </div>
