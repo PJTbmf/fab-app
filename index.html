@@ -8048,7 +8048,7 @@ function pwChildHTML(s, st, id){
     return `<div class="pw-child has-board"><div class="pw-main">
       <div class="pw-stephead"><span class="pw-steptag">Step ${kid.step + 1}</span> ${esc(stp.name)}</div><button type="button" class="pw-pathbtn" data-pwdrawer aria-controls="pwDrawer">🗺️ My flightpath</button>
       ${kid.phase === 'ido' ? pwIdoHTML(s, kid, stp) : pwReadyHTML(stp)}
-      <div class="pw-flags">${kid.phase === 'ido' ? '<button class="btn small soft" data-pwact="practise">⏭️ Skip to practice</button>' : ''}<button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '🙋 Nurse Willow is on the way' : "🙋 I'd like help"}</button><button class="btn small soft" data-pwact="rest">😴 I need a break</button></div>
+      <div class="pw-flags">${kid.phase === 'ido' ? '<button class="btn small soft" data-pwact="practise">⏭️ Skip to practice</button>' : ''}<button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '✋ Your teacher knows' : "🙋 I'd like help"}</button><button class="btn small soft" data-pwact="rest">😴 I need a break</button></div>
     </div>${pwCentreHTML(vis)}<div class="pw-drawer-back" data-pwdrawer-close aria-hidden="true"></div><aside class="pw-side" id="pwDrawer" aria-label="My flightpath"><div class="pw-side-head"><div class="pw-side-title">My flightpath</div><button type="button" class="pw-drawer-x" data-pwdrawer-close aria-label="Close My flightpath">✕</button></div>${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside></div>`;
   }
   if(kid.offer){
@@ -8060,7 +8060,7 @@ function pwChildHTML(s, st, id){
     const tapping = q.mode !== 'shade' && (q.mode === 'choice' || (q.mode !== 'orient' && kid.tap));
     let pad = '';
     if(tapping){
-      pad = `<div class="pw-choices">${pwToArr(q.choices).map((c, i) => `<button class="pw-choice" data-pwchoice="${i}">${esc(pwShow(c))}</button>`).join('')}</div>`;
+      pad = `<div class="pw-choices">${pwToArr(q.choices).map((c, i) => `<button class="pw-choice${window.FabHelp && FabHelp.cut(kid, i) ? ' hl-cut" disabled aria-hidden="true' : ''}" data-pwchoice="${i}">${esc(pwShow(c))}</button>`).join('')}</div>`;
     } else if(q.mode !== 'orient' && q.mode !== 'shade'){
       const keys = q.mode === 'rem' ? [...PW_KEYS.slice(0, 9), 'r', '0', '⌫', '✓'] : PW_KEYS;
       pad = `<div class="pw-keys ${q.mode === 'rem' ? 'rem' : ''}">${keys.map(k => `<button class="pw-key ${k === '✓' ? 'go' : ''}" data-pwkey="${k}" aria-label="${k === '⌫' ? 'Delete' : k === '✓' ? 'Check' : k === 'r' ? 'remainder' : k}">${k}</button>`).join('')}</div>`;
@@ -8072,7 +8072,7 @@ function pwChildHTML(s, st, id){
     const modeBtn = q.mode === 'num' || q.mode === 'rem'
       ? `<button class="btn small soft" data-pwact="mode">${kid.tap ? '⌨️ Type my answer' : '✋ Tap an answer'}</button>` : '';
     const we = kid.phase === 'wedo' ? `<div class="pw-phase"><span class="pw-phase-tag"><span class="fab-char yellow pw-tagfox" aria-hidden="true"></span><span class="fab-char green pw-tagfox" aria-hidden="true"></span>🤝 We do</span> ${esc((stp.teach && stp.teach.we) || 'Let’s try one together. No scores, and the hint is open.')}</div><div class="pw-fb try"><div class="fab-say pw-wepair"><span class="pw-wefoxes" role="img" aria-label="Bramble and Moss, Fab’s friends, joining in"><span class="fab-char yellow" aria-hidden="true"></span><span class="fab-char green" aria-hidden="true"></span></span><div class="bubble"><b>Bramble and Moss: let’s do it together</b>${esc(pwFindHint(stp, q, null).text)}</div></div></div>` : '';
-    body = `${we}<div class="pw-q">${pwQuestionHTML(q, kid)}</div>${fb}${pad}<div class="pw-modes">${modeBtn}</div>`;
+    body = `${we}<div class="pw-q">${pwQuestionHTML(q, kid)}</div>${window.FabHelp ? FabHelp.fb(s, kid, stp, fb) : fb}${pad}<div class="pw-modes">${modeBtn}</div>`;
   }
   const vis2 = kid.offer ? '' : pwVisPanel(stp, kid.q, 'focus');
   return `<div class="pw-child has-board">
@@ -8083,7 +8083,7 @@ function pwChildHTML(s, st, id){
       ${kid.phase !== 'wedo' && (kid.done || 0) > 0 ? `<div class="pw-sparkles">🦊 Your learning has earned <b>${kid.done}</b> sparkle${kid.done === 1 ? '' : 's'} for Fab Fox World today. Thank you!</div>` : ''}
       ${body}
       <div class="pw-flags">
-        <button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '🙋 Nurse Willow is on the way' : "🙋 I'd like help"}</button>
+        ${window.FabHelp ? FabHelp.btn(kid) : `<button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '✋ Your teacher knows' : "🙋 I'd like help"}</button>`}
         <button class="btn small soft" data-pwact="rest">😴 I need a break</button>
         ${kid.step > 0 && !kid.offer ? '<button class="btn small soft" data-pwact="down">⬇️ An easier step</button>' : ''}
       </div>
@@ -8165,7 +8165,7 @@ function pwTeacherHTML(s, st){
     Live.users.filter(u => u.role !== 'HOST' && !ids.includes(u._id)).forEach(u => ids.push(u._id));
   }
   if(!ids.length) return guideBtn + linksPanel + '<p class="lp-intro">Waiting for children to choose a step…</p>';
-  return guideBtn + linksPanel + `<p class="lp-intro">Everyone's flightpath, live. Only you can see this.</p><div class="pw-grid">${ids.map(id => {
+  return guideBtn + linksPanel + `<p class="lp-intro">Everyone's flightpath, live. Only you can see this.</p>${window.FabHelp ? FabHelp.queueHTML(s, st, ids) : ''}<div class="pw-grid">${ids.map(id => {
     const k = kids[id];
     if(!k) return `<div class="pw-card waiting"><div class="pw-card-name">${esc(pwName(id))}</div><p class="hint">Choosing a step…</p>
       <div class="pw-card-btns"><button class="btn small soft" data-pwset="${esc(id)}" data-pwto="0">Start at step 1</button></div></div>`;
@@ -8264,6 +8264,7 @@ function pwClick(t, s, st){
   }
   const cp = t.closest('[data-pwcopy]');
   if(cp){ const code = cp.dataset.pwcopy; try{ navigator.clipboard.writeText(pupilLink(Learn.pack.id, code)); cp.textContent = 'Copied ✓'; }catch(e){ const i = cp.parentNode.querySelector('input'); if(i){ i.select(); cp.textContent = 'Press Ctrl+C'; } } return false; }
+  if(window.FabHelp){ const r = FabHelp.click(t, s, st, me); if(r != null) return r; }
   if(window.FabCheck){ const r = FabCheck.click(t, s, st, me); if(r != null) return r; }
   const stg = t.closest('[data-pwstage]');
   if(stg){ const k = Number(stg.dataset.pwstage); pwOpenStage = pwOpenStage === k ? -1 : k; Sound.tick(); return true; }
@@ -8548,6 +8549,10 @@ if(!Live.start()) learnDeepLink();
 <script src="home.js"></script>
 <script src="wellbeing.js"></script>
 <script src="checkpoint.js"></script>
+<script src="lessontimer.js"></script>
+<script src="helpladder.js"></script>
+<script src="burrow.js"></script>
+<script src="timemachine.js"></script>
 <link rel="stylesheet" href="typescale.css">
 </body>
 </html>

@@ -124,7 +124,7 @@
       ${done ? '' : `<div class="choice-row fc-hand"><button class="btn big leaf" data-fcact="handin">📮 Hand it in</button></div>`}
       <div class="pw-flags">
         ${done ? '' : `<button class="btn small soft" data-fcact="clear">🔄 Start again</button>`}
-        <button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '🙋 Nurse Willow is on the way' : '🙋 Do it with my teacher'}</button>
+        <button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '✋ Your teacher knows' : '🙋 Do it with my teacher'}</button>
         <button class="btn small soft" data-pwact="rest">😴 I need a break</button>
         ${done ? '' : '<button class="btn small soft" data-fcact="back">⬅️ More practice first</button>'}
       </div>

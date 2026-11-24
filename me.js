@@ -1,4 +1,4 @@
-/* me.js — Fab codes (signing in), My Fab space, and the soft impact log.
+/* me.js — Fab codes (signing in), My Burrow (was My Fab space; shelves in burrow.js), and the soft impact log.
    Pupil codes only (like otter-482): the app never asks for, shows or stores a child's name.
    Everything is kept in this browser on this device. Nothing is sent anywhere.
    Loaded after the main script. Draft for BMF to check (privacy notice, DPIA, AI and data policy). */
@@ -112,8 +112,8 @@
 .pw-how{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;font-weight:700}.pw-how button{border:0;border-radius:999px;background:#fff;padding:8px 12px;font:700 .95rem Aleo,Georgia,serif;cursor:pointer;box-shadow:0 2px 0 rgba(43,26,18,.16);min-height:44px;color:var(--ink,#2B1A12)}
 `;
   const HTML = `
-<section id="screen-me" class="screen" aria-label="My Fab space">
-  <div class="screen-top"><button class="btn-back" data-go="screen-hub">← Back</button><h1 class="screen-title">🦊 My Fab space</h1></div>
+<section id="screen-me" class="screen" aria-label="My Burrow">
+  <div class="screen-top"><button class="btn-back" data-go="screen-hub">← Back</button><h1 class="screen-title">🦊 My Burrow</h1></div>
   <div id="meBody"></div>
 </section>
 <section id="screen-staff" class="screen" aria-label="For staff: Fab codes and soft impact">
@@ -128,8 +128,8 @@
   function renderWho(){
     const b = q1('#whoBtn'); if(!b) return;
     const c = fabLearnerCode();
-    b.innerHTML = c ? `<span class="dot" style="background:${h(colourOf(c))}"></span>${animalOf(c)} ${h(c)} · My Fab space` : '👋 Sign in with your Fab code';
-    b.setAttribute('aria-label', c ? 'My Fab space for ' + c : 'Sign in with your Fab code');
+    b.innerHTML = c ? `<span class="dot" style="background:${h(colourOf(c))}"></span>${animalOf(c)} ${h(c)} · My Burrow` : '👋 Sign in with your Fab code';
+    b.setAttribute('aria-label', c ? 'My Burrow for ' + c : 'Sign in with your Fab code');
   }
 
   /* ---- signing in ---- */
@@ -175,7 +175,7 @@
     box.querySelector('#meGuest').addEventListener('click', () => { ls.set('fab-guest', '1'); tick(); showScreen('screen-hub'); });
   }
 
-  /* ---- My Fab space ---- */
+  /* ---- My Burrow ---- */
   function renderMe(){
     const box = q1('#meBody'); if(!box) return;
     const code = fabLearnerCode();
@@ -187,7 +187,8 @@
     const fromUrl = (() => { try{ return !!new URLSearchParams(location.search).get('learner'); }catch(e){ return false; } })();
     box.innerHTML = `
       <div class="me-card me-hello" style="--me:${h(me)}"><div class="me-ava" aria-hidden="true">${animalOf(code)}</div>
-        <div><h2>Hello, ${h(code)}!</h2><p>This is your Fab space. Everything here is yours, and you choose what to do.</p></div></div>
+        <div><h2>Hello, ${h(code)}!</h2><p>This is your Burrow. Your work, your flightpaths and the things you make all live here.</p></div></div>
+      ${window.FabBurrow ? FabBurrow.shelvesHTML(code) : ''}
       <div class="me-grid">
         <button class="tile me-tile" data-me="learn"><span class="emoji">📚</span><h3>${pack ? 'Carry on learning' : 'Learning'}</h3><p>${pack ? h((pack.emoji || '📘') + ' ' + pack.title) : 'Pick a lesson in the Learning Hub'}</p></button>
         <button class="tile me-tile" data-me="world"><span class="emoji">🌍</span><h3>Fab Fox World</h3><p>⭐ ${Number(W.spk) || 0} stars · ${stage}</p></button>
@@ -200,6 +201,7 @@
       ${window.speechSynthesis ? `<div class="me-card"><h3>🗣️ My reading voice</h3>${voicePickerHTML()}</div>` : ''}
       <div class="me-card"><h3>🎨 My colour</h3><div class="me-cols">${COLOURS.map(c => `<button type="button" data-mecol="${c}" class="${c === me ? 'on' : ''}" style="background:${c}" aria-label="Choose this colour"></button>`).join('')}</div></div>
       <div class="me-foot">${fromUrl ? '<span class="hint">This link is just for you. Your teacher set it up.</span>' : '<button type="button" class="btn soft small" id="meSwitch">Not you? Use a different code</button><span class="hint">This device remembers your code. On a shared computer, press this when you finish.</span>'}</div>`;
+    if(window.FabBurrow) FabBurrow.wire(box, code);
     box.querySelectorAll('[data-me]').forEach(b => b.addEventListener('click', () => {
       const k = b.dataset.me; tick();
       if(k === 'learn'){ if(pack) learnOpen(pack); else showScreen('screen-learn'); }
@@ -238,6 +240,7 @@
         <div class="st-row"><button type="button" class="btn small leaf" id="stMake">Make 4 new codes</button></div>
         <div class="st-codes" id="stCodes">${staffCodes.map(c => `<div><b>${h(animalOf(c))} ${h(c)}</b><input readonly value="${h(location.origin + location.pathname + '?learner=' + c)}" aria-label="App link for ${h(c)}"><button type="button" class="btn small soft" data-stcopy="${h(c)}">Copy link</button></div>`).join('')}</div>
         <p class="hint">A child can use their own link (best in Pencil Spaces: one Web Viewer per child), or type or tap their code on the welcome screen.</p></div>
+      ${window.FabBurrow ? FabBurrow.staffHTML() : ''}
       ${window.FabCheck ? FabCheck.celebrateHTML() : ''}
       <div class="me-card"><h2>Soft impact on this device</h2>
         ${codes.length ? `<div style="overflow-x:auto"><table class="st-table"><thead><tr><th>Code</th><th>Days</th><th>Minutes in World</th><th>Stars earned</th><th>Check-ins</th><th>Feelings</th><th>Enjoyment</th><th>Confidence (first → latest)</th><th>How learning felt</th><th>Last seen</th></tr></thead>
@@ -257,6 +260,7 @@
         <li><b>Stays on the device.</b> Nothing is sent anywhere. To build a service-wide picture, download the CSV on each device and add it here, or move to a central database later.</li>
         <li><b>Before using with children:</b> include this in BMF's privacy notice, DPIA and AI and data policy, and tell families in plain words. This is a draft for BMF to check.</li></ul></div>`;
     if(window.FabCheck) FabCheck.celebrateWire(box, renderStaff);
+    if(window.FabBurrow) FabBurrow.staffWire(box, renderStaff);
     wireVoices(box, () => { if(q1('#screen-staff') && q1('#screen-staff').classList.contains('active')) renderStaff(); });
     box.querySelector('#stMake').addEventListener('click', () => { staffCodes = staffCodes.concat(typeof pupilMakeCodes === 'function' ? pupilMakeCodes(4) : []); tick(); renderStaff(); });
     box.querySelectorAll('[data-stcopy]').forEach(b => b.addEventListener('click', () => { const link = location.origin + location.pathname + '?learner=' + b.dataset.stcopy; try{ navigator.clipboard.writeText(link); b.textContent = 'Copied ✓'; }catch(e){ const i = b.parentNode.querySelector('input'); if(i) i.select(); b.textContent = 'Press Ctrl+C'; } }));
@@ -281,7 +285,7 @@
   /* ---- Read to me: every flightpath question (and reading passage) gets a speaker button. Uses the device's own voice.
      Devices offer very different voices, so we rank them: warm British voices first (Edge's young "Maisie", natural and
      enhanced voices, then Libby, Sonia, Martha, Kate, Serena...), stern or novelty voices last. A child or teacher can pick
-     another in My Fab space or on the staff page; the choice is remembered on this device. Later, BMF's own recorded
+     another in My Burrow or on the staff page; the choice is remembered on this device. Later, BMF's own recorded
      voices can play instead (see the voice plan in the project notes). */
   const VOICE_KEY = 'fab-voice';
   function voiceScore(v){
