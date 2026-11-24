@@ -295,3 +295,104 @@ body.bd-big{ overflow:hidden; }
 #screen-board.inlay:not(.big) .bd-hint{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
 #screen-board.inlay:not(.big) .bd-og + .bd-hint{ display:none; }
 #bdLive.on{ background:var(--flame); color:#fff; box-shadow:none; }
+
+/* ---------- 50/50: teaching and the board share the lesson; My flightpath is a drawer ---------- */
+.pw-child.has-board{ grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); }
+.pw-child.has-board > .pw-main{ grid-column:1; grid-row:1; }
+.pw-child.has-board .pw-centre{ grid-column:2; grid-row:1; }
+.pw-child.has-board .pw-side{ position:fixed; top:0; right:0; bottom:0; z-index:860; width:min(380px, 92vw); grid-column:auto; grid-row:auto; margin:0;
+  overflow-y:auto; border-radius:24px 0 0 24px; border:0; background:var(--cream); box-shadow:-10px 0 30px rgba(43,26,18,.28); padding:14px 14px 24px;
+  opacity:0; transform:none; visibility:hidden; pointer-events:none; transition:opacity .22s ease, transform .22s ease, visibility 0s linear .22s; }
+body.pw-drawer-open .pw-child.has-board .pw-side{ opacity:1; transform:none; visibility:visible; pointer-events:auto; transition:opacity .22s ease, transform .22s ease; }
+.pw-drawer-back{ display:none; }
+body.pw-drawer-open .pw-child.has-board .pw-drawer-back{ display:block; position:fixed; inset:0; z-index:855; background:rgba(29,38,25,.35); }
+.pw-side-head{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.pw-side-head .pw-side-title{ flex:1; margin:0; }
+.pw-drawer-x{ flex:none; width:52px; height:52px; border-radius:50%; border:0; background:#fff; font-size:1.3rem; cursor:pointer; box-shadow:inset 0 0 0 2px var(--cream-deep); }
+.pw-pathbtn{ display:inline-flex; align-items:center; gap:6px; min-height:48px; margin:6px auto 2px; padding:6px 18px; border:0; border-radius:999px; background:#fff;
+  color:var(--ink); font:700 1.05rem var(--disp); cursor:pointer; box-shadow:0 3px 0 rgba(43,26,18,.15), inset 0 0 0 2px var(--cream-deep); }
+.pw-pathbtn:focus-visible, .pw-drawer-x:focus-visible{ outline:4px solid var(--golden); outline-offset:2px; }
+@media (prefers-reduced-motion:reduce){ .pw-child.has-board .pw-side{ transition:none; } }
+/* narrow screens: the board above the teaching */
+@media (max-width:820px){
+  .pw-child.has-board{ grid-template-columns:1fr; }
+  .pw-child.has-board .pw-centre{ grid-column:1; grid-row:1; position:relative; top:0; height:min(70vh, 620px) !important; }
+  .pw-child.has-board > .pw-main{ grid-column:1; grid-row:2; }
+}
+@media (max-height:560px) and (min-width:600px){
+  .pw-child.has-board{ grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); }
+  .pw-child.has-board .pw-centre{ grid-column:2; grid-row:1; position:sticky; }
+  .pw-child.has-board > .pw-main{ grid-column:1; grid-row:1; }
+}
+/* A step on screen: one slim header row. Board and Show a link live on the board itself (⛶ and 🎬), so the lesson's
+   own copies hide; Child view / Teacher view sit at the end of the title row. */
+#screen-lesson:has(.pw-centre){ position:relative; }
+#screen-lesson:has(.pw-centre) .lp-head{ display:none; }
+#screen-lesson:has(.pw-centre) .screen-top{ margin:0 0 10px; padding-right:min(330px, 34vw); min-height:56px; }
+#screen-lesson:has(.pw-centre) .screen-title{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1; }
+#lpStage:has(.pw-centre){ position:static; }
+#lpStage:has(.pw-centre) .pw-viewtoggle{ position:absolute; top:0; right:78px; margin:0; height:56px; align-items:center; flex-wrap:nowrap; }
+#lpStage:has(.pw-centre) .pw-viewtoggle .pill-choice{ min-height:44px; padding:4px 14px; font-size:.98rem; white-space:nowrap; }
+/* the board's own controls: slimmer rows so the page gets the height */
+#screen-board.inlay:not(.big) .bd-top .bd-btn{ min-height:48px; }
+#screen-board.inlay:not(.big) .bd-view{ min-height:48px; font-size:1rem; }
+#screen-board.inlay:not(.big) .bd-tool{ min-height:54px; padding:2px; }
+#screen-board.inlay:not(.big) .bd-tool i{ font-size:1.35rem; }
+#screen-board.inlay:not(.big) .bd-opts, #screen-board.inlay:not(.big) .bd-opts:empty{ height:52px; padding:4px 10px; margin-bottom:6px; }
+#screen-board.inlay:not(.big) .bd-col{ width:38px; height:38px; }
+#screen-board.inlay:not(.big) .bd-size, #screen-board.inlay:not(.big) .bd-stick{ width:42px; height:42px; }
+#screen-board.inlay:not(.big) .bd-prompt{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:6px 12px; margin-bottom:6px; font-size:1rem; align-self:stretch; }
+#screen-board.inlay:not(.big) .bd-desk{ padding:6px; }
+#screen-board.inlay:not(.big) .bd-status:empty{ display:none; }
+
+/* ---------- Compact board in the lesson: controls in two slim rows across the top ----------
+   Row 1: ⛶ big board · what the board shows (Picture, Slides, My page, Tools, Booklet) · pages · 🎬 · 💾
+   Row 2: the drawing tools, then one palette button; colours and sizes float over the page only while choosing. */
+#screen-board.compact .bd-top{ flex-wrap:nowrap; gap:6px; }
+#screen-board.compact #bdBack{ flex:none; min-width:48px; padding:6px 12px; }
+#screen-board.compact #bdBack .bd-lbl-b{ display:none; }
+#screen-board.compact .bd-views{ flex:1 1 auto; min-width:0; margin:0; gap:5px; }
+#screen-board.compact .bd-view{ flex:1 1 auto; min-height:48px; padding:4px 10px; gap:5px; font-size:.98rem; }
+#screen-board.compact .bd-view i{ font-size:1.2rem; }
+#screen-board.compact .bd-pages{ flex:none; gap:4px; font-size:1rem; }
+#screen-board.compact .bd-pages .bd-btn{ min-width:46px; min-height:48px; padding:4px 8px; }
+#screen-board.compact .bd-extra{ flex:none; gap:4px; }
+#screen-board.compact .bd-extra .bd-btn{ min-width:46px; min-height:48px; padding:4px 10px; }
+#screen-board.compact .bd-main{ margin-top:6px; gap:6px; }
+#screen-board.compact .bd-desk{ padding:6px; }
+#screen-board.compact .bd-opts, #screen-board.compact .bd-opts:empty{ display:none; }
+#screen-board.compact.pal-open .bd-opts:not(:empty){ display:flex; position:absolute; top:6px; right:6px; left:auto; z-index:7; height:auto; max-width:calc(100% - 12px);
+  flex-wrap:wrap; gap:8px 12px; padding:10px 12px; box-shadow:0 10px 26px rgba(43,26,18,.3); }
+#screen-board.compact.pal-open .bd-og{ flex-wrap:wrap; }
+#screen-board.compact.pal-open .bd-cols, #screen-board.compact.pal-open .bd-sizes, #screen-board.compact.pal-open .bd-sticks{ flex-wrap:wrap; }
+#screen-board.compact.pal-open .bd-col{ width:46px; height:46px; }
+#screen-board.compact.pal-open .bd-size, #screen-board.compact.pal-open .bd-stick{ width:50px; height:50px; }
+.bd-palbtn .bd-swatch{ display:inline-block; width:28px; height:28px; border-radius:50%; box-shadow:0 0 0 3px #fff, 0 0 0 5px rgba(43,26,18,.3); font-style:normal; line-height:28px; text-align:center; font-size:1.3rem; }
+.bd-palbtn .bd-swatch.em{ box-shadow:none; }
+#screen-board.compact.pal-open .bd-palbtn{ background:var(--sunshine); box-shadow:inset 0 0 0 3px var(--salmon); }
+#screen-board.compact .bd-status{ position:absolute; left:50%; bottom:16px; transform:translateX(-50%); z-index:6; margin:0; padding:6px 14px; border-radius:999px;
+  background:rgba(43,26,18,.82); color:#fff; font-size:.98rem; max-width:90%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none; }
+#screen-board.compact .bd-status:empty{ display:none; }
+#screen-board.compact{ position:relative; }
+/* compact fixes: palette hidden until asked; view tabs stacked like the tools so they all fit */
+#screen-board.compact:not(.pal-open) .bd-opts{ display:none !important; }
+#screen-board.compact.pal-open:not(.big) .bd-opts:not(:empty){ display:flex !important; position:absolute; top:6px; right:6px; z-index:7; height:auto; margin:0; flex-wrap:wrap; overflow:visible; }
+#screen-board.compact #bdSave{ display:none; }
+#screen-board.compact .bd-view{ flex:1 0 56px; flex-direction:column; gap:1px; min-width:56px; min-height:52px; padding:3px 6px; font-size:.8rem; line-height:1.05; border-radius:14px; }
+#screen-board.compact .bd-view i{ font-size:1.25rem; }
+#screen-board.compact .bd-view span{ font-size:.8rem !important; white-space:nowrap; }
+#screen-board.compact .bd-main{ container-type:inline-size; }
+#screen-board.compact .bd-tool{ flex:1 1 0; min-width:44px; }
+@container (max-width:660px){
+  #screen-board.compact .bd-tool span{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  #screen-board.compact .bd-tool{ min-height:50px; }
+  #screen-board.compact .bd-tool i{ font-size:1.5rem; }
+}
+@container (max-width:660px){ #screen-board.compact .bd-tools{ gap:3px; } #screen-board.compact .bd-tool{ min-width:36px; padding:2px; } }
+#screen-board.compact .bd-top{ container-type:inline-size; }
+@container (max-width:600px){
+  #screen-board.compact .bd-view span{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+  #screen-board.compact .bd-view{ flex:1 0 46px; min-width:46px; }
+  #screen-board.compact .bd-view i{ font-size:1.45rem; }
+}
+@media (max-width:1100px) and (min-width:821px){ .pw-child.has-board{ grid-template-columns:minmax(0, .88fr) minmax(0, 1.12fr); } }

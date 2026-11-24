@@ -142,11 +142,11 @@
     const stepKey = c.p.id + ':' + c.i, deck = 'slides:' + stepKey;
     return () => {
       const pg = FabBoard.page() || {}, B = FabBoard.state(), stp = c.stp, out = [];
-      if(FabBoard.hasLive()) out.push({ k:'live', icon:'📡', name:'Teacher’s board', on:pg.key === 'live', go:() => FabBoard.goWhere(p => p.key === 'live') });
+      if(FabBoard.hasLive()) out.push({ k:'live', icon:'📡', name:'Teacher', on:pg.key === 'live', go:() => FabBoard.goWhere(p => p.key === 'live') });
       if(B.visHTML) out.push({ k:'vis', icon:'🖼️', name:'Picture', on:pg.bg === 'vis', go:() => FabBoard.goWhere(p => p.bg === 'vis') });
       out.push({ k:'slides', icon:'📽️', name:'Slides', on:pg.deck === deck, go:() => { if(pg.deck === deck) return; if(!FabBoard.goWhere(p => p.deck === deck)) showSlides(c); } });
       out.push({ k:'mine', icon:'✏️', name:'My page', on:pg.step === stepKey, go:() => FabBoard.goWhere(p => p.step === stepKey) });
-      if(window.FabModelKit) out.push({ k:'tools', icon:'🧰', name:'Modelling tools', on:!!pg.tool, go:() => FabModelKit.open(kitInfo(c)) });
+      if(window.FabModelKit) out.push({ k:'tools', icon:'🧰', name:'Tools', on:!!pg.tool, go:() => FabModelKit.open(kitInfo(c)) });
       if(stp && stp.booklet && stp.booklet.url) out.push({ k:'book', icon:'📄', name:'Booklet', on:pg.src === stp.booklet.url, go:() => openBooklet(c) });
       return out;
     };
@@ -204,6 +204,15 @@
     const show = window.showScreen;
     window.showScreen = function(id){ if(id !== 'screen-lesson' && id !== 'screen-board' && window.FabBoard){ if(FabBoard.docked()) FabBoard.undock(); FabBoard.setBig(false); } return show.apply(this, arguments); };
   }
+  /* 🗺️ My flightpath opens as a drawer over the right-hand side, so teaching and the board share the screen 50/50.
+     It closes on ✕, a tap outside it, Escape, or choosing a step. */
+  const drawer = on => { document.body.classList.toggle('pw-drawer-open', on); if(on){ const x = document.querySelector('.pw-drawer-x'); if(x) try{ x.focus({ preventScroll:true }); }catch(err){} } };
+  document.addEventListener('click', e => {
+    if(e.target.closest('[data-pwdrawer]')){ e.preventDefault(); drawer(!document.body.classList.contains('pw-drawer-open')); }
+    else if(e.target.closest('[data-pwdrawer-close]')) drawer(false);
+    else if(e.target.closest('[data-pwpick], [data-pwact="up"], [data-pwact="down"], [data-pwact="view-teacher"], .btn-back')) drawer(false);
+  }, true);
+  document.addEventListener('keydown', e => { if(e.key === 'Escape' && document.body.classList.contains('pw-drawer-open')) drawer(false); });
   document.addEventListener('click', e => {
     const c = () => current();
     if(e.target.closest('[data-lbmodel]')){ e.preventDefault(); modelOnBoard(); }

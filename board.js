@@ -81,6 +81,7 @@
     const back = B.el.querySelector('#bdBack'), sl = B.el.querySelector('#bdSlides');
     if(sl) sl.hidden = !B.ctx.slides || B.ctx.inlay;
     B.el.classList.toggle('inlay', B.ctx.inlay);
+    placeViews();
     if(B.ctx.inlay){
       // In the middle of the lesson: teaching on the left, the board in the centre, steps on the right.
       undock(); B.el.classList.remove('active');
@@ -96,6 +97,17 @@
     }
     requestAnimationFrame(() => { layout(); setTimeout(layout, 250); });
   }
+  /* In the lesson, the view tabs join the top row, so the controls take two slim rows across the top. */
+  function placeViews(){
+    if(!B.el) return;
+    const v = B.el.querySelector('#bdViews'), top = B.el.querySelector('.bd-top'), main = B.el.querySelector('.bd-main');
+    const compact = B.ctx.inlay && !B.el.classList.contains('big');
+    if(compact && v.parentNode !== top) top.insertBefore(v, top.querySelector('.bd-pages'));
+    if(!compact && v.parentNode === top) B.el.insertBefore(v, main);
+    B.el.classList.toggle('compact', compact);
+    if(!compact) setPal(false);
+  }
+  function setPal(on){ if(!B.el) return; B.el.classList.toggle('pal-open', !!on); const b = B.el.querySelector('#bdPal'); if(b) b.setAttribute('aria-expanded', on ? 'true' : 'false'); }
   function undock(){
     document.body.classList.remove('bd-dock'); if(B.el) B.el.classList.remove('docked');
   }
@@ -124,7 +136,7 @@
   const inlaid = () => !!(B.el && B.el.classList.contains('inlay') && B.el.isConnected);
   function setBig(on){
     if(!B.el) return;
-    B.el.classList.toggle('big', !!on); document.body.classList.toggle('bd-big', !!on);
+    B.el.classList.toggle('big', !!on); document.body.classList.toggle('bd-big', !!on); placeViews();
     const back = B.el.querySelector('#bdBack');
     if(back && B.ctx.inlay) back.innerHTML = on ? '↙ <span class="bd-lbl-b">Back to the lesson</span>' : '⛶ <span class="bd-lbl-b">Big board</span>';
     requestAnimationFrame(() => { layout(); setTimeout(layout, 200); });
@@ -197,6 +209,7 @@
           <button type="button" class="bd-tool" id="bdPaper"><i aria-hidden="true">📃</i><span>Paper</span></button>
           <button type="button" class="bd-tool" id="bdUndo"><i aria-hidden="true">↶</i><span>Undo</span></button>
           <button type="button" class="bd-tool" id="bdClear"><i aria-hidden="true">🗑️</i><span>Clear page</span></button>
+          <button type="button" class="bd-tool bd-palbtn" id="bdPal" aria-expanded="false" aria-controls="bdOpts" hidden><i aria-hidden="true"><b class="bd-swatch"></b></i><span>Colour</span></button>
         </div>
         <div class="bd-desk" id="bdDesk">
           <div class="bd-opts" id="bdOpts" role="group" aria-label="Choices for this tool"></div>
@@ -223,6 +236,8 @@
     $b('#bdAdd').addEventListener('click', () => { commitText(); B.doc.pages.splice(B.page + 1, 0, newPage({ bg:page() && page().bg !== 'img' ? page().bg : 'lines' })); goPage(B.page + 1); scheduleSave(); });
     $b('#bdSave').addEventListener('click', exportPNG);
     $b('#bdLive').addEventListener('click', () => setSharing(!B.live.sharing));
+    $b('#bdPal').addEventListener('click', () => setPal(!B.el.classList.contains('pal-open')));
+    document.addEventListener('pointerdown', e => { if(B.el && B.el.classList.contains('pal-open') && !e.target.closest('#bdOpts, #bdPal')) setPal(false); }, true);
     $b('#bdFit').addEventListener('click', () => { commitText(); B.fit = B.fit === 'page' ? 'width' : 'page'; layout(); });
     el.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => setTool(b.dataset.tool)));
     $b('#bdPic').addEventListener('click', () => $b('#bdFilePic').click());
@@ -302,14 +317,18 @@
     if(t === 'rub') hint = 'Rub over a line or sticker to take it away.';
     if(t === 'text') hint = 'Tap the page where you want to write.';
     // On short screens the hint shows for a moment at the bottom instead of taking space from the page.
-    const short = !B.ctx.inlay && window.matchMedia && matchMedia('(max-height:560px)').matches;   // in the lesson the choices strip keeps one height, so the page never jumps
+    const compact = B.el.classList.contains('compact');
+    const short = compact || (!B.ctx.inlay && window.matchMedia && matchMedia('(max-height:560px)').matches);
+    const pal = B.el.querySelector('#bdPal'); if(pal){ const has = t === 'pen' || t === 'hl' || t === 'text' || t === 'stick' || t === 'paper' || t === 'slides'; pal.hidden = !compact || !has;
+      pal.querySelector('span').textContent = t === 'stick' ? 'Sticker' : t === 'paper' ? 'Paper type' : t === 'slides' ? 'Slides' : 'Colour';
+      const sw = pal.querySelector('.bd-swatch'); sw.textContent = t === 'stick' ? B.sticker : ''; sw.style.background = t === 'stick' || t === 'paper' ? 'transparent' : B.col; sw.classList.toggle('em', t === 'stick' || t === 'paper'); if(t === 'paper') sw.textContent = '📃'; }   // in the lesson the choices strip keeps one height, so the page never jumps
     if(hint && !short) h += `<p class="bd-hint">${hint}</p>`;
     if(hint && short && B.lastHint !== t + hint){ status(hint); const mine = hint; clearTimeout(B.hintTimer); B.hintTimer = setTimeout(() => { const st = B.el.querySelector('#bdStatus'); if(st && st.textContent === mine) status(''); }, 4500); }
     B.lastHint = t + hint;
     o.innerHTML = h;
     o.querySelectorAll('[data-col]').forEach(b => b.onclick = () => { B.col = b.dataset.col; if(B.editing){ B.editing.c = B.col; styleEditor(); } paintOpts(); });
-    o.querySelectorAll('[data-size]').forEach(b => b.onclick = () => { B.size = +b.dataset.size; paintOpts(); });
-    o.querySelectorAll('[data-stick]').forEach(b => b.onclick = () => { B.sticker = b.dataset.stick; paintOpts(); });
+    o.querySelectorAll('[data-size]').forEach(b => b.onclick = () => { B.size = +b.dataset.size; paintOpts(); setPal(false); });
+    o.querySelectorAll('[data-stick]').forEach(b => b.onclick = () => { B.sticker = b.dataset.stick; paintOpts(); setPal(false); });
     o.querySelectorAll('[data-slide]').forEach(b => b.onclick = () => { const sl = (B.slideList || [])[+b.dataset.slide]; if(!sl) return; let pg = null; try{ pg = sl.make(); }catch(e){} if(pg) addPages([pg]); setTool('pen'); });
     o.querySelectorAll('[data-paper]').forEach(b => b.onclick = () => { const p = page(); if(!p) return; snap(); p.bg = b.dataset.paper; delete p.bgImg; paint(); paintOpts(); scheduleSave(); });
   }
@@ -354,7 +373,7 @@
       const fitW = dw / p.w, fitH = dh / p.h;
       return Math.max(0.2, tall && B.fit !== 'page' ? Math.min(fitW, 1.2) : Math.min(fitW, fitH));
     };
-    const hasOpts = opts.childElementCount > 0;
+    const hasOpts = opts.childElementCount > 0 && !B.el.classList.contains('compact');
     let scale = scaleFor(false);
     if(hasOpts && !tall && !(B.ctx.inlay && !B.el.classList.contains('big'))){ const sideScale = scaleFor(true); if(sideScale > scale * 1.04) scale = sideScale; else scaleFor(false); }
     B.scale = scale;
@@ -374,7 +393,8 @@
   function paintAll(){
     const p = page(); if(!p) return;
     B.el.querySelector('#bdTitle').textContent = B.doc.title || 'My workbook';
-    { const pg = page(); B.el.querySelector('#bdPageN').textContent = pg && pg.slide ? `Slide ${pg.slide} of ${pg.slides} · page ${B.page + 1} of ${B.doc.pages.length}` : `Page ${B.page + 1} of ${B.doc.pages.length}`; }
+    { const pg = page(); const c = B.el.classList.contains('compact'); B.el.querySelector('#bdPageN').textContent = pg && pg.slide ? (c ? `Slide ${pg.slide}/${pg.slides}` : `Slide ${pg.slide} of ${pg.slides} · page ${B.page + 1} of ${B.doc.pages.length}`) : (c ? `${B.page + 1} / ${B.doc.pages.length}` : `Page ${B.page + 1} of ${B.doc.pages.length}`);
+      B.el.querySelector('#bdPageN').setAttribute('aria-label', `Page ${B.page + 1} of ${B.doc.pages.length}`); }
     B.el.querySelector('#bdPrev').disabled = B.page <= 0;
     B.el.querySelector('#bdNext').disabled = B.page >= B.doc.pages.length - 1;
     try{ B.el.querySelector('#bdLink').hidden = !(window.CoView && CoView.canShare()); }catch(e){}

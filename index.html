@@ -7999,10 +7999,10 @@ function pwChildHTML(s, st, id){
   if(kid.phase === 'ido' || kid.phase === 'ready'){
     const vis = kid.phase === 'ido' ? pwVisPanel(stp, kid.ex || pwQuestion(stp), ['overview', 'focus', 'reveal'][Math.min(2, kid.idoStage || 0)]) : pwVisPanel(stp, { ask:'', ans:'' }, 'overview');
     return `<div class="pw-child has-board"><div class="pw-main">
-      <div class="pw-stephead"><span class="pw-steptag">Step ${kid.step + 1}</span> ${esc(stp.name)}</div>
+      <div class="pw-stephead"><span class="pw-steptag">Step ${kid.step + 1}</span> ${esc(stp.name)}</div><button type="button" class="pw-pathbtn" data-pwdrawer aria-controls="pwDrawer">🗺️ My flightpath</button>
       ${kid.phase === 'ido' ? pwIdoHTML(s, kid, stp) : pwReadyHTML(stp)}
       <div class="pw-flags">${kid.phase === 'ido' ? '<button class="btn small soft" data-pwact="practise">⏭️ Skip to practice</button>' : ''}<button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '🙋 Nurse Willow is on the way' : "🙋 I'd like help"}</button><button class="btn small soft" data-pwact="rest">😴 I need a break</button></div>
-    </div>${pwCentreHTML(vis)}<aside class="pw-side"><div class="pw-side-title">My flightpath</div>${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside></div>`;
+    </div>${pwCentreHTML(vis)}<div class="pw-drawer-back" data-pwdrawer-close aria-hidden="true"></div><aside class="pw-side" id="pwDrawer" aria-label="My flightpath"><div class="pw-side-head"><div class="pw-side-title">My flightpath</div><button type="button" class="pw-drawer-x" data-pwdrawer-close aria-label="Close My flightpath">✕</button></div>${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside></div>`;
   }
   if(kid.offer){
     body = `<div class="pw-offer"><span class="fab-char elder" role="img" aria-label="Mr Elder, the head teacher, cheering" style="width:96px;margin:0 auto"></span><p class="pw-ask">Brilliant! Three in a row.</p>
@@ -8030,7 +8030,7 @@ function pwChildHTML(s, st, id){
   const vis2 = kid.offer ? '' : pwVisPanel(stp, kid.q, 'focus');
   return `<div class="pw-child has-board">
     <div class="pw-main">
-      <div class="pw-stephead"><span class="pw-steptag">Step ${kid.step + 1}</span> ${esc(stp.name)}</div>
+      <div class="pw-stephead"><span class="pw-steptag">Step ${kid.step + 1}</span> ${esc(stp.name)}</div><button type="button" class="pw-pathbtn" data-pwdrawer aria-controls="pwDrawer">🗺️ My flightpath</button>
       <div class="pw-streak" aria-label="${kid.streak} in a row" ${kid.phase === 'wedo' ? 'hidden' : ''}>${[0,1,2].map(i => `<span class="${i < kid.streak ? 'on' : ''}">⭐</span>`).join('')}</div>
       ${pwMissionHTML(kid)}
       ${kid.phase !== 'wedo' && (kid.done || 0) > 0 ? `<div class="pw-sparkles">🦊 Your learning has earned <b>${kid.done}</b> sparkle${kid.done === 1 ? '' : 's'} for Fab Fox World today. Thank you!</div>` : ''}
@@ -8041,7 +8041,7 @@ function pwChildHTML(s, st, id){
         ${kid.step > 0 && !kid.offer ? '<button class="btn small soft" data-pwact="down">⬇️ An easier step</button>' : ''}
       </div>
     </div>${pwCentreHTML(vis2)}
-    <aside class="pw-side"><div class="pw-side-title">My flightpath</div>${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside>
+    <div class="pw-drawer-back" data-pwdrawer-close aria-hidden="true"></div><aside class="pw-side" id="pwDrawer" aria-label="My flightpath"><div class="pw-side-head"><div class="pw-side-title">My flightpath</div><button type="button" class="pw-drawer-x" data-pwdrawer-close aria-label="Close My flightpath">✕</button></div>${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside>
   </div>`;
 }
 
