@@ -496,14 +496,35 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       out.loops = BEAT.loops; W.closeScene(true);
       W.mNest(); await wait(5000); out.fabMoved = Math.abs(NS.fabX - 300) > 20 || Math.abs(NS.fabT - 300) > 20; W.closeScene(true);
       document.getElementById('v3Btn').click(); await wait(500); out.v3 = V3;
-      const cv = document.getElementById('cv'), d = cv.getContext('2d').getImageData(0, 0, cv.width, 20).data; out.sky = d[2] > d[0];
+      const gl = document.getElementById('glc'); out.sky = !!gl && gl.style.display === 'block' && GL.ok;
+      WORLD.P.x = 2095; WORLD.P.y = 5; S.visited = {}; for(let i = 0; i < 20; i++) S.visited['v' + i] = 1; S.missions = 30; WORLD.keys.ArrowUp = true; await wait(400); WORLD.keys.ArrowUp = false; out.wrapY = WORLD.P.y > 600;
       document.getElementById('v3Btn').click(); out.v3off = !V3;
       return out;
     });
     assert(r.ready >= 2 && r.gained >= 2, 'missions ready and collected: ' + JSON.stringify(r));
     assert(r.hut && r.cells >= 56 && r.loops >= 1, 'the beat maker plays: ' + JSON.stringify(r));
     assert(r.fabMoved, 'Fab walks about in the nest');
+    assert(r.wrapY, 'walking off the top of the world comes back at the bottom: ' + JSON.stringify(r));
     assert(r.v3 && r.sky && r.v3off, 'the 3D view shows a sky and switches back: ' + JSON.stringify(r));
+    await pg.close();
+  });
+  await test('games: Fab’s friends help in every game, and finishing a game sends stars to Fab Fox World', async () => {
+    const pg = await newPage('/index.html');
+    const r = await pg.evaluate(async () => {
+      const w = ms => new Promise(r => setTimeout(r, ms)), out = { missing:[] };
+      Object.keys(FabGameCast.games).forEach(id => { if(!document.getElementById(id)) out.missing.push(id); });
+      showScreen('screen-c4'); await w(500);
+      out.chips = [...document.querySelectorAll('#screen-c4 .gc-chip .fab-char')].map(e => e.className.split(' ')[1]).join(',');
+      out.how = !!document.querySelector('.gc-how'); FabGameCast.close();
+      const k = 'fabworld-pending-' + ((typeof fabLearnerCode === 'function' && fabLearnerCode()) || 'local'), b = +localStorage.getItem(k) || 0;
+      flashBanner(document.getElementById('c4Banner'), '🔴 Flame wins! Brilliant! 🎉'); await w(300);
+      out.gain = (+localStorage.getItem(k) || 0) - b; out.elder = !!document.querySelector('.gc-cheer .fab-char.elder');
+      return out;
+    });
+    assert(!r.missing.length, 'every listed game has a screen: ' + r.missing);
+    assert(r.chips === 'bell,yellow,green,doc,nurse,lark', 'one friend per job: ' + r.chips);
+    assert(r.how, 'Miss Bell shows how to play the first time');
+    assert(r.gain === 2 && r.elder, 'a win gives 2 stars and Mr Elder celebrates: ' + JSON.stringify(r));
     await pg.close();
   });
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
