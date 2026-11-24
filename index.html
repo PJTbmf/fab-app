@@ -1025,6 +1025,7 @@ body.rotate-up #rotateMe .rm-arrow{ transform:scaleX(-1); }
 .poll-opt.mine{ outline:3px solid var(--sunshine,#F0B913); }
 </style>
 <link rel="stylesheet" href="learnboard.css">
+<link rel="stylesheet" href="gamecast.css">
 <link rel="stylesheet" href="music.css">
 <style id="fabGuide">
 /* ===== Fab Fox World guide (Nov 2026): flat warm colours, ink-brown outlines, no gradients ===== */
@@ -2310,7 +2311,7 @@ function c4Init(){
   c4Status();
 }
 function c4Status(){
-  $('#c4Status').innerHTML = C4.over ? 'Game over' :
+  $('#c4Status').innerHTML = C4.over ? 'Round finished. Tap New game to play again.' :
     (C4.turn===1 ? '🔴 <span style="color:var(--flame-dark)">Flame</span> to play' : '🟡 <span style="color:#C98E00">Golden</span> to play');
 }
 function c4Drop(col){
@@ -8536,5 +8537,6 @@ if(!Live.start()) learnDeepLink();
 <script src="modelkit.js"></script>
 <script src="learnboard-hooks.js"></script>
 <script src="music.js"></script>
+<script src="gamecast.js"></script>
 </body>
 </html>
