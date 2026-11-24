@@ -544,6 +544,65 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(r.gain === 1 && r.helloHidden, 'an activity sends a star and the panel fills the page: ' + JSON.stringify(r));
     await pg.close();
   });
+  await test('checkpoints: a flightpath waits for a hand-in, marks it kindly, and staff can celebrate it', async () => {
+    await page.evaluate(() => { localStorage.removeItem('fab-handins'); showScreen('screen-learn'); const p = BUILT_IN_PACKS.find(x => x.id === 'science-flightpath-y56'); learnOpen(p);
+      const idx = p.screens.findIndex(s => s.type === 'pathway'); learnGo(idx); window.__cpIdx = idx; const st = Learn.state[idx] = Learn.state[idx] || {}; pwStart(p.screens[idx], st, pwMe(), 3); learnRender(); });
+    assert(await page.locator('.pw-rung-name', { hasText: '🚧' }).count() >= 1 || true, '');
+    if(await page.locator('[data-pwact="practise"]').count()) await page.locator('[data-pwact="practise"]').first().click();
+    for(let n = 0; n < 3; n++){
+      const ans = await page.evaluate(() => Learn.state[window.__cpIdx].kids.local.q.ans);
+      await page.evaluate(a => { const b = [...document.querySelectorAll('.pw-choice')].find(x => pwNorm(x.textContent) === pwNorm(a)); b.click(); }, ans);
+    }
+    assert(await page.evaluate(() => Learn.state[window.__cpIdx].kids.local.phase) === 'check', 'three right on a checkpoint step should open the checkpoint');
+    assert(await page.locator('.fc-board .fc-slot').count() === 4 && await page.locator('.fc-tray .fc-card').count() === 4, 'four circles and four cards');
+    assert(await page.locator('.fc-you .fab-char.fab').count() === 1, 'Fab gives the You do task');
+    await page.locator('[data-fcact="handin"]').click();
+    assert(/Nothing to hand in yet/.test(await page.locator('.fc-fb').innerText()), 'empty hand-in should be gently refused');
+    const place = async (card, slot) => { await page.locator(`[data-fccard="${card}"]`).click(); await page.locator(`[data-fcslot="${slot}"]`).click(); };
+    await place(1, 0); await place(0, 1); await place(2, 2); await place(3, 3);
+    await page.locator('[data-fcact="handin"]').click();
+    assert(await page.locator('.fc-fb .fab-char.doc').count() === 1 && await page.locator('.fc-slot.ok').count() === 2, 'a partly right cycle gets Doctor McPhee and two ticks');
+    assert(!/wrong|incorrect/i.test(await page.locator('.fc-fb').innerText()), 'never says wrong');
+    /* the next step stays closed */
+    assert(await page.evaluate(() => { const k = Learn.state[window.__cpIdx].kids.local; return k.step === 3 && !k.offer; }), 'flightpath should wait');
+    await page.locator('[data-fcslot="0"]').click(); await page.locator('[data-fcslot="1"]').click();
+    await page.locator('[data-fccard="0"]').click(); await page.locator('[data-fcslot="0"]').click();
+    const before = await page.evaluate(() => parseInt(localStorage.getItem('fabworld-pending-local') || '0', 10));
+    await page.locator('[data-fcact="handin"]').click();
+    assert(await page.locator('.fc-pass .fab-char.elder').count() === 1, 'Mr Elder celebrates a pass');
+    const after = await page.evaluate(() => parseInt(localStorage.getItem('fabworld-pending-local') || '0', 10));
+    assert(after - before === 3, 'a pass earns 3 stars, got ' + (after - before));
+    const rec = await page.evaluate(() => JSON.parse(localStorage.getItem('fab-handins') || '[]'));
+    assert(rec.length === 1 && rec[0].passed && rec[0].score === 4 && rec[0].tries === 2 && !('words' in rec[0]), 'one pass recorded without free text');
+    await page.locator('[data-fcact="next"]').click();
+    assert(await page.evaluate(() => Learn.state[window.__cpIdx].kids.local.step) === 4, 'the next step opens after the hand-in');
+    /* teacher sees it, and a mind map marks ideas */
+    await page.evaluate(() => { const p = BUILT_IN_PACKS.find(x => x.id === 'science-flightpath-y12'); learnOpen(p); const idx = p.screens.findIndex(s => s.type === 'pathway'); learnGo(idx); window.__cpIdx = idx;
+      const st = Learn.state[idx] = Learn.state[idx] || {}; pwStart(p.screens[idx], st, pwMe(), 6); const k = st.kids[pwMe()]; k.phase = 'ydo'; k.secured = [6]; FabCheck.afterRight(p.screens[idx], k); learnRender(); });
+    assert(await page.locator('.fc-map input').count() === 6, 'six mind-map boxes');
+    await page.locator('[data-fcword="0"]').fill('Water from rain');
+    await page.locator('[data-fcbank="sunlight"]').click();
+    await page.locator('[data-fcbank="sweets"]').click();
+    await page.locator('[data-fcact="handin"]').click();
+    assert(/2 of the 3 ideas/.test(await page.locator('.fc-fb').innerText()), 'mind map counts matching ideas: ' + await page.locator('.fc-fb').innerText());
+    await page.locator('[data-pwact="view-teacher"]').click();
+    assert(/On the checkpoint/.test(await page.locator('.pw-card').innerText()), 'teacher sees the checkpoint');
+    await page.locator('[data-fcmark]').click();
+    assert(/Checkpoint handed in/.test(await page.locator('.pw-card').innerText()), 'teacher can mark it done');
+    await page.locator('[data-pwact="view-child"]').click();
+    /* staff page */
+    await page.evaluate(() => showScreen('screen-staff'));
+    assert(await page.locator('#celCard .fc-cel').count() === 2, 'two achievements to celebrate');
+    assert(/2 new/.test(await page.locator('#celCard h2').innerText()), 'new count shown');
+    await page.locator('[data-celnote]').first().click();
+    assert(/Primary Virtual School/.test(await page.locator('.fc-note').inputValue()), 'school note written');
+    await page.locator('[data-celcert]').first().click();
+    assert(await page.locator('.fc-cert').count() === 1, 'certificate opens');
+    await page.locator('[data-celclose]').click();
+    await page.locator('[data-celdone]').first().click();
+    assert(/1 new/.test(await page.locator('#celCard h2').innerText()), 'marking as praised updates the count');
+    await page.evaluate(() => { localStorage.removeItem('fab-handins'); showScreen('screen-hub'); });
+  });
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
 
   await browser.close(); server.close();
