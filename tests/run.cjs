@@ -20,7 +20,7 @@ try { ({ chromium } = require('playwright')); } catch (e) {
 }
 
 const ROOT = path.resolve(__dirname, '..');
-const TYPES = { '.html':'text/html; charset=utf-8', '.png':'image/png', '.js':'text/javascript', '.json':'application/json' };
+const TYPES = { '.css':'text/css', '.pdf':'application/pdf', '.html':'text/html; charset=utf-8', '.png':'image/png', '.js':'text/javascript', '.json':'application/json' };
 const server = http.createServer((req, res) => {
   const p = path.join(ROOT, decodeURIComponent(new URL(req.url, 'http://x').pathname));
   if(!p.startsWith(ROOT) || !fs.existsSync(p) || fs.statSync(p).isDirectory()){ res.writeHead(404); res.end(); return; }
@@ -71,7 +71,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       const s = p.screens.find(x => x.type === 'pathway');
       return { rev: p.rev, n: s.steps.length, attribution: s.attribution, steps: s.steps.map(t => ({ name:t.name, year:t.year, nc:t.nc, oak:t.oak, hints:t.hints })) };
     });
-    assert(r.rev === 2, 'rev should be 2');
+    assert(r.rev >= 3, 'rev should be 3 or more (I do / we do steps)');
     assert(r.n === 23, `expected 23 steps, got ${r.n}`);
     assert(/Open Government Licence v3\.0/.test(r.attribution), 'OGL attribution missing');
     r.steps.forEach((t, i) => {
@@ -220,6 +220,8 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await page.locator('.pw-stage-head', { hasText: 'All the tables' }).click();
     await page.locator('[data-pwpick="13"]').click();
     assert(await page.locator('.pw-stephead').innerText().then(t => /Remainders/.test(t)), 'did not start on Remainders');
+    assert(await page.evaluate(() => Learn.state[1].kids.local.phase) === 'ido', 'a new step starts with I do');
+    await page.locator('[data-pwact="practise"]').first().click();
     const ans = await page.evaluate(() => Learn.state[1].kids.local.q.ans);
     await page.locator('.pw-choice', { hasText: new RegExp('^' + ans.replace(/ /g, '\\s*') + '$') }).click();
     assert(await page.locator('.pw-fb.good').count() === 1, 'tapping the answer should be praised');
@@ -240,6 +242,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await page.locator('[data-pwact="stay"]').click();
     await page.locator('[data-pwact="down"]').click();
     assert(await page.locator('.pw-stephead').innerText().then(t => /All facts to 12/.test(t)), 'easier step should go back one');
+    if(await page.locator('[data-pwact="practise"]').count()) await page.locator('[data-pwact="practise"]').first().click();
     assert(await page.locator('.pw-keys').count() === 1, 'typing choice should be remembered across steps');
     await page.locator('[data-pwact="mode"]').click();
     /* a wrong tap gives a gentle hint, never "wrong" */
@@ -269,16 +272,15 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
   /* ---------- 5. Per-child links ---------- */
   await test('per-child links keep progress, and progress from the old flightpath is ignored', async () => {
     const ctx = await browser.newContext();
-    const url = '/index.html?lesson=maths-flightpath-multiplication-division&learner=Sam';
+    const url = '/index.html?lesson=maths-flightpath-multiplication-division&learner=otter-482';
     const p1 = await newPage(url, ctx);
     await p1.evaluate(() => { learnGo(1); });
-    await p1.locator('.pw-stage-head', { hasText: 'Doubling up' }).click();
-    await p1.locator('[data-pwpick="5"]').click();
+    await p1.evaluate(() => { const s = Learn.pack.screens[1]; pwStart(s, Learn.state[1] = Learn.state[1] || {}, pwMe(), 5); learnRender(); });
     await p1.close();
     const p2 = await newPage(url, ctx);
-    const step = await p2.evaluate(() => Learn.step === 1 && Learn.state[1].kids['learner:Sam'].step);
+    const step = await p2.evaluate(() => Learn.step === 1 && Learn.state[1].kids['learner:otter-482'].step);
     assert(step === 5, 'progress not restored: ' + step);
-    await p2.evaluate(() => store.setJSON('bmf_progress_maths-flightpath-multiplication-division_Sam', { step:1, state:{ 1:{ kids:{ 'learner:Sam':{ step:4 } } } }, saved:1 }));
+    await p2.evaluate(() => store.setJSON('bmf_progress_maths-flightpath-multiplication-division_otter-482', { step:1, state:{ 1:{ kids:{ 'learner:otter-482':{ step:4 } } } }, saved:1 }));
     await p2.close();
     const p3 = await newPage(url, ctx);
     const after = await p3.evaluate(() => (Learn.state[1] && Learn.state[1].kids) ? 'restored' : 'fresh');
@@ -286,15 +288,67 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await ctx.close();
   });
 
-  /* ---------- 6. Christmas Carol ---------- */
-  await test('Meet Scrooge still opens and every screen renders', async () => {
+  /* ---------- 6. Every lesson pack opens ---------- */
+  await test('every lesson pack opens and every screen renders', async () => {
     const n = await page.evaluate(() => {
-      const p = BUILT_IN_PACKS.find(x => x.id === 'eng-y34-christmas-carol-l1');
+      for(const p of BUILT_IN_PACKS){ learnOpen(p); for(let i = 0; i < p.screens.length; i++){ learnGo(i); if(!document.getElementById('lpStage').innerHTML.trim()) return -1; } }
+      const p = BUILT_IN_PACKS[0];
       learnOpen(p);
       for(let i = 0; i <= p.screens.length; i++){ learnGo(i); if(!document.getElementById('lpStage').innerHTML.trim()) return -i; }
       return p.screens.length;
     });
     assert(n > 0, 'blank screen at ' + (-n));
+  });
+
+  /* ---------- 6b. The board in the centre of the lesson, on a laptop and an iPad ---------- */
+  for(const dev of [{ name:'laptop', viewport:{ width:1366, height:900 } }, { name:'iPad', viewport:{ width:1180, height:820 }, hasTouch:true, isMobile:true }, { name:'small iPad', viewport:{ width:1024, height:768 }, hasTouch:true, isMobile:true }]){
+    await test(`${dev.name}: board in the centre, slides, picture, modelling tools`, async () => {
+      const ctx = await browser.newContext({ viewport:dev.viewport, hasTouch:!!dev.hasTouch, isMobile:!!dev.isMobile });
+      const pg = await newPage('/index.html', ctx);
+      const tap = async sel => { const l = pg.locator(sel).first(); try{ if(dev.hasTouch) await l.tap({ timeout:5000 }); else await l.click({ timeout:5000 }); }catch(e){ throw new Error('could not tap ' + sel + ': ' + String(e.message).split('\n').filter(x => /intercepts|not visible|outside/.test(x)).slice(0, 2).join(' ')); } };
+      await pg.evaluate(() => { const p = BUILT_IN_PACKS.find(x => x.id === 'science-flightpath-y34'); learnOpen(p); learnGo(1); const s = p.screens[1]; Learn.state[1] = Learn.state[1] || {}; pwStart(s, Learn.state[1], pwMe(), 1); learnRender(); });
+      await pg.waitForFunction(() => window.FabBoard && FabBoard.inlaid() && FabBoard.state().doc && FabBoard.page());
+      const lay = await pg.evaluate(() => { const r = e => document.querySelector(e).getBoundingClientRect(); const m = r('.pw-main'), c = r('.pw-centre'), b = r('#screen-board');
+        return { centreRight:c.left > m.left, boardFits:b.bottom <= innerHeight + 2 || c.height >= 480, pic:FabBoard.page().bg, visShown:!document.getElementById('bdVis').hidden && !!document.querySelector('#bdVis .fv'), wide:document.documentElement.scrollWidth <= innerWidth + 1 }; });
+      assert(lay.centreRight, 'board should sit beside the teaching');
+      assert(lay.pic === 'vis' && lay.visShown, 'a step with a picture opens on its picture: ' + JSON.stringify(lay));
+      assert(lay.wide, 'nothing should spill off the side of the screen');
+      /* Slides: one tap makes the whole deck */
+      await tap('.bd-view:has-text("Slides")');
+      const sl = await pg.evaluate(() => { const p = FabBoard.page(); return { slide:p.slide, of:p.slides, chars:p.items.filter(i => i.t === 'c').map(i => i.k), label:document.getElementById('bdPageN').textContent }; });
+      assert(sl.slide === 1 && sl.of === 6 && /Slide 1 of 6/.test(sl.label), 'slides deck: ' + JSON.stringify(sl));
+      await tap('#bdNext'); await tap('#bdNext'); await tap('#bdNext');
+      const we = await pg.evaluate(() => FabBoard.page().items.filter(i => i.t === 'c').map(i => i.k).join());
+      assert(we === 'yellow,green', 'We do slide shows Bramble and Moss: ' + we);
+      /* modelling tools */
+      await tap('.bd-view:has-text("Modelling")');
+      assert(await pg.locator('.bd-kit .bk-tile').count() >= 4, 'tools for science');
+      await tap('.bd-kit [data-kit="venn"]');
+      const t = await pg.evaluate(() => { const p = FabBoard.page(); return { tool:p.tool, locked:p.items.every(i => i.lock) && p.items.length > 0 }; });
+      assert(t.tool === 'venn' && t.locked, 'Venn page added: ' + JSON.stringify(t));
+      /* draw, rub out: the template stays */
+      const box = await pg.locator('#bdCanvas').boundingBox();
+      await pg.mouse.move(box.x + box.width * .3, box.y + box.height * .5); await pg.mouse.down(); await pg.mouse.move(box.x + box.width * .6, box.y + box.height * .55, { steps:6 }); await pg.mouse.up();
+      const n1 = await pg.evaluate(() => FabBoard.page().items.length);
+      await tap('[data-tool="rub"]');
+      const box2 = await pg.locator('#bdCanvas').boundingBox();
+      assert(Math.abs(box2.y - box.y) < 2 && Math.abs(box2.height - box.height) < 2, 'the page should not jump when the tool changes');
+      await pg.mouse.move(box.x + box.width * .2, box.y + box.height * .5); await pg.mouse.down(); await pg.mouse.move(box.x + box.width * .7, box.y + box.height * .55, { steps:20 }); await pg.mouse.up();
+      const after = await pg.evaluate(() => ({ n:FabBoard.page().items.length, locked:FabBoard.page().items.filter(i => i.lock).length }));
+      assert(after.n === n1 - 1 && after.locked === n1 - 1, `rubber takes the child's line only: ${n1} -> ${JSON.stringify(after)} tool=${await pg.evaluate(() => FabBoard.state().tool)}`);
+      /* big board and back */
+      await tap('#bdBack');
+      assert(await pg.evaluate(() => document.getElementById('screen-board').classList.contains('big')), 'big board');
+      await tap('#bdBack');
+      assert(await pg.evaluate(() => !document.getElementById('screen-board').classList.contains('big')), 'back to the lesson');
+      await ctx.close();
+    });
+  }
+  await test('We do shows Bramble and Moss together', async () => {
+    const r = await page.evaluate(() => { const p = BUILT_IN_PACKS.find(x => x.id === 'maths-flightpath-multiplication-division'); learnOpen(p); learnGo(1); const s = p.screens[1]; Learn.state[1] = {}; pwStart(s, Learn.state[1], pwMe(), 0);
+      const k = Learn.state[1].kids[pwMe()]; k.phase = 'wedo'; k.q = pwQuestion(s.steps[0]); learnRender();
+      return { tag:document.querySelectorAll('.pw-phase-tag .fab-char.yellow, .pw-phase-tag .fab-char.green').length, bubble:document.querySelectorAll('.pw-wefoxes .fab-char').length, label:(document.querySelector('.pw-wefoxes') || {}).getAttribute && document.querySelector('.pw-wefoxes').getAttribute('aria-label') }; });
+    assert(r.tag === 2 && r.bubble === 2 && /Bramble and Moss/.test(r.label), JSON.stringify(r));
   });
 
   /* ---------- 7. Classroom demo (live) ---------- */
@@ -317,6 +371,60 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await demo.close();
   });
 
+  await test('📡 live board: the teacher shows their board, a child sees it update and cannot change it', async () => {
+    const demo = await browser.newPage({ viewport:{ width:1600, height:1000 } });
+    demo.on('pageerror', e => errors.push(`demo2: ${e.message}`));
+    await demo.goto(base + '/demo.html');
+    const frames = () => demo.frames().filter(f => /pencil=demo/.test(f.url()));
+    await demo.waitForFunction(() => document.querySelectorAll('iframe').length === 3);
+    for(let i = 0; i < 50 && frames().length < 3; i++) await demo.waitForTimeout(100);
+    const byId = id => frames().find(f => f.url().includes('as=' + id));
+    const teacher = byId('teacher'), child = byId('child-1');
+    for(const f of [teacher, child]) await f.waitForFunction(() => typeof Live !== 'undefined' && Live.on && Live.me);
+    await teacher.evaluate(() => { learnOpen(BUILT_IN_PACKS.find(x => x.id === 'maths-flightpath-multiplication-division')); learnGo(1); });
+    await child.waitForFunction(() => Learn.pack && Learn.step === 1, null, { timeout:5000 });
+    await child.evaluate(() => { const b = document.querySelector('[data-pwpick="0"]'); b.click(); });
+    await child.waitForFunction(() => window.FabBoard && FabBoard.inlaid() && FabBoard.page(), null, { timeout:5000 });
+    await teacher.evaluate(() => document.getElementById('lpBoard').click());
+    await teacher.waitForFunction(() => window.FabBoard && FabBoard.page() && !document.getElementById('bdLive').hidden, null, { timeout:5000 });
+    assert(await child.evaluate(() => document.getElementById('bdLive').hidden), 'children cannot share the board');
+    await teacher.evaluate(() => document.getElementById('bdLive').click());
+    await teacher.evaluate(() => { const B = FabBoard.state(); B.doc.pages[B.page].items.push({ t:'x', x:100, y:100, s:60, c:'#000', txt:'Hello class' }); FabBoard._paint(); FabBoard.go(B.page); });
+    await child.waitForFunction(() => { const p = FabBoard.page(); return p && p.key === 'live' && p.items.some(i => i.txt === 'Hello class'); }, null, { timeout:5000 });
+    const tabs = await child.evaluate(() => [...document.querySelectorAll('.bd-view')].map(b => b.textContent.trim()).join('|'));
+    assert(/Teacher’s board/.test(tabs), 'child gets a Teacher’s board tab: ' + tabs);
+    await teacher.evaluate(() => { const B = FabBoard.state(); B.doc.pages[B.page].items.push({ t:'k', e:'⭐', x:300, y:300, s:80 }); FabBoard.go(B.page); });
+    await child.waitForFunction(() => FabBoard.page().items.some(i => i.e === '⭐'), null, { timeout:5000 });
+    const before = await child.evaluate(() => FabBoard.page().items.length);
+    const box = await child.locator('#bdCanvas').boundingBox();
+    await child.evaluate(() => { const b = document.querySelector('[data-tool="pen"]'); b.click(); });
+    await demo.mouse.move(box.x + 40, box.y + 40); await demo.mouse.down(); await demo.mouse.move(box.x + 140, box.y + 90, { steps:5 }); await demo.mouse.up();
+    assert(await child.evaluate(() => FabBoard.page().items.length) === before, 'a child cannot draw on the teacher’s board');
+    /* My page is still the child's own */
+    await child.evaluate(() => [...document.querySelectorAll('.bd-view')].find(b => /My page/.test(b.textContent)).click());
+    assert(await child.evaluate(() => FabBoard.page().key !== 'live'), 'My page goes back to the child’s page');
+    /* stop sharing: the teacher's board leaves the child's screen */
+    await teacher.evaluate(() => document.getElementById('bdLive').click());
+    await child.waitForFunction(() => !FabBoard.hasLive(), null, { timeout:5000 });
+    await demo.close();
+  });
+  await test('Fab Fox World: each child names their cub, and every label uses the name', async () => {
+    const pg = await newPage('/index.html');
+    await pg.evaluate(() => { showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await pg.$('.game-frame[data-game="world"]')).contentFrame();
+    await fr.waitForFunction(() => !!window.WORLD);
+    await fr.evaluate(() => { const S = WORLD.S(); S.cub.has = false; S.cub.name = null; WORLD.hatch(); });
+    assert(await fr.evaluate(() => WORLD.cubNm()) === 'Pip', 'Pip until the child chooses');
+    await fr.waitForSelector('.namechip', { timeout:6000 });
+    await fr.fill('#nameIn', 'clover!!');
+    await fr.click('#nameGo');
+    await fr.evaluate(() => WORLD.mNest());
+    await pg.waitForTimeout(400);
+    const r = await fr.evaluate(() => { const t = document.body.innerText; return { name:WORLD.cubNm(), pip:(t.match(/\bPip\b/g) || []).length, mine:(t.match(/Clover/g) || []).length }; });
+    assert(r.name === 'Clover' && r.pip === 0 && r.mine >= 3, JSON.stringify(r));
+    assert(/feed Clover/.test(await pg.evaluate(() => pwTreasureLine('🍎'))), 'the Learning Hub uses the name too');
+    await pg.close();
+  });
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
 
   await browser.close(); server.close();
