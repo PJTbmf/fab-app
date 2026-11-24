@@ -527,6 +527,23 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(r.gain === 2 && r.elder, 'a win gives 2 stars and Mr Elder celebrates: ' + JSON.stringify(r));
     await pg.close();
   });
+  await test('wellbeing hub: friends in their roles, an energy check, and a star for each activity', async () => {
+    const pg = await newPage('/index.html');
+    const r = await pg.evaluate(async () => {
+      const w = ms => new Promise(r => setTimeout(r, ms)), out = {};
+      showScreen('screen-wellbeing'); await w(300);
+      out.groups = [...document.querySelectorAll('.wb2-group .wb2-gh .fab-char')].map(e => e.className.split(' ')[1]).join(',');
+      document.querySelector('[data-en="low"]').click(); out.today = [...document.querySelectorAll('#wbMenu .wb-tile.today h3')].map(h => h.textContent).join('|');
+      const k = 'fabworld-pending-' + ((typeof fabLearnerCode === 'function' && fabLearnerCode()) || 'local'), b = +localStorage.getItem(k) || 0;
+      document.querySelector('[data-wb="mood"]').click(); await w(100); document.querySelector('#wbMood .mood-btn').click(); await w(100);
+      out.gain = (+localStorage.getItem(k) || 0) - b; out.helloHidden = document.querySelector('.wb2-hello').style.display === 'none';
+      return out;
+    });
+    assert(r.groups === 'nurse,elder,yellow,green,fab', 'one friend per job: ' + r.groups);
+    assert(/Bubble Breathing/.test(r.today) && !/Beat Maker/.test(r.today), 'a little energy suggests calm things: ' + r.today);
+    assert(r.gain === 1 && r.helloHidden, 'an activity sends a star and the panel fills the page: ' + JSON.stringify(r));
+    await pg.close();
+  });
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
 
   await browser.close(); server.close();
