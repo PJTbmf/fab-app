@@ -1103,25 +1103,25 @@
     const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
     g.lineWidth = 22; g.strokeStyle = '#EF915E'; rr(40, 40, W - 80, H - 80, 60); g.stroke();
     g.lineWidth = 5; g.strokeStyle = INK; rr(70, 70, W - 140, H - 140, 44); g.stroke();
-    const flags = ['#E84432', '#FFD483', '#437039', '#325456', '#EF915E'];
+    const flags = ['#FE4D02', '#FFD483', '#4F7A2E', '#3F6A8C', '#EF915E'];
     for(let i = 0; i < 17; i++){ const x = 150 + i * 100; g.fillStyle = flags[i % 5]; g.beginPath(); g.moveTo(x, 92); g.lineTo(x + 84, 92); g.lineTo(x + 42, 170); g.closePath(); g.fill(); }
     g.strokeStyle = INK; g.lineWidth = 4; g.beginPath(); g.moveTo(130, 92); g.quadraticCurveTo(W / 2, 110, W - 130, 92); g.stroke();
     const fox = await foxImage();
     if(fox){ const h = 560, w = h * fox.width / fox.height; g.drawImage(fox, 120, H - 110 - h, w, h); }
     g.textAlign = 'center'; g.textBaseline = 'alphabetic';
     const cx = W / 2 + 150;
-    g.fillStyle = '#E84432'; g.font = `700 150px ${disp}`; g.fillText('Music Star', cx, 360);
+    g.fillStyle = '#FE4D02'; g.font = `700 150px ${disp}`; g.fillText('Music Star', cx, 360);
     g.fillStyle = INK; g.font = `700 64px ${disp}`; g.fillText('CERTIFICATE', cx, 450);
     g.font = `400 52px ${body}`; g.fillText('This certificate is for', cx, 570);
     g.setLineDash([4, 14]); g.lineWidth = 5; g.beginPath(); g.moveTo(cx - 480, 690); g.lineTo(cx + 480, 690); g.stroke(); g.setLineDash([]);
     g.font = `400 52px ${body}`; g.fillText('for playing', cx, 790);
-    g.fillStyle = '#437039'; let fs = 84; g.font = `700 ${fs}px ${disp}`; while(g.measureText(s.title).width > 1250 && fs > 40){ fs -= 4; g.font = `700 ${fs}px ${disp}`; } g.fillText(s.title, cx, 900);
+    g.fillStyle = '#4F7A2E'; let fs = 84; g.font = `700 ${fs}px ${disp}`; while(g.measureText(s.title).width > 1250 && fs > 40){ fs -= 4; g.font = `700 ${fs}px ${disp}`; } g.fillText(s.title, cx, 900);
     g.fillStyle = INK; g.font = `400 52px ${body}`; g.fillText('on the keyboard, all by themselves.', cx, 990);
     const st = starsOf(songId) || 3; [0, 1, 2].forEach(i => star(g, cx - 130 + i * 130, 1090, 50, i < st ? '#FFD483' : '#fff'));
     const sp = songProg(songId), when = sp.ownDate ? new Date(sp.ownDate + 'T12:00:00') : new Date();
     g.fillStyle = INK; g.textAlign = 'center';
     g.font = `400 44px ${body}`; g.fillText(when.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }), cx, 1205);
-    g.font = `700 42px ${disp}`; g.fillStyle = '#325456'; g.fillText('With love from everyone at BeMoreFab  #bemorefab', cx, H - 140);
+    g.font = `700 42px ${disp}`; g.fillStyle = '#3F6A8C'; g.fillText('With love from everyone at BeMoreFab  #bemorefab', cx, H - 140);
     return c;
   }
   function pdfFromJpeg(jpg, wPx, hPx){
