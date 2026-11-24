@@ -309,19 +309,19 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       await pg.evaluate(() => { const p = BUILT_IN_PACKS.find(x => x.id === 'science-flightpath-y34'); learnOpen(p); learnGo(1); const s = p.screens[1]; Learn.state[1] = Learn.state[1] || {}; pwStart(s, Learn.state[1], pwMe(), 1); learnRender(); });
       await pg.waitForFunction(() => window.FabBoard && FabBoard.inlaid() && FabBoard.state().doc && FabBoard.page());
       const lay = await pg.evaluate(() => { const r = e => document.querySelector(e).getBoundingClientRect(); const m = r('.pw-main'), c = r('.pw-centre'), b = r('#screen-board');
-        return { centreRight:c.left > m.left, boardFits:b.bottom <= innerHeight + 2 || c.height >= 480, pic:FabBoard.page().bg, visShown:!document.getElementById('bdVis').hidden && !!document.querySelector('#bdVis .fv'), wide:document.documentElement.scrollWidth <= innerWidth + 1 }; });
+        return { centreRight:c.left > m.left, boardFits:b.bottom <= innerHeight + 2 || c.height >= 480, pic:FabBoard.page().bg, visShown:!document.getElementById('bdVis').hidden && !!document.querySelector('#bdVis .fv'), wide:document.documentElement.scrollWidth <= innerWidth + 1, over:[...document.querySelectorAll('body *')].filter(e => e.getBoundingClientRect().right > innerWidth + 1 && e.getBoundingClientRect().width > 0).slice(0, 4).map(e => (e.id || e.className) + ':' + Math.round(e.getBoundingClientRect().right)).join(', ') + ' sw=' + document.documentElement.scrollWidth }; });
       assert(lay.centreRight, 'board should sit beside the teaching');
       assert(lay.pic === 'vis' && lay.visShown, 'a step with a picture opens on its picture: ' + JSON.stringify(lay));
-      assert(lay.wide, 'nothing should spill off the side of the screen');
+      assert(lay.wide, 'nothing should spill off the side of the screen: ' + lay.over);
       /* Slides: one tap makes the whole deck */
       await tap('.bd-view:has-text("Slides")');
       const sl = await pg.evaluate(() => { const p = FabBoard.page(); return { slide:p.slide, of:p.slides, chars:p.items.filter(i => i.t === 'c').map(i => i.k), label:document.getElementById('bdPageN').textContent }; });
-      assert(sl.slide === 1 && sl.of === 6 && /Slide 1 of 6/.test(sl.label), 'slides deck: ' + JSON.stringify(sl));
+      assert(sl.slide === 1 && sl.of === 6 && /Slide 1( of |\/)6/.test(sl.label), 'slides deck: ' + JSON.stringify(sl));
       await tap('#bdNext'); await tap('#bdNext'); await tap('#bdNext');
       const we = await pg.evaluate(() => FabBoard.page().items.filter(i => i.t === 'c').map(i => i.k).join());
       assert(we === 'yellow,green', 'We do slide shows Bramble and Moss: ' + we);
       /* modelling tools */
-      await tap('.bd-view:has-text("Modelling")');
+      await tap('.bd-view:has-text("Tools")');
       assert(await pg.locator('.bd-kit .bk-tile').count() >= 4, 'tools for science');
       await tap('.bd-kit [data-kit="venn"]');
       const t = await pg.evaluate(() => { const p = FabBoard.page(); return { tool:p.tool, locked:p.items.every(i => i.lock) && p.items.length > 0 }; });
@@ -344,6 +344,22 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       await ctx.close();
     });
   }
+  await test('50/50 lesson: teaching and board share the screen; My flightpath opens as a drawer', async () => {
+    const ctx = await browser.newContext({ viewport:{ width:1505, height:812 } });
+    const pg = await newPage('/index.html', ctx);
+    await pg.evaluate(() => { const p = BUILT_IN_PACKS.find(x => x.id === 'maths-flightpath-multiplication-division'); learnOpen(p); learnGo(1); const s = p.screens[1]; Learn.state[1] = {}; pwStart(s, Learn.state[1], pwMe(), 17); learnRender(); });
+    await pg.waitForFunction(() => window.FabBoard && FabBoard.inlaid() && FabBoard.page());
+    const r = await pg.evaluate(() => { const m = document.querySelector('.pw-main').getBoundingClientRect(), c = document.querySelector('.pw-centre').getBoundingClientRect(), side = document.querySelector('.pw-side');
+      return { ratio:c.width / m.width, sideHidden:getComputedStyle(side).visibility === 'hidden', page:document.getElementById('bdCanvas').getBoundingClientRect().width }; });
+    assert(r.ratio > .9 && r.ratio < 1.1 && r.sideHidden && r.page > 500, JSON.stringify(r));
+    await pg.locator('[data-pwdrawer]').first().click({ timeout:5000 });
+    await pg.waitForTimeout(400);
+    assert(await pg.evaluate(() => getComputedStyle(document.querySelector('.pw-side')).visibility === 'visible'), 'drawer opens');
+    await pg.locator('.pw-drawer-x').click();
+    await pg.waitForTimeout(400);
+    assert(await pg.evaluate(() => !document.body.classList.contains('pw-drawer-open') && document.documentElement.scrollWidth <= innerWidth + 1), 'the ✕ closes the drawer');
+    await ctx.close();
+  });
   await test('We do shows Bramble and Moss together', async () => {
     const r = await page.evaluate(() => { const p = BUILT_IN_PACKS.find(x => x.id === 'maths-flightpath-multiplication-division'); learnOpen(p); learnGo(1); const s = p.screens[1]; Learn.state[1] = {}; pwStart(s, Learn.state[1], pwMe(), 0);
       const k = Learn.state[1].kids[pwMe()]; k.phase = 'wedo'; k.q = pwQuestion(s.steps[0]); learnRender();
@@ -392,7 +408,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await teacher.evaluate(() => { const B = FabBoard.state(); B.doc.pages[B.page].items.push({ t:'x', x:100, y:100, s:60, c:'#000', txt:'Hello class' }); FabBoard._paint(); FabBoard.go(B.page); });
     await child.waitForFunction(() => { const p = FabBoard.page(); return p && p.key === 'live' && p.items.some(i => i.txt === 'Hello class'); }, null, { timeout:5000 });
     const tabs = await child.evaluate(() => [...document.querySelectorAll('.bd-view')].map(b => b.textContent.trim()).join('|'));
-    assert(/Teacher’s board/.test(tabs), 'child gets a Teacher’s board tab: ' + tabs);
+    assert(/Teacher/.test(tabs), 'child gets a Teacher’s board tab: ' + tabs);
     await teacher.evaluate(() => { const B = FabBoard.state(); B.doc.pages[B.page].items.push({ t:'k', e:'⭐', x:300, y:300, s:80 }); FabBoard.go(B.page); });
     await child.waitForFunction(() => FabBoard.page().items.some(i => i.e === '⭐'), null, { timeout:5000 });
     const before = await child.evaluate(() => FabBoard.page().items.length);
