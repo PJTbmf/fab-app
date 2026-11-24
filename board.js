@@ -40,7 +40,7 @@
 
   /* ---------- state ---------- */
   const B = { fit:'width', doc:null, key:'', page:0, tool:'pen', col:COLS[0], size:1, sticker:'⭐', undo:[], redo:[], sel:null, drag:null, scale:1,
-              imgs:new Map(), saveTimer:null, el:null, cv:null, g:null, stroke:null, editing:null, ready:false, ctx:{}, status:'' };
+              imgs:new Map(), saveTimer:null, el:null, cv:null, g:null, stroke:null, editing:null, ready:false, ctx:{}, status:'', visHTML:'', home:null, src:new Map(), live:{ sharing:false, rev:0, got:0, pending:null, lastPageId:null } };
   const who = () => { try{ return (typeof fabLearnerCode === 'function' && fabLearnerCode()) || 'device'; }catch(e){ return 'device'; } };
   const page = () => B.doc && B.doc.pages[B.page];
   function newPage(o){ return Object.assign({ id:uid(), w:PAGE_W, h:PAGE_H, bg:'lines', items:[] }, o || {}); }
@@ -50,31 +50,47 @@
     opts = opts || {};
     build();
     const id = opts.id || 'workbook';
-    B.key = who() + '::' + id;
-    let doc = await dget('boards', B.key);
+    const key = who() + '::' + id;
+    if(B.doc && B.key){ commitText(); saveNow(); }
+    let doc = B.doc && B.key === key ? B.doc : await dget('boards', key);
+    B.key = key;
     if(!doc || !Array.isArray(doc.pages) || !doc.pages.length) doc = { id, title:opts.title || 'My workbook', pages:[newPage()], cur:0 };
     if(opts.title) doc.title = opts.title;
     B.doc = doc; B.undo = []; B.redo = []; B.sel = null;
     B.page = Math.min(doc.cur || 0, doc.pages.length - 1);
-    B.ctx = { back:opts.back || null, dock:!!opts.dock, slides:typeof opts.slides === 'function' ? opts.slides : null };
+    B.ctx = { back:opts.back || null, dock:!!opts.dock && !opts.inlay, inlay:!!opts.inlay, slides:typeof opts.slides === 'function' ? opts.slides : null,
+              views:typeof opts.views === 'function' ? opts.views : null };
     if(opts.step){                                       // a page for this step, with its prompt
       let i = doc.pages.findIndex(p => p.step === opts.step.key);
       if(i < 0){ doc.pages.push(newPage({ step:opts.step.key, title:opts.step.title, prompt:opts.step.prompt, bg:opts.step.bg || 'lines' })); i = doc.pages.length - 1; }
       B.page = i;
     }
+    if(opts.visPage){                                    // the step's picture, as the first page, ready to draw on
+      let v = doc.pages.findIndex(p => p.bg === 'vis');
+      if(v < 0){ doc.pages.unshift(newPage({ bg:'vis', key:'vis', title:'', prompt:'' })); v = 0; if(opts.step) B.page += 1; }
+      if(opts.freshVis) doc.pages[v].items = [];         // a new step: last step's notes on the picture are cleared
+      if(opts.go === 'vis') B.page = v;
+    }
     if(opts.booklet){ const at = await addBooklet(opts.booklet); if(at >= 0) B.page = at; }
     showBoard();
+    if(B.live.pending){ const sh = B.live.pending; B.live.pending = null; B.live.got = 0; fromShared(sh); }
+    else if(!liveHost() && B.live.last){ B.live.got = 0; fromShared(B.live.last); }
     paintAll(); scheduleSave();
   }
   function showBoard(){
     const back = B.el.querySelector('#bdBack'), sl = B.el.querySelector('#bdSlides');
-    if(sl) sl.hidden = !B.ctx.slides;
-    if(B.ctx.dock){
+    if(sl) sl.hidden = !B.ctx.slides || B.ctx.inlay;
+    B.el.classList.toggle('inlay', B.ctx.inlay);
+    if(B.ctx.inlay){
+      // In the middle of the lesson: teaching on the left, the board in the centre, steps on the right.
+      undock(); B.el.classList.remove('active');
+      back.innerHTML = '⛶ <span class="bd-lbl-b">Big board</span>'; back.setAttribute('aria-label', 'Make the board fill the screen');
+    } else if(B.ctx.dock){
       // Beside the lesson: the teaching stays on one side, the board on the other.
       document.body.classList.add('bd-dock'); B.el.classList.add('docked');
       back.innerHTML = '✕ <span class="bd-lbl-b">Close board</span>'; back.setAttribute('aria-label', 'Close the board');
     } else {
-      undock();
+      undock(); unmount();
       back.innerHTML = '← <span class="bd-lbl-b">Back</span>'; back.removeAttribute('aria-label');
       if(typeof showScreen === 'function') showScreen('screen-board');
     }
@@ -83,6 +99,57 @@
   function undock(){
     document.body.classList.remove('bd-dock'); if(B.el) B.el.classList.remove('docked');
   }
+  /* The board can live inside the lesson (its centre column). mount() puts it there; unmount() sends it home. */
+  function mount(host){
+    build(); if(!B.el || !host) return;
+    if(B.el.parentNode !== host) host.appendChild(B.el);
+    B.el.classList.add('inlay'); B.el.classList.remove('active');
+    fitHost(host);
+    requestAnimationFrame(() => { fitHost(host); layout(); });
+  }
+  /* The centre column reaches from where it starts to the bottom of the screen, so the whole board is in view
+     without scrolling. On short screens it keeps a sensible size and stays in view as the page scrolls. */
+  function fitHost(host){
+    host = host || (B.el && B.el.parentNode); if(!host || !host.classList || !host.classList.contains('pw-centre')) return;
+    const top = host.getBoundingClientRect().top + (window.scrollY || 0), vh = window.innerHeight || 800;
+    const room = vh - top - 12, min = Math.min(520, vh - 16);
+    host.style.height = Math.round(room >= min ? Math.min(room, 980) : Math.min(vh - 16, 980)) + 'px';
+  }
+  function unmount(){
+    if(!B.el) return;
+    setBig(false);
+    B.el.classList.remove('inlay');
+    const h = B.home; if(h && h.parent && B.el.parentNode !== h.parent){ if(h.next && h.next.parentNode === h.parent) h.parent.insertBefore(B.el, h.next); else h.parent.appendChild(B.el); }
+  }
+  const inlaid = () => !!(B.el && B.el.classList.contains('inlay') && B.el.isConnected);
+  function setBig(on){
+    if(!B.el) return;
+    B.el.classList.toggle('big', !!on); document.body.classList.toggle('bd-big', !!on);
+    const back = B.el.querySelector('#bdBack');
+    if(back && B.ctx.inlay) back.innerHTML = on ? '↙ <span class="bd-lbl-b">Back to the lesson</span>' : '⛶ <span class="bd-lbl-b">Big board</span>';
+    requestAnimationFrame(() => { layout(); setTimeout(layout, 200); });
+  }
+  /* The step's picture (drawn by vis.js) sits under the page, so the teacher can draw on it. */
+  function setVis(html){
+    B.visHTML = html || '';
+    const v = B.el && B.el.querySelector('#bdVis'); if(!v) return;
+    if(!v.dataset.live) v.innerHTML = B.visHTML ? `<div class="pw-vis">${B.visHTML}</div>` : '';
+    layout();
+  }
+  /* Ready-made pages that belong together (a step's slides): any old copy is replaced, and the first one opens. */
+  function setDeck(tag, list){
+    if(!B.doc || !Array.isArray(list) || !list.length) return;
+    commitText();
+    const old = B.doc.pages.findIndex(p => p.deck === tag);
+    B.doc.pages = B.doc.pages.filter(p => p.deck !== tag);
+    let at = old >= 0 ? old : Math.min(B.page + 1, B.doc.pages.length);
+    at = Math.max(0, Math.min(at, B.doc.pages.length));
+    B.doc.pages.splice(at, 0, ...list.map((pg, i) => newPage(Object.assign({}, pg, { deck:tag, slide:i + 1, slides:list.length }))));
+    goPage(at); scheduleSave();
+  }
+  function goWhere(test){ if(!B.doc) return false; const i = B.doc.pages.findIndex(test); if(i < 0) return false; goPage(i); return true; }
+  /* Put ready-made items (a model, a template) on a new page after this one. */
+  function addModelPage(pg){ if(!B.doc || !pg) return; commitText(); B.doc.pages.splice(B.page + 1, 0, newPage(pg)); goPage(B.page + 1); scheduleSave(); }
   /* Add ready-made pages (slides) after this one. A slide with a key that is already in the board is opened, not added again. */
   function addPages(list){
     if(!B.doc || !Array.isArray(list) || !list.length) return;
@@ -101,7 +168,7 @@
   function build(){
     if(B.el) return;
     const el = document.getElementById('screen-board'); if(!el) return;
-    B.el = el;
+    B.el = el; B.home = { parent:el.parentNode, next:el.nextSibling };
     const tool = (k, ic, n) => `<button type="button" class="bd-tool" data-tool="${k}" aria-pressed="false"><i aria-hidden="true">${ic}</i><span>${n}</span></button>`;
     el.innerHTML = `<div class="bd-top">
         <button type="button" class="bd-btn" id="bdBack">← <span class="bd-lbl-b">Back</span></button>
@@ -114,10 +181,12 @@
           <button type="button" class="bd-btn soft" id="bdFit" aria-pressed="false" aria-label="Whole page" hidden>🔍<span class="bd-lbl"> Whole page</span></button>
         </div>
         <div class="bd-extra">
+          <button type="button" class="bd-btn soft" id="bdLive" aria-pressed="false" hidden>📡<span class="bd-lbl"> Show everyone</span></button>
           <button type="button" class="bd-btn soft" id="bdLink" data-cvlaunch aria-label="Show a link">🎬<span class="bd-lbl"> Show a link</span></button>
           <button type="button" class="bd-btn soft" id="bdSave" aria-label="Save picture">💾<span class="bd-lbl"> Save picture</span></button>
         </div>
       </div>
+      <div class="bd-views" id="bdViews" role="group" aria-label="What the board shows" hidden></div>
       <div class="bd-main">
         <div class="bd-tools" role="toolbar" aria-label="Board tools">
           ${tool('move', '✋', 'Move')}${tool('pen', '✏️', 'Pen')}${tool('hl', '🖍️', 'Highlight')}${tool('rub', '🧽', 'Rubber')}
@@ -134,6 +203,7 @@
           <div class="bd-stage" id="bdStage">
           <div class="bd-prompt" id="bdPrompt" hidden></div>
           <div class="bd-sheet" id="bdSheet">
+            <div class="bd-vis" id="bdVis" hidden></div>
             <canvas id="bdCanvas" aria-label="Board page. Draw, write or add pictures." role="img"></canvas>
             <textarea class="bd-edit" id="bdEdit" hidden aria-label="Type your words"></textarea>
             <div class="bd-selbar" id="bdSelBar" hidden><button type="button" class="bd-btn soft" id="bdSelBig">＋ Bigger</button><button type="button" class="bd-btn soft" id="bdSelSmall">− Smaller</button><button type="button" class="bd-btn flame" id="bdSelDel">🗑️ Remove</button></div>
@@ -147,11 +217,12 @@
       <input type="file" id="bdFileBook" accept="application/pdf,image/png,image/jpeg" hidden>`;
     B.cv = el.querySelector('#bdCanvas'); B.g = B.cv.getContext('2d');
     const $b = s => el.querySelector(s);
-    $b('#bdBack').addEventListener('click', () => { commitText(); saveNow(); if(B.ctx.dock){ undock(); try{ learnRender(); }catch(e){} return; } const back = B.ctx.back || 'screen-learn'; if(typeof showScreen === 'function') showScreen(back); if(back === 'screen-lesson'){ try{ learnRender(); }catch(e){} } else if(back === 'screen-learn'){ try{ learnRenderList(); }catch(e){} } });
+    $b('#bdBack').addEventListener('click', () => { commitText(); saveNow(); if(B.ctx.inlay){ setBig(!B.el.classList.contains('big')); return; } if(B.ctx.dock){ undock(); try{ learnRender(); }catch(e){} return; } const back = B.ctx.back || 'screen-learn'; if(typeof showScreen === 'function') showScreen(back); if(back === 'screen-lesson'){ try{ learnRender(); }catch(e){} } else if(back === 'screen-learn'){ try{ learnRenderList(); }catch(e){} } });
     $b('#bdPrev').addEventListener('click', () => goPage(B.page - 1));
     $b('#bdNext').addEventListener('click', () => goPage(B.page + 1));
     $b('#bdAdd').addEventListener('click', () => { commitText(); B.doc.pages.splice(B.page + 1, 0, newPage({ bg:page() && page().bg !== 'img' ? page().bg : 'lines' })); goPage(B.page + 1); scheduleSave(); });
     $b('#bdSave').addEventListener('click', exportPNG);
+    $b('#bdLive').addEventListener('click', () => setSharing(!B.live.sharing));
     $b('#bdFit').addEventListener('click', () => { commitText(); B.fit = B.fit === 'page' ? 'width' : 'page'; layout(); });
     el.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => setTool(b.dataset.tool)));
     $b('#bdPic').addEventListener('click', () => $b('#bdFilePic').click());
@@ -161,7 +232,9 @@
     $b('#bdPaper').addEventListener('click', () => setTool('paper'));
     $b('#bdSlides').addEventListener('click', () => setTool('slides'));
     $b('#bdUndo').addEventListener('click', undo);
-    $b('#bdClear').addEventListener('click', () => { const p = page(); if(!p || !p.items.length) return; if(!window.confirm('Clear everything on this page? You can press Undo to get it back.')) return; snap(); p.items = []; B.sel = null; paint(); scheduleSave(); });
+    $b('#bdClear').addEventListener('click', () => { const p = page(); if(!p || !p.items.length) return; const keep = p.items.filter(i => i.lock), mine = p.items.length - keep.length;
+      if(!window.confirm(mine && keep.length ? 'Clear the writing on this page? The template stays. You can press Undo to get it back.' : 'Clear everything on this page? You can press Undo to get it back.')) return;
+      snap(); p.items = mine ? keep : []; B.sel = null; paint(); scheduleSave(); });
     $b('#bdSelDel').addEventListener('click', () => { if(!B.sel) return; snap(); page().items = page().items.filter(i => i !== B.sel); B.sel = null; paint(); scheduleSave(); });
     $b('#bdSelBig').addEventListener('click', () => resizeSel(1.2));
     $b('#bdSelSmall').addEventListener('click', () => resizeSel(1 / 1.2));
@@ -192,11 +265,12 @@
       if(!isBoardOn() || B.editing || /input|textarea/i.test((e.target.tagName || ''))) return;
       if((e.key === 'Delete' || e.key === 'Backspace') && B.sel){ e.preventDefault(); $b('#bdSelDel').click(); }
       if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z'){ e.preventDefault(); undo(); }
+      if(e.key === 'Escape' && B.el.classList.contains('big')){ e.preventDefault(); setBig(false); }
     });
-    window.addEventListener('resize', () => { if(isBoardOn()) layout(); });
+    window.addEventListener('resize', () => { if(isBoardOn()){ fitHost(); layout(); } });
     setTool('pen');
   }
-  const isBoardOn = () => { const s = document.getElementById('screen-board'); return !!(s && (s.classList.contains('active') || s.classList.contains('docked'))); };
+  const isBoardOn = () => { const s = B.el; return !!(s && s.isConnected && s.getClientRects().length && (s.classList.contains('active') || s.classList.contains('docked') || s.classList.contains('inlay'))); };
   function status(t){ const s = B.el && B.el.querySelector('#bdStatus'); if(s) s.textContent = t || ''; }
 
   function setTool(t){
@@ -228,7 +302,7 @@
     if(t === 'rub') hint = 'Rub over a line or sticker to take it away.';
     if(t === 'text') hint = 'Tap the page where you want to write.';
     // On short screens the hint shows for a moment at the bottom instead of taking space from the page.
-    const short = window.matchMedia && matchMedia('(max-height:560px)').matches;
+    const short = !B.ctx.inlay && window.matchMedia && matchMedia('(max-height:560px)').matches;   // in the lesson the choices strip keeps one height, so the page never jumps
     if(hint && !short) h += `<p class="bd-hint">${hint}</p>`;
     if(hint && short && B.lastHint !== t + hint){ status(hint); const mine = hint; clearTimeout(B.hintTimer); B.hintTimer = setTimeout(() => { const st = B.el.querySelector('#bdStatus'); if(st && st.textContent === mine) status(''); }, 4500); }
     B.lastHint = t + hint;
@@ -238,6 +312,30 @@
     o.querySelectorAll('[data-stick]').forEach(b => b.onclick = () => { B.sticker = b.dataset.stick; paintOpts(); });
     o.querySelectorAll('[data-slide]').forEach(b => b.onclick = () => { const sl = (B.slideList || [])[+b.dataset.slide]; if(!sl) return; let pg = null; try{ pg = sl.make(); }catch(e){} if(pg) addPages([pg]); setTool('pen'); });
     o.querySelectorAll('[data-paper]').forEach(b => b.onclick = () => { const p = page(); if(!p) return; snap(); p.bg = b.dataset.paper; delete p.bgImg; paint(); paintOpts(); scheduleSave(); });
+  }
+
+  /* ---------- what the board shows (lesson views: picture, slides, my page, tools, booklet) ---------- */
+  function paintViews(){
+    const bar = B.el && B.el.querySelector('#bdViews'); if(!bar) return;
+    let list = []; if(B.ctx.views){ try{ list = B.ctx.views() || []; }catch(e){ list = []; } }
+    bar.hidden = !list.length;
+    const sig = list.map(v => v.k + (v.on ? '1' : '0')).join('|') + '#' + B.page;
+    if(bar.dataset.sig === sig) return; bar.dataset.sig = sig;
+    B.viewList = list;
+    bar.innerHTML = list.map((v, i) => `<button type="button" class="bd-view ${v.on ? 'on' : ''}" data-view="${i}" aria-pressed="${v.on ? 'true' : 'false'}"><i aria-hidden="true">${v.icon}</i><span>${esc(v.name)}</span></button>`).join('');
+    bar.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { const v = (B.viewList || [])[+b.dataset.view]; if(v && v.go){ try{ v.go(); }catch(e){} } bar.dataset.sig = ''; paintViews(); });
+  }
+  /* Fab Fox World characters on a page (the dual-coding cast), drawn from the app's own character art. */
+  const CHAR = {};
+  function charImg(k){
+    if(CHAR[k]) return CHAR[k];
+    const im = new Image(); CHAR[k] = im;
+    try{
+      const t = document.createElement('span'); t.className = 'fab-char ' + k; t.style.position = 'absolute'; t.style.left = '-9999px'; document.body.appendChild(t);
+      const m = /url\((['"]?)(.*?)\1\)/.exec(getComputedStyle(t).backgroundImage || ''); t.remove();
+      if(m){ im.onload = () => paint(); im.src = m[2]; }
+    }catch(e){}
+    return im;
   }
 
   /* ---------- layout and painting ---------- */
@@ -258,21 +356,29 @@
     };
     const hasOpts = opts.childElementCount > 0;
     let scale = scaleFor(false);
-    if(hasOpts && !tall){ const sideScale = scaleFor(true); if(sideScale > scale * 1.04) scale = sideScale; else scaleFor(false); }
+    if(hasOpts && !tall && !(B.ctx.inlay && !B.el.classList.contains('big'))){ const sideScale = scaleFor(true); if(sideScale > scale * 1.04) scale = sideScale; else scaleFor(false); }
     B.scale = scale;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     B.cv.style.width = Math.round(p.w * B.scale) + 'px'; B.cv.style.height = Math.round(p.h * B.scale) + 'px';
     B.cv.width = Math.round(p.w * B.scale * dpr); B.cv.height = Math.round(p.h * B.scale * dpr);
     B.dpr = dpr;
+    const vis = B.el.querySelector('#bdVis');
+    if(vis){ const on = p.bg === 'vis'; vis.hidden = !on; B.el.querySelector('#bdSheet').classList.toggle('on-vis', on);
+      if(on){ vis.style.width = B.cv.style.width; vis.style.height = B.cv.style.height; if(p.key === 'live'){ vis.innerHTML = p.visHTML ? `<div class="pw-vis">${p.visHTML}</div>` : ''; vis.dataset.live = '1'; } else if(vis.dataset.live){ vis.dataset.live = ''; vis.innerHTML = B.visHTML ? `<div class="pw-vis">${B.visHTML}</div>` : ''; }
+        if(!B.visHTML && p.key !== 'live') vis.innerHTML = '<p class="bd-novis">This step has no picture. Use ✏️ My page or 📽️ Slides.</p>';
+        // the picture is laid out at a fixed size (half the page) and scaled, so it always fits and lines up with drawing on top
+        const pv = vis.querySelector('.pw-vis'); if(pv){ pv.style.width = (p.w / 2) + 'px'; pv.style.height = (p.h / 2) + 'px'; pv.style.transform = `scale(${B.scale * 2})`; } } }
+    paintViews();
     paint();
   }
   function paintAll(){
     const p = page(); if(!p) return;
     B.el.querySelector('#bdTitle').textContent = B.doc.title || 'My workbook';
-    B.el.querySelector('#bdPageN').textContent = `Page ${B.page + 1} of ${B.doc.pages.length}`;
+    { const pg = page(); B.el.querySelector('#bdPageN').textContent = pg && pg.slide ? `Slide ${pg.slide} of ${pg.slides} · page ${B.page + 1} of ${B.doc.pages.length}` : `Page ${B.page + 1} of ${B.doc.pages.length}`; }
     B.el.querySelector('#bdPrev').disabled = B.page <= 0;
     B.el.querySelector('#bdNext').disabled = B.page >= B.doc.pages.length - 1;
     try{ B.el.querySelector('#bdLink').hidden = !(window.CoView && CoView.canShare()); }catch(e){}
+    B.el.querySelector('#bdLive').hidden = !liveHost();
     paintOpts(); layout();
   }
   function goPage(i){
@@ -282,6 +388,7 @@
     paintAll(); scheduleSave();
   }
   function paper(g, p){
+    if(p.bg === 'vis'){ g.clearRect(0, 0, p.w, p.h); return; }
     g.fillStyle = '#fffdf6'; g.fillRect(0, 0, p.w, p.h);
     if(p.bg === 'img'){ const im = B.imgs.get(p.bgImg); if(im && im.complete) g.drawImage(im, 0, 0, p.w, p.h); else loadImg(p.bgImg); return; }
     g.save();
@@ -312,12 +419,17 @@
       g.save(); g.fillStyle = it.c; g.font = `${it.s}px ${TEXT_FONT}`; g.textBaseline = 'top';
       String(it.txt || '').split('\n').forEach((ln, i) => g.fillText(ln, it.x, it.y + i * it.s * 1.25));
       g.restore();
+    } else if(it.t === 'c'){
+      const im = charImg(it.k); if(im && im.complete && im.naturalWidth){ g.drawImage(im, it.x, it.y, it.w, it.w * im.naturalHeight / im.naturalWidth); }
+    } else if(it.t === 'r'){
+      g.save(); if(it.f){ g.fillStyle = it.f; g.fillRect(it.x, it.y, it.w, it.h); } g.strokeStyle = it.c || '#2b2f3a'; g.lineWidth = it.lw || 5; g.strokeRect(it.x, it.y, it.w, it.h); g.restore();
     } else if(it.t === 'k'){
       g.save(); g.font = `${it.s}px serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(it.e, it.x, it.y); g.restore();
     }
   }
   function bounds(it){
-    if(it.t === 'i') return { x:it.x, y:it.y, w:it.w, h:it.h };
+    if(it.t === 'i' || it.t === 'r') return { x:it.x, y:it.y, w:it.w, h:it.h };
+    if(it.t === 'c'){ const im = charImg(it.k), r = im && im.naturalWidth ? im.naturalHeight / im.naturalWidth : 1.41; return { x:it.x, y:it.y, w:it.w, h:it.w * r }; }
     if(it.t === 'k') return { x:it.x - it.s / 2, y:it.y - it.s / 2, w:it.s, h:it.s };
     if(it.t === 'x'){ const g = B.g; g.save(); g.font = `${it.s}px ${TEXT_FONT}`; const lines = String(it.txt || ' ').split('\n'); const w = Math.max(40, ...lines.map(l => g.measureText(l).width)); g.restore(); return { x:it.x, y:it.y, w, h:lines.length * it.s * 1.25 }; }
     let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for(let i = 0; i < it.p.length; i += 2){ x0 = Math.min(x0, it.p[i]); x1 = Math.max(x1, it.p[i]); y0 = Math.min(y0, it.p[i + 1]); y1 = Math.max(y1, it.p[i + 1]); }
@@ -341,18 +453,19 @@
   function loadImg(id){
     if(!id || B.imgs.has(id)) return;
     const im = new Image(); B.imgs.set(id, im);
-    dget('imgs', id).then(src => { if(src){ im.onload = () => paint(); im.src = src; } });
+    dget('imgs', id).then(src => { if(src){ B.src.set(id, src); im.onload = () => paint(); im.src = src; } });
   }
 
   /* ---------- pointer ---------- */
   function pt(e){ const r = B.cv.getBoundingClientRect(); return { x:(e.clientX - r.left) / B.scale, y:(e.clientY - r.top) / B.scale }; }
   function hit(x, y){
     const items = page().items;
-    for(let i = items.length - 1; i >= 0; i--){ const it = items[i]; if(it.t === 's') continue; const b = bounds(it); if(x >= b.x - 10 && x <= b.x + b.w + 10 && y >= b.y - 10 && y <= b.y + b.h + 10) return it; }
+    for(let i = items.length - 1; i >= 0; i--){ const it = items[i]; if(it.t === 's' || it.lock) continue; const b = bounds(it); if(x >= b.x - 10 && x <= b.x + b.w + 10 && y >= b.y - 10 && y <= b.y + b.h + 10) return it; }
     return null;
   }
   function down(e){
     const p = page(); if(!p) return;
+    if(p.key === 'live'){ status('This is your teacher’s board. Tap ✏️ My page to write on your own page.'); return; }
     const q = pt(e);
     if(B.editing){ commitText(); if(B.tool === 'text') return; }
     try{ B.cv.setPointerCapture(e.pointerId); }catch(err){}
@@ -381,7 +494,8 @@
     const d0 = B.drag.it0, dx = q.x - B.drag.q0.x, dy = q.y - B.drag.q0.y;
     if(B.drag.resize){
       const b0 = B.drag.b0, k = Math.max(.15, (b0.w + dx) / Math.max(1, b0.w));
-      if(it.t === 'i'){ it.w = Math.max(40, d0.w * k); it.h = it.w * d0.h / d0.w; }
+      if(it.t === 'i' || it.t === 'r'){ it.w = Math.max(40, d0.w * k); it.h = it.w * d0.h / d0.w; }
+      else if(it.t === 'c') it.w = Math.max(40, d0.w * k);
       else if(it.t === 'x') it.s = Math.max(16, Math.min(220, d0.s * k));
       else if(it.t === 'k') it.s = Math.max(24, Math.min(400, d0.s * k));
     } else { it.x = d0.x + dx; it.y = d0.y + dy; B.drag.moved = true; }
@@ -395,6 +509,7 @@
     const p = page(), r = 18 / Math.max(.4, B.scale) + 10;
     const before = p.items.length;
     p.items = p.items.filter(it => {
+      if(it.lock) return true;                       // a ready-made template stays put; only the child's marks rub out
       if(it.t === 'k') return Math.hypot(it.x - q.x, it.y - q.y) > it.s / 2;
       if(it.t !== 's') return true;
       for(let i = 0; i < it.p.length; i += 2) if(Math.hypot(it.p[i] - q.x, it.p[i + 1] - q.y) < r + it.w / 2) return false;
@@ -404,7 +519,7 @@
   }
   function resizeSel(k){
     const it = B.sel; if(!it) return; snap();
-    if(it.t === 'i'){ it.w *= k; it.h *= k; } else if(it.t === 'x') it.s = Math.max(16, Math.min(220, it.s * k)); else if(it.t === 'k') it.s = Math.max(24, Math.min(400, it.s * k));
+    if(it.t === 'i' || it.t === 'r'){ it.w *= k; it.h *= k; } else if(it.t === 'c') it.w *= k; else if(it.t === 'x') it.s = Math.max(16, Math.min(220, it.s * k)); else if(it.t === 'k') it.s = Math.max(24, Math.min(400, it.s * k));
     paint(); scheduleSave();
   }
 
@@ -463,7 +578,7 @@
     try{
       status('Adding your picture…');
       const im = await fileToImage(file), small = shrink(im, MAX_IMG, file.type === 'image/png' && file.size < 1.5e6 ? 'image/png' : 'image/jpeg');
-      const id = 'img-' + uid(); await dput('imgs', id, small.src);
+      const id = 'img-' + uid(); await dput('imgs', id, small.src); B.src.set(id, small.src);
       const el = new Image(); el.onload = () => paint(); el.src = small.src; B.imgs.set(id, el);
       if(asPage){
         const w = BOOK_W, h = Math.round(BOOK_W * small.h / small.w);
@@ -513,7 +628,7 @@
         const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
         await pg.render({ canvasContext:g, viewport:vp }).promise;
         const id = 'img-' + uid(), src = c.toDataURL('image/jpeg', .85);
-        await dput('imgs', id, src);
+        await dput('imgs', id, src); B.src.set(id, src);
         const im = new Image(); im.src = src; B.imgs.set(id, im);
         added.push(newPage({ w:c.width, h:c.height, bg:'img', bgImg:id, title:`${bk.title || 'Booklet'} · page ${n}`, src:bk.url || tag, srcPage:n }));
       }
@@ -525,8 +640,56 @@
   }
 
   /* ---------- saving ---------- */
-  function scheduleSave(){ clearTimeout(B.saveTimer); B.saveTimer = setTimeout(saveNow, 600); }
-  function saveNow(){ clearTimeout(B.saveTimer); if(!B.doc || !B.key) return; B.doc.cur = B.page; dput('boards', B.key, JSON.parse(JSON.stringify(B.doc))); }
+  function scheduleSave(){ clearTimeout(B.saveTimer); B.saveTimer = setTimeout(saveNow, 600); livePush(); }
+  function saveNow(){ clearTimeout(B.saveTimer); if(!B.doc || !B.key) return;
+    const doc = JSON.parse(JSON.stringify(B.doc)); const at = doc.pages.findIndex(p => p.key === 'live');
+    if(at >= 0){ doc.pages.splice(at, 1); if(doc.cur > at) doc.cur -= 1; } doc.cur = Math.max(0, Math.min(doc.cur || 0, doc.pages.length - 1));
+    if(doc.pages.length) dput('boards', B.key, doc); }
+
+  /* ---------- 📡 Live board in a Pencil Space ----------
+     The teacher taps "Show everyone": from then on the page they are on (and everything drawn on it) appears on every
+     child's board as "Teacher's board", updating as they write. Children can look but not change it; their own pages stay
+     theirs, on their own device. Pictures travel with the page, up to a size that the Space can carry. */
+  const LIVE_IMG_CAP = 1.2e6;
+  const liveObj = () => { try{ return typeof Live !== 'undefined' && Live.on ? Live : null; }catch(e){ return null; } };
+  const liveHost = () => { const L = liveObj(); return !!(L && L.isHost()); };
+  function livePush(){ if(!B.live.sharing) return; B.live.rev += 1; const L = liveObj(); if(L) L.push(250); }
+  function liveShared(){
+    if(!B.live.sharing || !liveHost()) return null;
+    const p = page(); if(!p) return { on:true, rev:B.live.rev, page:null };
+    const pg = JSON.parse(JSON.stringify(p)), imgs = {}; let size = 0;
+    const want = [p.bg === 'img' ? p.bgImg : null, ...p.items.filter(i => i.t === 'i').map(i => i.id)].filter(Boolean);
+    want.forEach(id => { const src = B.src.get(id); if(src && size + src.length < LIVE_IMG_CAP){ imgs[id] = src; size += src.length; } });
+    if(p.bg === 'vis') pg.visHTML = B.visHTML || '';
+    return { on:true, rev:B.live.rev, title:B.doc ? B.doc.title : '', n:B.page + 1, of:B.doc ? B.doc.pages.length : 1, page:pg, imgs };
+  }
+  function setSharing(on){
+    B.live.sharing = !!on && liveHost();
+    const b = B.el && B.el.querySelector('#bdLive');
+    if(b){ b.classList.toggle('on', B.live.sharing); b.setAttribute('aria-pressed', B.live.sharing ? 'true' : 'false');
+      b.innerHTML = B.live.sharing ? '📡<span class="bd-lbl"> Everyone can see</span>' : '📡<span class="bd-lbl"> Show everyone</span>'; }
+    B.live.rev += 1; const L = liveObj(); if(L) L.push(0);
+    status(B.live.sharing ? 'Everyone in the Space can now see this board. Tap 📡 again to stop.' : 'The board is just on your screen again.');
+  }
+  /* On a child's screen: show what the teacher shared. */
+  function fromShared(sh){
+    if(liveHost()) return;
+    if(!B.doc){ B.live.pending = sh; return; }
+    const at = B.doc.pages.findIndex(p => p.key === 'live');
+    if(!sh || !sh.on || !sh.page){
+      if(at >= 0){ const was = B.page === at; B.doc.pages.splice(at, 1); if(B.page >= at && B.page > 0) B.page -= 1; if(was || B.page >= B.doc.pages.length) B.page = Math.min(B.live.back || 0, B.doc.pages.length - 1); B.live.got = 0; if(B.el && B.el.isConnected) paintAll(); }
+      return;
+    }
+    if(sh.rev === B.live.got && at >= 0) return;
+    B.live.got = sh.rev;
+    Object.keys(sh.imgs || {}).forEach(id => { if(!B.imgs.has(id) || !B.imgs.get(id).src){ const im = new Image(); im.onload = () => paint(); im.src = sh.imgs[id]; B.imgs.set(id, im); B.src.set(id, sh.imgs[id]); } });
+    const pg = Object.assign({}, sh.page, { key:'live', id:'live', title:'📡 Teacher’s board' + (sh.page.title ? ': ' + sh.page.title : ''), prompt:sh.page.prompt || '' });
+    const newPg = B.live.lastPageId !== sh.page.id; B.live.lastPageId = sh.page.id;
+    if(at >= 0) B.doc.pages[at] = pg; else { B.doc.pages.unshift(pg); B.page += 1; }
+    const li = B.doc.pages.findIndex(p => p.key === 'live');
+    if(at < 0 || newPg){ if(B.page !== li) B.live.back = B.page; B.page = li; B.sel = null; }   // follow the teacher when they share or turn the page
+    if(B.el && B.el.isConnected) paintAll();
+  }
   function exportPNG(){
     commitText();
     const p = page(); if(!p) return;
@@ -539,5 +702,10 @@
     }catch(e){ status('Sorry, the picture could not be saved here.'); }
   }
 
-  window.FabBoard = { open:openBoard, addPages, undock, docked:() => !!(B.el && B.el.classList.contains('docked')), addBooklet:o => addBooklet(o), state:() => B, _page:page, _save:saveNow, _paint:paint };
+  window.FabBoard = { open:openBoard, addPages, undock, docked:() => !!(B.el && B.el.classList.contains('docked')), addBooklet:o => addBooklet(o), state:() => B, _page:page, _save:saveNow, _paint:paint,
+    liveShared, fromShared:sh => { B.live.last = sh; fromShared(sh); }, setSharing, sharing:() => B.live.sharing, hasLive:() => !!(B.doc && B.doc.pages.some(p => p.key === 'live')),
+    mount, unmount, inlaid, setVis, setDeck, goWhere, addModelPage, setBig, page:() => page(), go:goPage, refresh:() => { if(B.el && B.doc) paintAll(); },
+    /* for live sharing (coview.js): the whole page as plain data, and a way to show a page sent by the teacher */
+    snapshot:() => { const p = page(); return p ? { title:B.doc.title, n:B.page, of:B.doc.pages.length, page:JSON.parse(JSON.stringify(p)) } : null; },
+    imgSrc:id => dget('imgs', id), putImg:(id, src) => { const im = new Image(); im.onload = () => paint(); im.src = src; B.imgs.set(id, im); return dput('imgs', id, src); } };
 })();

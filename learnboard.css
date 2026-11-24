@@ -1,7 +1,7 @@
 /* Learning Board, Show a link, and their buttons in the Learning Hub.
    Design rules: buttons at least 56px tall with text at least 1.05rem; the board and the viewer use the whole screen. */
 .coview[hidden], .cv-chip[hidden], .cvl-wrap[hidden], .cv-foot[hidden], .bd-prompt[hidden], .bd-selbar[hidden], .bd-drop[hidden], .bd-edit[hidden],
-.lt-card[hidden], .lp-tools [hidden], .bd-btn[hidden]{ display:none !important; }
+.lt-card[hidden], .lp-tools [hidden], .bd-btn[hidden], .bd-tool[hidden]{ display:none !important; }
 
 /* ---------- Learning Hub and lesson buttons ---------- */
 .learn-tools{ display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; margin:0 auto 18px; max-width:860px; }
@@ -193,3 +193,105 @@ body.bd-dock main{ max-width:none; margin:0 50vw 0 0; }
 #screen-board.docked .bd-desk.opts-side{ flex-direction:column; }
 #screen-board.docked .bd-desk.opts-side .bd-opts{ flex-direction:row; flex-wrap:wrap; width:auto; margin:0 0 8px; overflow:visible; }
 #screen-board.docked .bd-desk.opts-side .bd-og{ flex-direction:row; align-items:center; }
+
+/* ---------- The board in the middle of a lesson (Learning Hub flightpaths) ----------
+   One screen, three columns: teaching on the left, the board in the centre (pictures, slides, modelling tools, drawing,
+   booklets), the child's steps on the right. The board replaces the old picture panel instead of being added on top. */
+.pw-child.has-board{ grid-template-columns:minmax(300px, .82fr) minmax(0, 1.38fr) clamp(250px, 19vw, 320px); grid-template-rows:auto; align-items:start; }
+.pw-child.has-board > .pw-main{ grid-row:1; }
+.pw-child.has-board .pw-side{ grid-row:1; grid-column:3; }
+.pw-centre{ grid-row:1; grid-column:2; position:sticky; top:8px; z-index:2; min-width:0; height:clamp(480px, calc(100vh - 16px), 940px); display:flex; }
+.pw-centre > #screen-board{ flex:1; min-width:0; }
+@media (max-width:1199px){
+  .pw-child.has-board{ grid-template-columns:minmax(280px, .9fr) minmax(0, 1.3fr); }
+  .pw-child.has-board .pw-side{ grid-column:1 / -1; grid-row:2; }
+}
+@media (max-width:760px){
+  .pw-child.has-board{ grid-template-columns:1fr; }
+  .pw-child.has-board .pw-centre{ grid-column:1; grid-row:1; position:relative; top:0; height:min(78vh, 640px); }
+  .pw-child.has-board > .pw-main{ grid-row:2; } .pw-child.has-board .pw-side{ grid-row:3; grid-column:1; }
+}
+/* phones on their side: the board takes the full height beside the teaching */
+@media (max-height:560px) and (min-width:600px){
+  .pw-child.has-board{ grid-template-columns:minmax(240px, .8fr) minmax(0, 1.4fr); }
+  .pw-child.has-board .pw-centre{ grid-column:2; grid-row:1; position:sticky; height:calc(100vh - 12px); }
+  .pw-child.has-board > .pw-main{ grid-row:1; } .pw-child.has-board .pw-side{ grid-row:2; grid-column:1 / -1; }
+}
+#screen-board.inlay{ display:flex; flex-direction:column; margin:0; max-width:none; padding:8px; border-radius:var(--radius, 22px); overflow:hidden;
+  background:radial-gradient(circle at 20% 0%, #fffaf0, #f5e6c8 70%); border:3px solid var(--golden); box-shadow:var(--shadow); }
+#screen-board.inlay .bd-title{ display:none; }
+#screen-board.inlay .bd-top{ flex-wrap:nowrap; gap:6px; }
+#screen-board.inlay .bd-pages{ flex:1; justify-content:center; font-size:1.02rem; min-width:0; }
+#screen-board.inlay #bdPageN{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+#screen-board.inlay .bd-btn{ min-height:52px; padding:6px 14px; font-size:1.05rem; }
+#screen-board.inlay .bd-pages .bd-btn{ min-width:52px; padding:6px 10px; }
+#screen-board.inlay .bd-lbl{ display:none; }
+#screen-board.inlay #bdSlides, #screen-board.inlay #bdBook{ display:none; }
+#screen-board.inlay .bd-main{ flex-direction:column; gap:6px; margin-top:6px; }
+#screen-board.inlay .bd-tools{ width:auto; display:flex; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; gap:6px; padding:2px 2px 4px; scrollbar-width:thin; }
+#screen-board.inlay .bd-tool{ flex:1 0 62px; min-width:62px; min-height:64px; padding:4px; border-radius:16px; font-size:.88rem; gap:2px; }
+#screen-board.inlay .bd-tool i{ font-size:1.55rem; }
+#screen-board.inlay .bd-desk{ padding:8px; border-radius:18px; }
+#screen-board.inlay .bd-opts{ padding:6px 10px; gap:6px 10px; }
+#screen-board.inlay .bd-col{ width:44px; height:44px; }
+#screen-board.inlay .bd-size, #screen-board.inlay .bd-stick{ width:48px; height:48px; }
+#screen-board.inlay .bd-status{ margin-top:4px; font-size:1rem; min-height:1.2em; }
+#screen-board.inlay .bd-prompt{ font-size:clamp(1rem, 1.15vw, 1.2rem); padding:8px 14px; margin-bottom:8px; }
+/* the big board: the same board, filling the screen, for modelling to the whole group */
+#screen-board.inlay.big{ position:fixed; inset:0; z-index:800; border:0; border-radius:0; padding:10px 14px 6px; }
+#screen-board.inlay.big .bd-main{ flex-direction:row; }
+#screen-board.inlay.big .bd-tools{ flex-direction:column; flex-wrap:nowrap; width:96px; overflow-y:auto; overflow-x:hidden; }
+#screen-board.inlay.big .bd-tool{ flex:none; min-height:72px; font-size:.95rem; }
+#screen-board.inlay.big .bd-lbl{ display:inline; }
+body.bd-big{ overflow:hidden; }
+
+/* what the board shows: big, friendly tabs */
+.bd-views{ display:flex; gap:6px; margin-top:6px; overflow-x:auto; scrollbar-width:thin; }
+.bd-views[hidden]{ display:none; }
+.bd-view{ flex:1 0 auto; display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:54px; padding:6px 14px; border:0; border-radius:16px;
+  background:#fff; color:var(--ink); font:700 1.05rem var(--disp); cursor:pointer; box-shadow:0 3px 0 rgba(43,26,18,.16), inset 0 0 0 2px var(--cream-deep); white-space:nowrap; }
+.bd-view i{ font-style:normal; font-size:1.35rem; line-height:1; }
+.bd-view.on{ background:var(--sunshine); box-shadow:0 3px 0 rgba(43,26,18,.16), inset 0 0 0 3px var(--salmon); }
+.bd-view:focus-visible{ outline:4px solid var(--golden); outline-offset:2px; }
+@media (max-width:1366px){ #screen-board.inlay .bd-view span{ font-size:.98rem; } #screen-board.inlay .bd-view{ padding:6px 10px; } }
+
+/* the step's picture under the page */
+.bd-vis{ position:absolute; left:0; top:0; z-index:0; overflow:hidden; border-radius:6px; background:#EAF4FB; display:flex; }
+.bd-vis[hidden]{ display:none; }
+.bd-sheet.on-vis #bdCanvas{ position:relative; z-index:1; background:transparent; }
+.bd-vis > .pw-vis{ flex:1; min-height:0 !important; display:flex; flex-direction:column; margin:0; }
+.bd-vis > .pw-vis > .fv{ position:static !important; flex:1; max-height:none !important; min-height:0; border-radius:6px; }
+.bd-novis{ margin:auto; padding:20px; font:700 1.3rem var(--disp); color:var(--ink-soft); text-align:center; }
+.bd-vis > .pw-vis{ flex:none; transform-origin:0 0; }
+/* a step on screen: a slimmer lesson header, so the three columns get the height */
+#screen-lesson:has(.pw-centre) .lp-dots, #lpStage:has(.pw-centre) > .lp-title{ display:none; }
+#lpStage:has(.pw-centre) .pw-viewtoggle{ margin:0 0 8px; justify-content:flex-end; }
+#lpStage:has(.pw-centre) .pw-viewtoggle .pill-choice{ min-height:46px; padding:6px 18px; font-size:1.02rem; }
+/* tools and their choices: compact in the centre column so the page stays big */
+#screen-board.inlay .bd-tool{ flex:1 1 0; min-width:52px; }
+#screen-board.inlay .bd-tool span{ font-size:.82rem; white-space:nowrap; }
+#screen-board.inlay .bd-optlbl{ display:none; }
+#screen-board.inlay .bd-opts{ flex-wrap:nowrap; overflow-x:auto; }
+#screen-board.inlay .bd-og{ flex-wrap:nowrap; }
+#screen-board.inlay .bd-cols, #screen-board.inlay .bd-sizes, #screen-board.inlay .bd-sticks{ flex-wrap:nowrap; gap:6px; }
+#screen-board.inlay .bd-col{ width:40px; height:40px; flex:none; }
+#screen-board.inlay .bd-size, #screen-board.inlay .bd-stick{ width:44px; height:44px; flex:none; }
+#screen-board.inlay .bd-hint{ font-size:.98rem; }
+
+/* ---------- 🧰 Modelling tools panel (modelkit.js) ---------- */
+.bd-kit{ position:absolute; inset:8px; z-index:6; overflow:auto; padding:16px 18px; border-radius:18px; background:var(--cream, #FFFBF3); box-shadow:0 10px 30px rgba(43,26,18,.3); }
+.bk-head{ display:flex; align-items:center; gap:10px; }
+.bk-head h2{ flex:1; margin:0; font:700 clamp(1.2rem, 1.6vw, 1.5rem) var(--disp); color:var(--ink); }
+.bk-x{ flex:none; width:52px; height:52px; border-radius:50%; border:0; background:#fff; font-size:1.3rem; cursor:pointer; box-shadow:inset 0 0 0 2px var(--cream-deep); }
+.bk-sub{ margin:6px 0 12px; font-size:1.02rem; color:var(--ink-soft); }
+.bk-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(132px, 1fr)); gap:10px; }
+.bk-tile{ min-height:96px; padding:8px; border:0; border-radius:18px; background:#fff; color:var(--ink); font:700 1.02rem var(--disp); cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; box-shadow:0 3px 0 rgba(43,26,18,.16), inset 0 0 0 2px var(--cream-deep); text-align:center; }
+.bk-tile i{ font-style:normal; font-size:2rem; line-height:1; }
+.bk-tile:hover{ background:#fffaf0; } .bk-tile:focus-visible{ outline:4px solid var(--golden); outline-offset:2px; }
+.bk-more{ margin-top:14px; } .bk-more summary{ min-height:48px; display:flex; align-items:center; font:700 1.05rem var(--disp); cursor:pointer; color:var(--ink); }
+/* in the lesson, the choices strip is always one row of the same height, so the page never jumps when the tool changes */
+#screen-board.inlay:not(.big) .bd-opts, #screen-board.inlay:not(.big) .bd-opts:empty{ display:flex; height:58px; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; margin:0 0 8px; }
+#screen-board.inlay:not(.big) .bd-hint{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+#screen-board.inlay:not(.big) .bd-og + .bd-hint{ display:none; }
+#bdLive.on{ background:var(--flame); color:#fff; box-shadow:none; }

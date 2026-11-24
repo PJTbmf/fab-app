@@ -150,7 +150,7 @@
     return `<div class="me-card me-login">
       <div class="me-fox" aria-hidden="true">🦊</div>
       <h2>Welcome! What is your Fab code?</h2>
-      <p>Your teacher gives you a code, like <b>otter-482</b>. It keeps your stars, treasure, Pip and learning safe on this device. <b>Please never type your name.</b></p>
+      <p>Your teacher gives you a code, like <b>otter-482</b>. It keeps your stars, treasure, cub and learning safe on this device. <b>Please never type your name.</b></p>
       <form id="meForm" class="me-form" autocomplete="off"><input id="meCode" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="20" placeholder="otter-482" aria-label="Your Fab code"><button class="btn leaf" type="submit">Let's go ➡️</button></form>
       <p class="me-msg" id="meMsg" aria-live="polite"></p>
       <details class="me-tap"><summary><b>Or tap to make your code</b> (no typing)</summary>
