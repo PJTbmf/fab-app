@@ -2174,6 +2174,11 @@ const reducedMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-mo
 function fabOverlayGame(key){
   if(!FAB_GAMES[key]) return;
   closeFabOverlay(false);
+  /* The world sleeps underneath (frees its big canvases: iPads run out of canvas memory with two games at once),
+     and a real full screen is left first, otherwise the game would open behind it. */
+  const wf = document.querySelector('iframe[data-game="world"]');
+  try{ wf && wf.contentWindow && wf.contentWindow.postMessage('fabworld-sleep', '*'); }catch(e){}
+  try{ if(document.fullscreenElement && document.exitFullscreen){ const pr = document.exitFullscreen(); if(pr && pr.catch) pr.catch(() => {}); } }catch(e){}
   const o = document.createElement('div'); o.id = 'fabOverlay'; o.dataset.game = key;
   o.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#FCE6B4;display:flex;flex-direction:column';
   o.setAttribute('role', 'dialog'); o.setAttribute('aria-label', 'Quick game');
@@ -2204,10 +2209,20 @@ document.addEventListener('fullscreenchange', () => {
     try{ fr.contentWindow.postMessage('fabworld-fs-exit', '*'); }catch(e){}
   }
 });
+/* The Music Hut in Fab Fox World opens the big keyboard; its Back button comes home to the world. */
+function fabOpenMusic(){
+  if(!window.FabMusic || !FabMusic.open) return false;
+  try{ fabWorldFull(false); }catch(e){}
+  const wf = document.querySelector('iframe[data-game="world"]');
+  try{ wf && wf.contentWindow && wf.contentWindow.postMessage('fabworld-sleep', '*'); }catch(e){}
+  FabMusic.open(null, { back:'screen-world' });
+  return true;
+}
 function closeFabOverlay(reward){
   const o = document.getElementById('fabOverlay'); if(!o) return;
   o.remove();
   try{ window.fabRotateCheck && window.fabRotateCheck(); }catch(e){}
+  try{ const w0 = document.querySelector('iframe[data-game="world"]'); w0 && w0.contentWindow && w0.contentWindow.postMessage('fabworld-wake', '*'); }catch(e){}
   if(reward){
     fabWorldAward(2);
     const w = document.querySelector('iframe[data-game="world"]');

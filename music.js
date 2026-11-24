@@ -363,7 +363,8 @@
     document.addEventListener('visibilitychange', () => { if(document.hidden){ [...held.keys()].forEach(noteOff); stopListen(true); stopPlayback(); } });
     M.el.querySelector('#muPanel').addEventListener('click', panelClick);
   }
-  function open(songId){
+  function open(songId, how){
+    M.backTo = (how && how.back) || null;
     build();
     if(typeof showScreen === 'function') showScreen('screen-music');
     if(songId) loadSong(songId); else if(!M.song && !M.step) loadSong(null);
@@ -372,6 +373,12 @@
   function leave(){
     stopListen(true); stopShow(); stopPlayback(); if(M.rec) stopRec();
     [...held.keys()].forEach(noteOff); closePanel();
+    if(M.backTo){
+      const b = M.backTo; M.backTo = null;
+      if(typeof showScreen === 'function') showScreen(b);
+      try{ const wf = document.querySelector('iframe[data-game="world"]'); wf && wf.contentWindow && wf.contentWindow.postMessage('fabworld-wake', '*'); }catch(e){}
+      return;
+    }
     if(typeof showScreen === 'function') showScreen('screen-learn');
     try{ learnRenderList(); }catch(e){}
   }
