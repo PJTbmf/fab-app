@@ -56,7 +56,7 @@
     if(opts.title) doc.title = opts.title;
     B.doc = doc; B.undo = []; B.redo = []; B.sel = null;
     B.page = Math.min(doc.cur || 0, doc.pages.length - 1);
-    B.ctx = { back:opts.back || null };
+    B.ctx = { back:opts.back || null, dock:!!opts.dock, slides:typeof opts.slides === 'function' ? opts.slides : null };
     if(opts.step){                                       // a page for this step, with its prompt
       let i = doc.pages.findIndex(p => p.step === opts.step.key);
       if(i < 0){ doc.pages.push(newPage({ step:opts.step.key, title:opts.step.title, prompt:opts.step.prompt, bg:opts.step.bg || 'lines' })); i = doc.pages.length - 1; }
@@ -67,8 +67,34 @@
     paintAll(); scheduleSave();
   }
   function showBoard(){
-    if(typeof showScreen === 'function') showScreen('screen-board');
-    requestAnimationFrame(() => { layout(); });
+    const back = B.el.querySelector('#bdBack'), sl = B.el.querySelector('#bdSlides');
+    if(sl) sl.hidden = !B.ctx.slides;
+    if(B.ctx.dock){
+      // Beside the lesson: the teaching stays on one side, the board on the other.
+      document.body.classList.add('bd-dock'); B.el.classList.add('docked');
+      back.innerHTML = '✕ <span class="bd-lbl-b">Close board</span>'; back.setAttribute('aria-label', 'Close the board');
+    } else {
+      undock();
+      back.innerHTML = '← <span class="bd-lbl-b">Back</span>'; back.removeAttribute('aria-label');
+      if(typeof showScreen === 'function') showScreen('screen-board');
+    }
+    requestAnimationFrame(() => { layout(); setTimeout(layout, 250); });
+  }
+  function undock(){
+    document.body.classList.remove('bd-dock'); if(B.el) B.el.classList.remove('docked');
+  }
+  /* Add ready-made pages (slides) after this one. A slide with a key that is already in the board is opened, not added again. */
+  function addPages(list){
+    if(!B.doc || !Array.isArray(list) || !list.length) return;
+    commitText();
+    let first = -1, at = B.page;
+    list.forEach(pg => {
+      const have = pg.key ? B.doc.pages.findIndex(x => x.key === pg.key) : -1;
+      if(have >= 0){ if(first < 0) first = have; return; }
+      at += 1; B.doc.pages.splice(at, 0, newPage(pg)); if(first < 0) first = at;
+    });
+    if(first >= 0) goPage(first);
+    scheduleSave();
   }
 
   /* ---------- the screen ---------- */
@@ -98,6 +124,7 @@
           ${tool('text', '🔤', 'Text')}${tool('stick', '⭐', 'Stickers')}
           <button type="button" class="bd-tool" id="bdPic"><i aria-hidden="true">🖼️</i><span>Picture</span></button>
           <button type="button" class="bd-tool" id="bdBook"><i aria-hidden="true">📄</i><span>Booklet</span></button>
+          <button type="button" class="bd-tool" id="bdSlides" hidden><i aria-hidden="true">📽️</i><span>Slides</span></button>
           <button type="button" class="bd-tool" id="bdPaper"><i aria-hidden="true">📃</i><span>Paper</span></button>
           <button type="button" class="bd-tool" id="bdUndo"><i aria-hidden="true">↶</i><span>Undo</span></button>
           <button type="button" class="bd-tool" id="bdClear"><i aria-hidden="true">🗑️</i><span>Clear page</span></button>
@@ -120,7 +147,7 @@
       <input type="file" id="bdFileBook" accept="application/pdf,image/png,image/jpeg" hidden>`;
     B.cv = el.querySelector('#bdCanvas'); B.g = B.cv.getContext('2d');
     const $b = s => el.querySelector(s);
-    $b('#bdBack').addEventListener('click', () => { commitText(); saveNow(); const back = B.ctx.back || 'screen-learn'; if(typeof showScreen === 'function') showScreen(back); if(back === 'screen-lesson'){ try{ learnRender(); }catch(e){} } else if(back === 'screen-learn'){ try{ learnRenderList(); }catch(e){} } });
+    $b('#bdBack').addEventListener('click', () => { commitText(); saveNow(); if(B.ctx.dock){ undock(); try{ learnRender(); }catch(e){} return; } const back = B.ctx.back || 'screen-learn'; if(typeof showScreen === 'function') showScreen(back); if(back === 'screen-lesson'){ try{ learnRender(); }catch(e){} } else if(back === 'screen-learn'){ try{ learnRenderList(); }catch(e){} } });
     $b('#bdPrev').addEventListener('click', () => goPage(B.page - 1));
     $b('#bdNext').addEventListener('click', () => goPage(B.page + 1));
     $b('#bdAdd').addEventListener('click', () => { commitText(); B.doc.pages.splice(B.page + 1, 0, newPage({ bg:page() && page().bg !== 'img' ? page().bg : 'lines' })); goPage(B.page + 1); scheduleSave(); });
@@ -132,6 +159,7 @@
     $b('#bdFilePic').addEventListener('change', e => { [...e.target.files].forEach(f => addPicture(f)); e.target.value = ''; });
     $b('#bdFileBook').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if(!f) return; if(/pdf/.test(f.type) || /\.pdf$/i.test(f.name)){ const at = await addBooklet({ file:f, title:f.name.replace(/\.pdf$/i, '') }); if(at >= 0) goPage(at); } else addPicture(f, true); });
     $b('#bdPaper').addEventListener('click', () => setTool('paper'));
+    $b('#bdSlides').addEventListener('click', () => setTool('slides'));
     $b('#bdUndo').addEventListener('click', undo);
     $b('#bdClear').addEventListener('click', () => { const p = page(); if(!p || !p.items.length) return; if(!window.confirm('Clear everything on this page? You can press Undo to get it back.')) return; snap(); p.items = []; B.sel = null; paint(); scheduleSave(); });
     $b('#bdSelDel').addEventListener('click', () => { if(!B.sel) return; snap(); page().items = page().items.filter(i => i !== B.sel); B.sel = null; paint(); scheduleSave(); });
@@ -168,7 +196,7 @@
     window.addEventListener('resize', () => { if(isBoardOn()) layout(); });
     setTool('pen');
   }
-  const isBoardOn = () => { const s = document.getElementById('screen-board'); return !!(s && s.classList.contains('active')); };
+  const isBoardOn = () => { const s = document.getElementById('screen-board'); return !!(s && (s.classList.contains('active') || s.classList.contains('docked'))); };
   function status(t){ const s = B.el && B.el.querySelector('#bdStatus'); if(s) s.textContent = t || ''; }
 
   function setTool(t){
@@ -176,6 +204,7 @@
     B.tool = t; if(t !== 'move'){ B.sel = null; }
     B.el.querySelectorAll('[data-tool]').forEach(b => { const on = b.dataset.tool === t; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     B.el.querySelector('#bdPaper').classList.toggle('on', t === 'paper');
+    B.el.querySelector('#bdSlides').classList.toggle('on', t === 'slides');
     B.cv.style.cursor = t === 'move' ? 'grab' : t === 'text' ? 'text' : 'crosshair';
     paintOpts(); layout();
   }
@@ -189,6 +218,12 @@
     }
     if(t === 'stick') h += og('Sticker', `<div class="bd-sticks">${STICKERS.map(s => `<button type="button" class="bd-stick ${B.sticker === s ? 'on' : ''}" data-stick="${s}" aria-pressed="${B.sticker === s}">${s}</button>`).join('')}</div>`);
     if(t === 'paper'){ const p = page(); h += og('Paper', `<div class="bd-papers">${PAPERS.map(pp => `<button type="button" class="bd-paperbtn ${p && p.bg === pp.k ? 'on' : ''}" data-paper="${pp.k}" aria-pressed="${p && p.bg === pp.k}">${pp.n}</button>`).join('')}</div>`); if(p && p.bg === 'img') hint = 'This page is a booklet page.'; }
+    if(t === 'slides' && B.ctx.slides){
+      let list = []; try{ list = B.ctx.slides() || []; }catch(e){ list = []; }
+      B.slideList = list;
+      h += og('Slides for this step', `<div class="bd-slides">${list.map((sl, i) => `<button type="button" class="bd-slidebtn" data-slide="${i}">${sl.icon ? `<i aria-hidden="true">${sl.icon}</i>` : ''}<span>${esc(sl.name)}</span></button>`).join('')}</div>`);
+      hint = list.length ? 'Each slide becomes a page to write on.' : 'Pick a step in the lesson to get its slides.';
+    }
     if(t === 'move') hint = 'Tap a picture, words or a sticker to move it. Drag the corner to make it bigger.';
     if(t === 'rub') hint = 'Rub over a line or sticker to take it away.';
     if(t === 'text') hint = 'Tap the page where you want to write.';
@@ -201,6 +236,7 @@
     o.querySelectorAll('[data-col]').forEach(b => b.onclick = () => { B.col = b.dataset.col; if(B.editing){ B.editing.c = B.col; styleEditor(); } paintOpts(); });
     o.querySelectorAll('[data-size]').forEach(b => b.onclick = () => { B.size = +b.dataset.size; paintOpts(); });
     o.querySelectorAll('[data-stick]').forEach(b => b.onclick = () => { B.sticker = b.dataset.stick; paintOpts(); });
+    o.querySelectorAll('[data-slide]').forEach(b => b.onclick = () => { const sl = (B.slideList || [])[+b.dataset.slide]; if(!sl) return; let pg = null; try{ pg = sl.make(); }catch(e){} if(pg) addPages([pg]); setTool('pen'); });
     o.querySelectorAll('[data-paper]').forEach(b => b.onclick = () => { const p = page(); if(!p) return; snap(); p.bg = b.dataset.paper; delete p.bgImg; paint(); paintOpts(); scheduleSave(); });
   }
 
@@ -503,5 +539,5 @@
     }catch(e){ status('Sorry, the picture could not be saved here.'); }
   }
 
-  window.FabBoard = { open:openBoard, addBooklet:o => addBooklet(o), state:() => B, _page:page, _save:saveNow, _paint:paint };
+  window.FabBoard = { open:openBoard, addPages, undock, docked:() => !!(B.el && B.el.classList.contains('docked')), addBooklet:o => addBooklet(o), state:() => B, _page:page, _save:saveNow, _paint:paint };
 })();

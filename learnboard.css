@@ -164,3 +164,32 @@ body.cv-side #screen-board.active{ right:50vw; }
   .bd-desk.opts-side .bd-papers{ flex-direction:column; }
 }
 @media (prefers-reduced-motion:reduce){ .cv-btn, .bd-tool, .lt-card{ transition:none; } }
+
+/* ---------- The board docked beside a lesson: teaching on the left, the board on the right ---------- */
+#screen-board.docked{ position:fixed; top:0; right:0; bottom:0; left:auto; width:50vw; z-index:800; display:flex; flex-direction:column; margin:0; max-width:none;
+  padding:10px 14px 6px; background:var(--cream, #FFF6E6); overflow:hidden; border-left:4px solid var(--golden); box-shadow:-6px 0 18px rgba(43,26,18,.12); }
+body.bd-dock main{ max-width:none; margin:0 50vw 0 0; }
+#screen-board.docked .bd-pages #bdPageN{ white-space:nowrap; }
+#screen-board.docked .bd-lbl{ display:none; }
+.bd-slides{ display:flex; flex-wrap:wrap; gap:8px; }
+.bd-slidebtn{ display:inline-flex; align-items:center; gap:8px; min-height:52px; padding:8px 16px; border:0; border-radius:999px; background:#fff; color:var(--ink);
+  box-shadow:inset 0 0 0 2px var(--cream-deep); font:700 1.1rem var(--disp); cursor:pointer; }
+.bd-slidebtn:hover{ box-shadow:inset 0 0 0 3px var(--amber); }
+.bd-slidebtn i{ font-style:normal; font-size:1.3rem; }
+@media (max-width:900px), (orientation:portrait) and (max-width:1100px){
+  #screen-board.docked{ top:auto; left:0; width:100%; height:52vh; border-left:0; border-top:4px solid var(--golden); }
+  body.bd-dock main{ margin:0; padding-bottom:54vh; }
+}
+
+/* Docked: the tools run along the top so the page can use the whole width of the board. */
+#screen-board.docked .bd-top{ flex-wrap:nowrap; gap:8px; }
+#screen-board.docked .bd-title{ min-width:0; font-size:1.25rem; }
+#screen-board.docked .bd-btn{ min-height:50px; padding:6px 14px; }
+#screen-board.docked .bd-main{ flex-direction:column; gap:8px; margin-top:8px; }
+#screen-board.docked .bd-tools{ width:auto; display:flex; flex-wrap:wrap; overflow:visible; gap:6px; padding:2px; }
+#screen-board.docked .bd-tool{ flex:none; min-width:68px; min-height:66px; padding:4px 6px; border-radius:16px; font-size:.95rem; }
+#screen-board.docked .bd-tool i{ font-size:1.5rem; }
+#screen-board.docked .bd-desk{ padding:8px; }
+#screen-board.docked .bd-desk.opts-side{ flex-direction:column; }
+#screen-board.docked .bd-desk.opts-side .bd-opts{ flex-direction:row; flex-wrap:wrap; width:auto; margin:0 0 8px; overflow:visible; }
+#screen-board.docked .bd-desk.opts-side .bd-og{ flex-direction:row; align-items:center; }
