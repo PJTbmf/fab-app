@@ -315,11 +315,11 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       assert(lay.wide, 'nothing should spill off the side of the screen: ' + lay.over);
       /* Slides: one tap makes the whole deck */
       await tap('.bd-view:has-text("Slides")');
-      const sl = await pg.evaluate(() => { const p = FabBoard.page(); return { slide:p.slide, of:p.slides, chars:p.items.filter(i => i.t === 'c').map(i => i.k), label:document.getElementById('bdPageN').textContent }; });
-      assert(sl.slide === 1 && sl.of === 6 && /Slide 1( of |\/)6/.test(sl.label), 'slides deck: ' + JSON.stringify(sl));
+      const sl = await pg.evaluate(() => { const p = FabBoard.page(); return { slide:p.slide, of:p.slides, html:p.bg === 'html' && /fab-char bell/.test(p.html), shown:!!document.querySelector('#bdVis .bsl'), label:document.getElementById('bdPageN').textContent }; });
+      assert(sl.slide === 1 && sl.of === 6 && sl.html && sl.shown && /Slide 1( of |\/)6/.test(sl.label), 'slides deck: ' + JSON.stringify(sl));
       await tap('#bdNext'); await tap('#bdNext'); await tap('#bdNext');
-      const we = await pg.evaluate(() => FabBoard.page().items.filter(i => i.t === 'c').map(i => i.k).join());
-      assert(we === 'yellow,green', 'We do slide shows Bramble and Moss: ' + we);
+      const we = await pg.evaluate(() => (FabBoard.page().html.match(/fab-char (yellow|green)/g) || []).join());
+      assert(we === 'fab-char yellow,fab-char green', 'We do slide shows Bramble and Moss: ' + we);
       /* modelling tools */
       await tap('.bd-view:has-text("Tools")');
       assert(await pg.locator('.bd-kit .bk-tile').count() >= 4, 'tools for science');
@@ -439,6 +439,44 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     const r = await fr.evaluate(() => { const t = document.body.innerText; return { name:WORLD.cubNm(), pip:(t.match(/\bPip\b/g) || []).length, mine:(t.match(/Clover/g) || []).length }; });
     assert(r.name === 'Clover' && r.pip === 0 && r.mine >= 3, JSON.stringify(r));
     assert(/feed Clover/.test(await pg.evaluate(() => pwTreasureLine('🍎'))), 'the Learning Hub uses the name too');
+    await pg.close();
+  });
+  await test('fractions: children shade parts to answer, and slides show the fraction models', async () => {
+    const r = await page.evaluate(() => {
+      const p = BUILT_IN_PACKS.find(x => x.id === 'maths-flightpath-fractions'); learnOpen(p); learnGo(1);
+      const s = p.screens[1], st = Learn.state[1] = {}; pwStart(s, st, pwMe(), 3);
+      const k = st.kids[pwMe()]; k.phase = 'ydo'; let q; do { q = pwQuestion(s.steps[3]); } while(q.mode !== 'shade'); k.q = q; learnRender();
+      const parts = document.querySelectorAll('[data-pwshade]').length;
+      for(let i = 0; i < q.vars.k; i++) document.querySelector(`[data-pwshade="${i}"]`).dispatchEvent(new MouseEvent('click', { bubbles:true }));
+      document.querySelector('[data-pwact="shadecheck"]').click();
+      const sl = FabLearnBoard.slidesFor({ p, s, stp:s.steps[3], i:3 })();
+      const idea = sl[0].make().html;
+      return { parts, d:q.shade.d, right:k.last === 'right' || k.streak === 1, idea:/1\/3/.test(idea) && /a third/.test(idea) && /pw-frac/.test(idea) };
+    });
+    assert(r.parts === r.d, 'one button per part');
+    assert(r.right, 'shading the right number of parts is right: ' + JSON.stringify(r));
+    assert(r.idea, 'the big idea slide models thirds with fraction bars');
+  });
+  await test('Fab Fox World: Fab Says Field, Dad’s Workshop 3D builder, and the 3D studio make', async () => {
+    const pg = await newPage('/index.html');
+    await pg.evaluate(() => { showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await pg.$('.game-frame[data-game="world"]')).contentFrame();
+    await fr.waitForFunction(() => !!window.WORLD);
+    const r = await fr.evaluate(async () => {
+      const out = {}; const W = window.WORLD;
+      out.places = W.PLACES.map(p => p.n).join('|');
+      W.startMini('move'); await new Promise(r => setTimeout(r, 300)); document.querySelector('[data-w="sit"]').click(); await new Promise(r => setTimeout(r, 200));
+      out.move = /reach|wiggle|roll|touch|clap|march|flap|row|stretch|shake|breath|nod|move like|waddle|flutter|swing|scratch|sway/.test(document.querySelector('.mv-t').textContent);
+      W.closeScene(true);
+      W.startMini('workshop'); await new Promise(r => setTimeout(r, 300)); document.querySelector('[data-m="blocks"]').click(); await new Promise(r => setTimeout(r, 200));
+      document.querySelector('[data-tpl="house"]').click(); await new Promise(r => setTimeout(r, 300));
+      const cv = document.getElementById('cad3d'), d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; let orange = 0; for(let i = 0; i < d.length; i += 16) if(d[i] > 180 && d[i + 1] < 120 && d[i + 2] < 80) orange++;
+      out.blocks3d = orange > 200;
+      return out;
+    });
+    assert(/Fab Says Field/.test(r.places) && !/Bouncy Hole|Sunny’s|Leaf’s/.test(r.places), 'places: ' + r.places);
+    assert(r.move, 'a movement idea shows');
+    assert(r.blocks3d, 'the house appears in 3D');
     await pg.close();
   });
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
