@@ -479,6 +479,33 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(r.blocks3d, 'the house appears in 3D');
     await pg.close();
   });
+  await test('Fab Fox World: missions, the Music Hut beat maker, the nest, and the 3D view', async () => {
+    const pg = await newPage('/index.html');
+    await pg.evaluate(() => { showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await pg.$('.game-frame[data-game="world"]')).contentFrame();
+    await fr.waitForFunction(() => !!window.WORLD);
+    const r = await fr.evaluate(async () => {
+      const out = {}; const W = window.WORLD, S = W.S(), wait = ms => new Promise(r => setTimeout(r, ms));
+      S.visited = { treehouse:1, shed:1, den:1 }; S.cub.has = true; S.cub.name = 'Pebble';
+      document.getElementById('misBtn').click(); await wait(300);
+      out.ready = document.querySelectorAll('.mrow.ready').length; const before = S.spk;
+      document.querySelector('.mrow.ready .claim').click(); out.gained = S.spk - before; W.closeScene(true);
+      out.hut = !!W.PLACES.find(p => p.id === 'music');
+      mMusicHut(); await wait(200); document.querySelector('[data-m="beat"]').click(); await wait(200);
+      out.cells = document.querySelectorAll('.bcell').length; document.getElementById('bPlay').click(); await wait(3500);
+      out.loops = BEAT.loops; W.closeScene(true);
+      W.mNest(); await wait(5000); out.fabMoved = Math.abs(NS.fabX - 300) > 20 || Math.abs(NS.fabT - 300) > 20; W.closeScene(true);
+      document.getElementById('v3Btn').click(); await wait(500); out.v3 = V3;
+      const cv = document.getElementById('cv'), d = cv.getContext('2d').getImageData(0, 0, cv.width, 20).data; out.sky = d[2] > d[0];
+      document.getElementById('v3Btn').click(); out.v3off = !V3;
+      return out;
+    });
+    assert(r.ready >= 2 && r.gained >= 2, 'missions ready and collected: ' + JSON.stringify(r));
+    assert(r.hut && r.cells >= 56 && r.loops >= 1, 'the beat maker plays: ' + JSON.stringify(r));
+    assert(r.fabMoved, 'Fab walks about in the nest');
+    assert(r.v3 && r.sky && r.v3off, 'the 3D view shows a sky and switches back: ' + JSON.stringify(r));
+    await pg.close();
+  });
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
 
   await browser.close(); server.close();
