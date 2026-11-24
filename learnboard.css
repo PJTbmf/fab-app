@@ -396,3 +396,85 @@ body.pw-drawer-open .pw-child.has-board .pw-drawer-back{ display:block; position
   #screen-board.compact .bd-view i{ font-size:1.45rem; }
 }
 @media (max-width:1100px) and (min-width:821px){ .pw-child.has-board{ grid-template-columns:minmax(0, .88fr) minmax(0, 1.12fr); } }
+
+/* Home: the four hubs side by side in one row (two by two on narrow screens) */
+.category-grid{ grid-template-columns:repeat(4, minmax(0, 1fr)); max-width:1240px; }
+@media (max-width:900px){ .category-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+@media (max-width:480px){ .category-grid{ grid-template-columns:1fr; } }
+/* fraction bars in a question: always full width (they collapsed to a thin line inside the centred teaching column) */
+.pw-main .kx-bars, .pw-teach .kx-bars{ width:100%; }
+.pw-main .kx-bars .kx-fbar, .pw-teach .kx-bars .kx-fbar{ width:100%; max-width:440px; justify-self:center; }
+
+/* ---------- Fraction figures and shading (tap the parts) ---------- */
+.pw-frac.bar{ display:flex; width:min(460px, 100%); height:78px; margin:12px auto 6px; border:4px solid var(--ink); border-radius:12px; overflow:hidden; background:#fff; }
+.pw-frac.bar .pw-sh{ flex:1; display:flex; align-items:center; justify-content:center; border:0; border-left:4px solid var(--ink); background:#FFF6E6; font:700 1.05rem var(--disp); color:var(--ink); padding:0; }
+.pw-frac.bar .pw-sh:first-child{ border-left:0; }
+.pw-frac.bar .pw-sh.on{ background:var(--salmon); }
+.pw-frac.bar.tap .pw-sh{ cursor:pointer; min-width:44px; transition:background .15s; }
+.pw-frac.bar.tap .pw-sh:hover{ background:#ffe3c9; } .pw-frac.bar.tap .pw-sh.on:hover{ background:#e9824b; }
+.pw-frac.bar.tap .pw-sh:focus-visible{ outline:4px solid var(--sky); outline-offset:-6px; }
+.pw-frac.circle{ display:block; width:min(220px, 60%); margin:10px auto 4px; overflow:visible; }
+.pw-frac.circle .pw-sh-p{ fill:#FFF6E6; stroke:var(--ink); stroke-width:4; stroke-linejoin:round; transition:fill .15s; }
+.pw-frac.circle .pw-sh-p.on{ fill:var(--salmon); }
+.pw-frac.circle.tap .pw-sh-p{ cursor:pointer; } .pw-frac.circle.tap .pw-sh-p:hover{ fill:#ffe3c9; } .pw-frac.circle.tap .pw-sh-p.on:hover{ fill:#e9824b; }
+.pw-frac.circle text{ font:700 15px var(--disp); fill:var(--ink); pointer-events:none; }
+.pw-shade-n{ margin:4px 0 8px; font:700 1.1rem var(--disp); color:var(--ink-soft); }
+
+/* ---------- Slides (800 × 500, scaled to the page) ---------- */
+.bd-html{ flex:none; transform-origin:0 0; }
+.bsl{ position:relative; width:800px; max-width:none; margin:0; padding:0; height:500px; overflow:hidden; background:#fffdf6; color:var(--ink); font-family:var(--body, Georgia, serif); }
+.sl-band{ display:flex; align-items:center; gap:14px; height:66px; padding:0 22px; background:#FFE2CC; }
+.sl-idea .sl-band{ background:#E3F1F8; } .sl-think .sl-band{ background:#FFE2CC; } .sl-wedo .sl-band{ background:#FFF1B8; } .sl-ydo .sl-band{ background:#DDEFD3; } .sl-stop .sl-band{ background:#EFE4F7; }
+.sl-tag{ flex:none; padding:5px 14px; border-radius:999px; background:#fff; font:700 19px var(--disp); box-shadow:0 2px 0 rgba(43,26,18,.12); }
+.sl-title{ font:700 24px var(--disp); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sl-body{ position:absolute; left:26px; right:150px; top:78px; bottom:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; text-align:center; }
+.sl-wedo .sl-body{ right:190px; }
+.sl-cast{ position:absolute; right:10px; bottom:6px; display:flex; align-items:flex-end; }
+.sl-cast .fab-char{ width:118px; } .sl-wedo .sl-cast .fab-char{ width:96px; } .sl-wedo .sl-cast .fab-char + .fab-char{ margin-left:-18px; }
+.sl-q{ font:700 27px var(--disp); line-height:1.25; }
+.sl-model{ width:100%; display:flex; justify-content:center; }
+.sl-model > *{ margin-top:0 !important; margin-bottom:0 !important; }
+.bsl .pw-frac.bar{ width:min(480px, 100%); height:64px; margin:4px auto; }
+.bsl .pw-frac.circle{ width:170px; margin:2px auto; }
+.sl-fv{ width:100%; height:230px; min-height:0 !important; display:flex; }
+.sl-fv > .fv{ position:static !important; flex:1; max-height:none !important; }
+.sl-choices{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; font:700 24px var(--disp); }
+.sl-choices span{ padding:6px 16px; border-radius:14px; background:#fff; box-shadow:inset 0 0 0 3px var(--cream-deep, #F6E2B8); }
+.sl-choices span.ok{ background:#DDEFD3; box-shadow:inset 0 0 0 3px #4F7A2E; }
+.sl-ans{ min-width:120px; padding:6px 18px; border-radius:14px; background:#fff; font:700 30px var(--disp); color:#FE4D02; box-shadow:inset 0 0 0 3px #FE4D02; }
+.sl-ans.blank{ color:#b9a98a; box-shadow:inset 0 0 0 3px #e9dcc0; border-bottom:0; }
+.sl-worked{ margin:0; font-size:20px; line-height:1.35; max-width:600px; }
+.sl-note{ margin:0; font-size:18px; color:#5C6B52; } .sl-note.big{ font:700 26px var(--disp); color:var(--ink); line-height:1.3; }
+.sl-fracs{ width:100%; display:flex; flex-direction:column; gap:8px; }
+.sl-frow{ display:flex; align-items:center; gap:14px; }
+.sl-frow .pw-frac.bar{ flex:1; height:50px; margin:0; }
+.sl-frow .pw-frac.bar .pw-sh b{ font-size:16px; }
+.sl-frow .pw-frac.circle{ flex:none; width:96px; margin:0; }
+.sl-flab{ flex:none; width:136px; text-align:left; font:700 20px var(--disp); line-height:1.1; }
+.sl-flab b{ display:block; font-size:30px; color:#FE4D02; } .sl-flab small{ display:block; font:400 14px var(--body, Georgia); color:#5C6B52; }
+.sl-frow.eg{ margin-top:4px; padding-top:8px; border-top:3px dashed #F6E2B8; }
+/* fraction bars anywhere (lesson, picture page, slides) keep their width */
+.kx-bars{ width:100%; } .kx-bars .kx-fbar{ width:100%; max-width:440px; justify-self:center; }
+/* maths models drawn for slides */
+.sl-arr{ display:flex; flex-direction:column; gap:5px; padding:10px; border-radius:14px; background:#fff; box-shadow:inset 0 0 0 3px #F6E2B8; }
+.sl-arr span{ display:flex; gap:5px; } .sl-arr i, .sl-groups i, .sl-count i{ display:block; width:18px; height:18px; border-radius:50%; background:#FE4D02; }
+.sl-groups{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:560px; }
+.sl-grp{ display:flex; flex-wrap:wrap; gap:4px; width:74px; padding:8px; justify-content:center; border:3px solid #2b2f3a; border-radius:40%; background:#fff; }
+.sl-grp.left{ border-style:dashed; border-color:#9aa3a8; } .sl-groups i.left{ background:#437039; }
+.sl-count{ display:flex; flex-wrap:wrap; gap:7px; max-width:520px; justify-content:center; } .sl-count i{ width:26px; height:26px; }
+.sl-count i.two{ background:#2f6fed; } .sl-count i.gone{ background:#fff; box-shadow:inset 0 0 0 3px #b9a98a; position:relative; }
+.sl-count i.gone::after{ content:''; position:absolute; left:3px; right:3px; top:11px; height:3px; background:#b9a98a; transform:rotate(-40deg); }
+.sl-bar{ width:min(520px, 100%); font:700 22px var(--disp); }
+.sl-bar-whole{ padding:8px; border:3px solid #2b2f3a; border-radius:10px 10px 0 0; background:#E3F1F8; }
+.sl-bar-parts{ display:flex; border:3px solid #2b2f3a; border-top:0; border-radius:0 0 10px 10px; overflow:hidden; }
+.sl-bar-parts span{ padding:8px; background:#FFE9D6; } .sl-bar-parts span + span{ border-left:3px solid #2b2f3a; background:#FFF3C4; }
+.sl-cap{ margin:2px 0 0; font:700 18px var(--disp); color:#5C6B52; }
+.sl-fv{ height:auto !important; max-height:280px; } .sl-fv .fv{ zoom:.68; }
+.sl-model{ flex-direction:column; align-items:center; gap:4px; }
+
+/* the board's surroundings: equal heights, and a soft meadow under the page instead of a flat brown block */
+.pw-child.has-board > .pw-main{ min-height:var(--bdh, auto); box-sizing:border-box; }
+#screen-board.compact .bd-desk{ background:#FFF6E6 url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20800%20160%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M0%2090%20C120%2040%20240%2040%20360%2080%20S600%20130%20800%2070%20V160%20H0Z%27%20fill%3D%27%23bfe0a3%27/%3E%3Cpath%20d%3D%27M0%20120%20C160%2080%20300%20100%20420%20120%20S660%20150%20800%20110%20V160%20H0Z%27%20fill%3D%27%239fd47c%27/%3E%3Cg%20fill%3D%27%23fff%27%3E%3Ccircle%20cx%3D%2790%27%20cy%3D%27128%27%20r%3D%275%27/%3E%3Ccircle%20cx%3D%27260%27%20cy%3D%27112%27%20r%3D%274%27/%3E%3Ccircle%20cx%3D%27520%27%20cy%3D%27136%27%20r%3D%275%27/%3E%3Ccircle%20cx%3D%27700%27%20cy%3D%27122%27%20r%3D%274%27/%3E%3C/g%3E%3Cg%20fill%3D%27%23F3BB17%27%3E%3Ccircle%20cx%3D%2790%27%20cy%3D%27128%27%20r%3D%272%27/%3E%3Ccircle%20cx%3D%27260%27%20cy%3D%27112%27%20r%3D%271.6%27/%3E%3Ccircle%20cx%3D%27520%27%20cy%3D%27136%27%20r%3D%272%27/%3E%3Ccircle%20cx%3D%27700%27%20cy%3D%27122%27%20r%3D%271.6%27/%3E%3C/g%3E%3Cg%20fill%3D%27%23E84432%27%3E%3Ccircle%20cx%3D%27170%27%20cy%3D%27140%27%20r%3D%274%27/%3E%3Ccircle%20cx%3D%27610%27%20cy%3D%27146%27%20r%3D%274%27/%3E%3C/g%3E%3C/svg%3E") left bottom / 100% 34% no-repeat; box-shadow:inset 0 2px 10px rgba(43,26,18,.12); }
+#screen-board.compact .bd-desk::before{ content:''; position:absolute; right:16px; top:12px; width:44px; height:44px; border-radius:50%; background:radial-gradient(circle, #FFD483 55%, rgba(255,212,131,0) 70%); opacity:.9; pointer-events:none; }
+#screen-board.compact .bd-stage{ justify-content:flex-start; position:relative; z-index:1; }
+#screen-board.compact .bd-sheet{ box-shadow:0 10px 24px rgba(43,26,18,.22); }

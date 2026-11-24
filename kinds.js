@@ -282,6 +282,12 @@
         return { mode:'choice', ask:`Which fraction is “${frWords(k, d)}”?`, ans, choices:shuffle([ans, flipped, w2]), wrong:[W(flipped, 'flipped'), W(w2, 'neighbourDenominator')],
           reveal:`${ans} means ${frWords(k, d)}.`, vars:{ k, d, name:NAMES[d] || `${d}th`, parts:plural(d), words:frWords(k, d) } };
       }
+      /* Sometimes the child does the shading: tap parts of a bar or a circle to show the fraction. */
+      if(!p.noShade && Math.random() < (p.shade == null ? 0.4 : Number(p.shade))){
+        const shape = d <= 8 && Math.random() < 0.5 ? 'circle' : 'bar', other = fr(d - k, d);
+        return { mode:'shade', ask:`Shade ${ans} of the ${shape}.`, shade:{ d, shape }, ans, wrong:other !== ans ? [W(other, 'shadedOverUnshaded')] : [],
+          reveal:`${ans}: ${k} of the ${d} equal parts ${k === 1 ? 'is' : 'are'} shaded.`, vars:{ k, d, name:NAMES[d] || `${d}th`, parts:plural(d), unshaded:d - k, isare:k === 1 ? 'is' : 'are' } };
+      }
       const w2 = d - k === k ? fr(k, d + 1) : fr(k, d - k), tag2 = d - k === k ? 'neighbourDenominator' : 'shadedOverUnshaded';
       const on = shuffle(range(d)).slice(0, k).sort((x, y) => x - y);
       return { mode:'choice', ask:'What fraction of the shape is shaded?', vis:{ bars:[{ w:Array(d).fill(1), on }] }, ans, choices:shuffle([ans, flipped, w2]),

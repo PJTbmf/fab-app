@@ -7846,6 +7846,9 @@ function pwIdoHTML(s, kid, stp){
       ? `<span class="pw-choice ${pwNorm(c) === pwNorm(q.ans) ? 'model' : ''}" aria-hidden="true">${esc(pwShow(c))}</span>`
       : `<button type="button" class="pw-choice ${kid.idoGuess != null && pwNorm(c) === pwNorm(kid.idoGuess) ? 'guess' : ''}" data-pwact="idoguess" data-v="${esc(String(c))}" aria-pressed="${kid.idoGuess != null && pwNorm(c) === pwNorm(kid.idoGuess)}">${esc(pwShow(c))}</button>`).join('')}</div>
       ${kid.idoStage < 2 ? `<p class="pw-guesshint">${kid.idoGuess != null ? '🤔 Lovely thinking! Hold on to your idea while we watch.' : 'Have a think. Tap the one you would pick. There are no marks for this.'}</p>` : ''}`;
+  } else if(q.mode === 'shade'){
+    const k = (q.vars && q.vars.k) || 1;
+    ex = `<p class="pw-ask">${esc(q.ask)}</p>${pwFracFigure(q.shade.d, kid.idoStage >= 2 ? Array.from({ length:k }, (_, i) => i) : [], q.shade.shape, {})}<div class="pw-answer model">${kid.idoStage >= 2 ? esc(pwShow(q.ans)) : '<span class="pw-ph">?</span>'}</div>`;
   } else if(q.mode === 'orient'){
     ex = `<p class="pw-ask">Which ${q.d} is the right way round?</p>`;
   } else {
@@ -7900,7 +7903,32 @@ function pwVisHTML(q){
   if(v.bus){ const b = pwToArr(v.bus); return `<div class="pw-bus"><span class="pw-divisor">${b[0]}</span><span class="pw-dividend">${pwFmt(b[1])}</span></div>`; }
   return '';
 }
+/* A fraction figure: a bar or a circle cut into d equal parts. on = shaded parts. tap = parts are buttons the child taps. */
+function pwFracFigure(d, on, shape, o){
+  o = o || {}; on = pwToArr(on); d = Math.max(1, Number(d) || 1);
+  const lab = i => o.labels ? `<b>1/${d}</b>` : '';
+  if(shape === 'circle'){
+    const R = 100, C = 110, pt = a => [C + R * Math.cos(a), C + R * Math.sin(a)].map(n => n.toFixed(1)).join(' ');
+    const parts = Array.from({ length:d }, (_, i) => {
+      const a0 = -Math.PI / 2 + i / d * Math.PI * 2, a1 = -Math.PI / 2 + (i + 1) / d * Math.PI * 2;
+      const path = d === 1 ? `M ${C - R} ${C} A ${R} ${R} 0 1 0 ${C + R} ${C} A ${R} ${R} 0 1 0 ${C - R} ${C}` : `M ${C} ${C} L ${pt(a0)} A ${R} ${R} 0 ${a1 - a0 > Math.PI ? 1 : 0} 1 ${pt(a1)} Z`;
+      const am = (a0 + a1) / 2, lx = (C + R * .62 * Math.cos(am)).toFixed(1), ly = (C + R * .62 * Math.sin(am)).toFixed(1);
+      return `<path class="pw-sh-p ${on.includes(i) ? 'on' : ''}" d="${path}" ${o.tap ? `data-pwshade="${i}" role="button" tabindex="0" aria-pressed="${on.includes(i)}" aria-label="Part ${i + 1} of ${d}"` : ''}/>${o.labels ? `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle">1/${d}</text>` : ''}`;
+    }).join('');
+    return `<svg class="pw-frac circle ${o.tap ? 'tap' : ''}" viewBox="0 0 220 220" role="${o.tap ? 'group' : 'img'}" aria-label="A circle in ${d} equal parts, ${on.length} shaded">${parts}</svg>`;
+  }
+  return `<div class="pw-frac bar ${o.tap ? 'tap' : ''}" role="${o.tap ? 'group' : 'img'}" aria-label="A bar in ${d} equal parts, ${on.length} shaded">${Array.from({ length:d }, (_, i) => o.tap
+    ? `<button type="button" class="pw-sh ${on.includes(i) ? 'on' : ''}" data-pwshade="${i}" aria-pressed="${on.includes(i)}" aria-label="Part ${i + 1} of ${d}">${lab(i)}</button>`
+    : `<span class="pw-sh ${on.includes(i) ? 'on' : ''}">${lab(i)}</span>`).join('')}</div>`;
+}
+function pwShadeHTML(q, kid){
+  const on = pwToArr(kid.shade), d = q.shade.d;
+  return `${pwFracFigure(d, on, q.shade.shape, { tap:true })}
+    <p class="pw-shade-n" aria-live="polite">${on.length} of ${d} parts shaded</p>
+    <div class="choice-row"><button type="button" class="btn leaf" data-pwact="shadecheck" ${on.length ? '' : 'disabled'}>✓ Check</button><button type="button" class="btn soft" data-pwact="shadeclear" ${on.length ? '' : 'disabled'}>Start again</button></div>`;
+}
 function pwQuestionHTML(q, kid){
+  if(q.mode === 'shade') return `<p class="pw-ask">${esc(q.ask)}</p>${pwShadeHTML(q, kid)}`;
   if(q.mode === 'orient'){
     return `<p class="pw-ask">Which ${q.d} is the right way round?</p>
       <div class="pw-orient">
@@ -8010,11 +8038,11 @@ function pwChildHTML(s, st, id){
       <div class="choice-row"><button class="btn leaf" data-pwact="up">Yes, let's try it ➡️</button><button class="btn soft" data-pwact="stay">I'll stay here</button></div></div>`;
   } else {
     const q = kid.q;
-    const tapping = q.mode === 'choice' || (q.mode !== 'orient' && kid.tap);
+    const tapping = q.mode !== 'shade' && (q.mode === 'choice' || (q.mode !== 'orient' && kid.tap));
     let pad = '';
     if(tapping){
       pad = `<div class="pw-choices">${pwToArr(q.choices).map((c, i) => `<button class="pw-choice" data-pwchoice="${i}">${esc(pwShow(c))}</button>`).join('')}</div>`;
-    } else if(q.mode !== 'orient'){
+    } else if(q.mode !== 'orient' && q.mode !== 'shade'){
       const keys = q.mode === 'rem' ? [...PW_KEYS.slice(0, 9), 'r', '0', '⌫', '✓'] : PW_KEYS;
       pad = `<div class="pw-keys ${q.mode === 'rem' ? 'rem' : ''}">${keys.map(k => `<button class="pw-key ${k === '✓' ? 'go' : ''}" data-pwkey="${k}" aria-label="${k === '⌫' ? 'Delete' : k === '✓' ? 'Check' : k === 'r' ? 'remainder' : k}">${k}</button>`).join('')}</div>`;
     }
@@ -8240,6 +8268,8 @@ function pwClick(t, s, st){
     if(a === 'up'){ const keep = kid.done; pwStart(s, st, me, kid.step + 1); st.kids[me].done = keep; pwOpenStage = null; Sound.jingle(); return true; }
     if(a === 'down'){ if(kid.step < 1) return false; const keep = kid.done; pwStart(s, st, me, kid.step - 1); st.kids[me].done = keep; pwOpenStage = null; Sound.tick(); return true; }
     if(a === 'stay'){ kid.offer = false; kid.streak = 0; Sound.tick(); return true; }
+    if(a === 'shadeclear'){ kid.shade = []; Sound.tick(); return true; }
+    if(a === 'shadecheck'){ if(!kid.q || kid.q.mode !== 'shade' || kid.phase === 'ido' || kid.phase === 'ready') return false; const n = pwToArr(kid.shade).length; kid.shade = []; pwCheck(s, kid, `${n}/${kid.q.shade.d}`); return true; }
   }
   const pick = t.closest('[data-pwpick]');
   if(pick && !kid){ pwStart(s, st, me, Number(pick.dataset.pwpick)); pwOpenStage = null; Sound.ding(); return true; }
@@ -8258,6 +8288,8 @@ function pwClick(t, s, st){
   if(!kid || kid.offer || kid.rest || kid.phase === 'ido' || kid.phase === 'ready') return false;
   const o = t.closest('[data-orient]');
   if(o){ pwCheck(s, kid, Number(o.dataset.orient)); return true; }
+  const sh = t.closest('[data-pwshade]');
+  if(sh && kid.q && kid.q.mode === 'shade'){ const i = Number(sh.dataset.pwshade), cur = pwToArr(kid.shade); kid.shade = cur.includes(i) ? cur.filter(x => x !== i) : cur.concat(i); kid.last = null; Sound.tick(); return true; }
   const ch = t.closest('[data-pwchoice]');
   if(ch){ const c = pwToArr(kid.q.choices)[Number(ch.dataset.pwchoice)]; if(c == null) return false; pwCheck(s, kid, c); return true; }
   const key = t.closest('[data-pwkey]');
@@ -8278,7 +8310,7 @@ document.addEventListener('keydown', e => {
   const s = Learn.pack.screens[Learn.step];
   if(!s || s.type !== 'pathway') return;
   const st = Learn.state[Learn.step]; if(!st || pwIsTeacher(st)) return;
-  const kid = pwKid(st, pwMe()); if(!kid || kid.offer || kid.rest || kid.phase === 'ido' || kid.phase === 'ready' || !kid.q || kid.q.mode === 'orient' || kid.q.mode === 'choice' || kid.tap) return;
+  const kid = pwKid(st, pwMe()); if(!kid || kid.offer || kid.rest || kid.phase === 'ido' || kid.phase === 'ready' || !kid.q || kid.q.mode === 'orient' || kid.q.mode === 'choice' || kid.q.mode === 'shade' || kid.tap) return;
   const map = { Backspace:'⌫', Enter:'✓', r:'r', R:'r' };
   const k = /^[0-9]$/.test(e.key) ? e.key : map[e.key];
   if(!k) return;

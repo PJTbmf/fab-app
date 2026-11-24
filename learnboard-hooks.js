@@ -62,43 +62,95 @@
     return [words(q.ask || q.say || '', 80, 230, 84, INK, width)];
   }
   function kidNow(){ try{ const st = Learn.state[Learn.step]; return st && pwKid(st, pwMe()); }catch(e){ return null; } }
-  /* Slides: the step taught as a short deck, one job per character (dual coding).
-     💡 the big idea and 👀 I do: Miss Bell · 🤝 We do: Bramble and Moss · ⭐ You do: Fab · 🛑 a good place to stop: Mrs Lark.
-     Every slide is a board page, so the teacher can write on it. */
-  const BAND = { idea:'#E3F1F8', ido:'#FFE2CC', think:'#FFE2CC', wedo:'#FFF1B8', ydo:'#DDEFD3', stop:'#EFE4F7' };
-  const cast = (ks, w) => { const out = []; const list = [].concat(ks); const step = w * 0.78; let x = 1560 - w - (list.length - 1) * step;
-    list.forEach((k, i) => out.push({ t:'c', k, x:x + i * step, y:1000 - w * 1.42 - 20, w, lock:true })); return out; };
-  const band = (kind, head) => [{ t:'r', x:0, y:0, w:1600, h:150, f:BAND[kind] || '#fff8d6', c:BAND[kind] || '#fff8d6', lw:1, lock:true }, { t:'x', x:60, y:38, s:74, c:INK, txt:head, lock:true }];
-  const roomFor = ks => 1600 - 80 - ([].concat(ks).length > 1 ? 470 : 300);
-  function qItems(qq, maths, width){
-    const out = modelItems(qq, maths, width);
-    if(qq.mode === 'choice' && Array.isArray(qq.choices) && !(maths && /[+−\-×÷]/.test(qq.say || ''))){
-      const y = 230 + 92 * Math.max(1, out[0] && out[0].txt ? out[0].txt.split('\n').length : 1) + 40;
-      qq.choices.forEach((ch, i) => out.push(words(`${'abcd'[i]})  ${pwShow(ch)}`, 120, y + i * 96, 70, INK, width)));
+  /* Slides: the step taught as a short deck that shows the learning, not the same words again.
+     Each slide is a ready-made picture (HTML laid under the page, so the teacher can still write on it) with one job per
+     character: 💡 the big idea and 👀 I do: Miss Bell · 💭 my thinking · 🤝 We do: Bramble and Moss · ⭐ You do: Fab ·
+     🛑 a good place to stop: Mrs Lark. The models are the app's own: fraction bars and circles, place value blocks, groups,
+     number tracks, columns, maps, timelines and diagrams, drawn from the step's real questions. */
+  const escH = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  const CAST = { idea:['bell'], ido:['bell'], think:['bell'], wedo:['yellow', 'green'], ydo:['fab'], stop:['lark'] };
+  const CAST_NAME = { bell:'Miss Bell', yellow:'Bramble', green:'Moss', fab:'Fab', lark:'Mrs Lark' };
+  const TAG = { idea:'💡 The big idea', ido:'👀 I do: watch me', think:'💭 My thinking', wedo:'🤝 We do: together', ydo:'⭐ You do: your turn', stop:'🛑 A good place to stop' };
+  function slideHTML(kind, title, body){
+    return `<div class="bsl sl-${kind}"><div class="sl-band"><span class="sl-tag">${TAG[kind]}</span><span class="sl-title">${escH(title)}</span></div>` +
+      `<div class="sl-body">${body}</div><div class="sl-cast" aria-hidden="true">${CAST[kind].map(k => `<span class="fab-char ${k}" title="${CAST_NAME[k]}"></span>`).join('')}</div></div>`;
+  }
+  const range = n => Array.from({ length:n }, (_, i) => i);
+  const isFrac = stp => /^(frac|equalParts)/.test((stp && stp.kind) || '');
+  const firstSentence = t => { const m = String(t || '').match(/^.*?[.!?](\s|$)/); return (m ? m[0] : String(t || '')).trim(); };
+  /* the picture for one question: hidden answer, or revealed */
+  function modelHTML(stp, qq, reveal){
+    if(!qq) return '';
+    if(qq.mode === 'shade'){ const k = (qq.vars && qq.vars.k) || 1; return pwFracFigure(qq.shade.d, reveal ? range(k) : [], qq.shade.shape, {}); }
+    let h = ''; try{ h = pwVisHTML(qq) || ''; }catch(e){}
+    if(!h && window.FabVis){
+      try{ const spec = pwVisSpec(stp, qq); if(spec){ const fv = qq.fv || {}; const v = FabVis.html(spec, { ask:qq.ask || '', ans:qq.ans, vq:fv.vq, va:fv.va, vx:fv.vx, reveal:!!reveal }); if(v) h = `<div class="pw-vis sl-fv">${v}</div>`; } }catch(e){}
     }
-    return out;
+    if(!h) h = mathsModel(qq, reveal);
+    return h ? `<div class="sl-model">${h}</div>` : '';
+  }
+  /* When a maths question has no picture of its own, draw the maths: an array for ×, equal groups (and what is left over)
+     for ÷, counters or a bar model for + and −, a number line for counting on. */
+  function mathsModel(qq, reveal){
+    const m = /^\s*([\d,]+)\s*([×x÷+−\-])\s*([\d,]+)/.exec(String(qq.say || qq.ask || '').replace(/\(|\)/g, ''));
+    if(!m) return '';
+    const a = Number(m[1].replace(/,/g, '')), op = m[2], b = Number(m[3].replace(/,/g, ''));
+    const dot = c => `<i class="${c || ''}"></i>`;
+    if((op === '×' || op === 'x') && a <= 12 && b <= 12){
+      return `<div class="sl-arr" style="--c:${b}" role="img" aria-label="${a} rows of ${b}">${Array.from({ length:a }, () => `<span>${dot().repeat(b)}</span>`).join('')}</div><p class="sl-cap">${a} rows of ${b}${reveal ? ` = ${a * b}` : ''}</p>`;
+    }
+    if(op === '÷' && b >= 2 && b <= 12 && a <= 144){
+      const g = Math.floor(a / b), r = a % b;
+      if(g > 12) return '';
+      return `<div class="sl-groups" role="img" aria-label="${a} in groups of ${b}">${Array.from({ length:g }, () => `<span class="sl-grp">${dot().repeat(b)}</span>`).join('')}${r ? `<span class="sl-grp left">${dot('left').repeat(r)}</span>` : ''}</div><p class="sl-cap">${a} in groups of ${b}${reveal ? `: ${g} groups${r ? `, ${r} left over` : ''}` : ''}</p>`;
+    }
+    if((op === '+' || op === '−' || op === '-') && a <= 20 && b <= 20){
+      const sub = op !== '+';
+      return `<div class="sl-count" role="img" aria-label="counters">${dot().repeat(sub ? a - b : a)}${sub ? dot('gone').repeat(b) : dot('two').repeat(b)}</div><p class="sl-cap">${sub ? `${a}, take away ${b}` : `${a} and ${b} more`}${reveal ? ` = ${sub ? a - b : a + b}` : ''}</p>`;
+    }
+    if(op === '+' || op === '−' || op === '-'){
+      const sub = op !== '+', whole = sub ? a : a + b, p1 = sub ? a - b : a, p2 = b;
+      const w1 = Math.max(18, Math.round(p1 / whole * 100));
+      return `<div class="sl-bar"><div class="sl-bar-whole">${sub || reveal ? pwShow(whole) : '?'}</div><div class="sl-bar-parts"><span style="flex:${w1}">${!sub || reveal ? pwShow(p1) : '?'}</span><span style="flex:${100 - w1}">${pwShow(p2)}</span></div></div><p class="sl-cap">A bar model: the whole and its parts</p>`;
+    }
+    return '';
+  }
+  function questionHTML(stp, qq, reveal, maths){
+    const ask = qq.mode === 'orient' ? `Which ${qq.d} is the right way round?` : (qq.ask || qq.say || '');
+    const choices = qq.mode === 'choice' && Array.isArray(qq.choices) ? `<div class="sl-choices">${qq.choices.map((c, i) => `<span class="${reveal && pwNorm(c) === pwNorm(qq.ans) ? 'ok' : ''}">${'abcd'[i]}) ${escH(pwShow(c))}</span>`).join('')}</div>` : '';
+    const ans = reveal ? `<div class="sl-ans">${escH(qq.say ? `${qq.say} = ${pwShow(qq.ans)}` : pwShow(qq.ans))}</div>` : (qq.mode === 'choice' ? '' : '<div class="sl-ans blank">?</div>');
+    return `<div class="sl-q">${escH(ask)}</div>${modelHTML(stp, qq, reveal)}${choices}${ans}`;
+  }
+  /* the big idea, shown: for fractions, the equal parts themselves */
+  function ideaHTML(stp, tc, qq){
+    if(isFrac(stp)){
+      const P = stp.params || {}, dens = (Array.isArray(P.dens) && P.dens.length ? P.dens : [2, 3, 4]).slice(0, 3);
+      const NAME = { 2:'a half', 3:'a third', 4:'a quarter', 5:'a fifth', 6:'a sixth', 8:'an eighth', 10:'a tenth' };
+      const rows = dens.map(d => `<div class="sl-frow"><span class="sl-flab"><b>1/${d}</b> ${NAME[d] || 'one ' + d + 'th'}<small>${d} equal parts</small></span>${pwFracFigure(d, [0], 'bar', { labels:true })}</div>`).join('');
+      const big = dens[dens.length - 1], k = Math.max(2, big - 1);
+      const eg = big >= 3 ? `<div class="sl-frow eg"><span class="sl-flab"><b>${k}/${big}</b><small>${k} of ${big} equal parts</small></span>${pwFracFigure(big, range(k), 'bar', {})}${pwFracFigure(big, range(k), 'circle', {})}</div>` : '';
+      return `<div class="sl-fracs">${rows}${eg}</div><p class="sl-note">The bottom number: how many equal parts. The top number: how many we have.</p>`;
+    }
+    const m = modelHTML(stp, qq, true);
+    return `${m || ''}<p class="sl-note big">${escH(firstSentence(tc.idea || stp.task || stp.name))}</p>`;
   }
   function slidesFor(c){
     if(!c || !c.stp) return null;
-    const stp = c.stp, tc = stp.teach || {}, maths = isMaths(c), paper = maths ? 'squares' : 'plain', base = c.p.id + ':' + c.i;
+    const stp = c.stp, tc = stp.teach || {}, maths = isMaths(c);
     const q = () => { const k = kidNow(); return (k && (k.ex || k.q)) || pwQuestion(stp); };
-    const pg = (kind, head, who, items, bg) => ({ key:'', title:'', prompt:'', bg:bg || 'plain', items:[...band(kind, head), ...items, ...cast(who, [].concat(who).length > 1 ? 230 : 270)] });
-    return () => {
-      const list = [];
-      const W1 = roomFor('bell'), W2 = roomFor(['yellow', 'green']);
-      list.push({ icon:'💡', name:'The big idea', kind:'idea', make:() => pg('idea', `💡 ${stp.name}`, 'bell', [words(tc.idea || stp.task || 'Today we are learning something new, one small step at a time.', 80, 220, 64, INK, W1)]) });
-      list.push({ icon:'👀', name:'I do', kind:'ido', make:() => { const qq = q(); return pg('ido', '👀 I do: watch me', 'bell', qItems(qq, maths, W1), paper); } });
-      list.push({ icon:'💭', name:'My thinking', kind:'think', make:() => {
-        const qq = q(); let worked = '';
+    const page = (kind, body) => ({ key:'', title:'', prompt:'', bg:'html', html:slideHTML(kind, stp.name, body), items:[] });
+    return () => { const ex = q(); return [
+      { icon:'💡', name:'The big idea', kind:'idea', make:() => page('idea', ideaHTML(stp, tc, ex)) },
+      { icon:'👀', name:'I do', kind:'ido', make:() => page('ido', questionHTML(stp, ex, false, maths)) },
+      { icon:'💭', name:'My thinking', kind:'think', make:() => {
+        const qq = ex; let worked = '';
         try{ worked = PW_WORKED[qq.kind] ? PW_WORKED[qq.kind](qq) : pwFindHint(stp, qq, null).text; }catch(e){}
-        const ans = qq.say ? `${qq.say} = ${pwShow(qq.ans)}` : `The answer is ${pwShow(qq.ans)}`;
-        return pg('think', '💭 My thinking', 'bell', [words(worked || '', 80, 210, 58, INK, W1), words(ans, 80, 760, 76, FLAME, W1)]);
-      } });
-      list.push({ icon:'🤝', name:'We do', kind:'wedo', make:() => { const qq = pwQuestion(stp); return pg('wedo', '🤝 We do: one together', ['yellow', 'green'], [...qItems(qq, maths, W2), words(tc.we || 'Let’s try one together. The hint is open.', 80, 850, 44, '#5C6B52', W2)], paper); } });
-      list.push({ icon:'⭐', name:'You do', kind:'ydo', make:() => { const qq = pwQuestion(stp); return pg('ydo', '⭐ You do: your turn', 'fab', [...qItems(qq, maths, W1), words('Have a go on your own. Hints are always there.', 80, 850, 44, '#5C6B52', W1)], paper); } });
-      list.push({ icon:'🛑', name:'A good place to stop', kind:'stop', make:() => pg('stop', '🛑 A good place to stop', 'lark', [words('Well done for your thinking today. You can stop here and it still counts, or carry on if you would like to.', 80, 230, 62, INK, W1)]) });
-      return list;
-    };
+        return page('think', `<p class="sl-worked">${escH(worked)}</p>${questionHTML(stp, qq, true, maths)}`);
+      } },
+      { icon:'🤝', name:'We do', kind:'wedo', make:() => page('wedo', questionHTML(stp, pwQuestion(stp), false, maths) + '<p class="sl-note">Let’s work it out together.</p>') },
+      { icon:'⭐', name:'You do', kind:'ydo', make:() => page('ydo', questionHTML(stp, pwQuestion(stp), false, maths) + '<p class="sl-note">Your turn. Hints are always there.</p>') },
+      { icon:'🛑', name:'A good place to stop', kind:'stop', make:() => page('stop', '<p class="sl-note big">Well done for your thinking today.</p><p class="sl-note">You can stop here and it still counts, or carry on if you would like to.</p>') },
+    ]; };
   }
   /* Build the whole deck for the step, or rebuild it with fresh examples, and open it (on a chosen slide). */
   function showSlides(c, kind){

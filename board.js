@@ -125,7 +125,9 @@
     host = host || (B.el && B.el.parentNode); if(!host || !host.classList || !host.classList.contains('pw-centre')) return;
     const top = host.getBoundingClientRect().top + (window.scrollY || 0), vh = window.innerHeight || 800;
     const room = vh - top - 12, min = Math.min(520, vh - 16);
-    host.style.height = Math.round(room >= min ? Math.min(room, 980) : Math.min(vh - 16, 980)) + 'px';
+    const h = Math.round(room >= min ? Math.min(room, 980) : Math.min(vh - 16, 980));
+    host.style.height = h + 'px';
+    if(host.parentNode && host.parentNode.style) host.parentNode.style.setProperty('--bdh', h + 'px');   // the teaching column matches the board's height
   }
   function unmount(){
     if(!B.el) return;
@@ -145,7 +147,7 @@
   function setVis(html){
     B.visHTML = html || '';
     const v = B.el && B.el.querySelector('#bdVis'); if(!v) return;
-    if(!v.dataset.live) v.innerHTML = B.visHTML ? `<div class="pw-vis">${B.visHTML}</div>` : '';
+    v.dataset.sig = '';
     layout();
   }
   /* Ready-made pages that belong together (a step's slides): any old copy is replaced, and the first one opens. */
@@ -381,12 +383,19 @@
     B.cv.style.width = Math.round(p.w * B.scale) + 'px'; B.cv.style.height = Math.round(p.h * B.scale) + 'px';
     B.cv.width = Math.round(p.w * B.scale * dpr); B.cv.height = Math.round(p.h * B.scale * dpr);
     B.dpr = dpr;
+    /* Under the page: the step's picture (bg 'vis') or a ready-made slide (bg 'html'), laid out at half the page size and scaled. */
     const vis = B.el.querySelector('#bdVis');
-    if(vis){ const on = p.bg === 'vis'; vis.hidden = !on; B.el.querySelector('#bdSheet').classList.toggle('on-vis', on);
-      if(on){ vis.style.width = B.cv.style.width; vis.style.height = B.cv.style.height; if(p.key === 'live'){ vis.innerHTML = p.visHTML ? `<div class="pw-vis">${p.visHTML}</div>` : ''; vis.dataset.live = '1'; } else if(vis.dataset.live){ vis.dataset.live = ''; vis.innerHTML = B.visHTML ? `<div class="pw-vis">${B.visHTML}</div>` : ''; }
-        if(!B.visHTML && p.key !== 'live') vis.innerHTML = '<p class="bd-novis">This step has no picture. Use ✏️ My page or 📽️ Slides.</p>';
-        // the picture is laid out at a fixed size (half the page) and scaled, so it always fits and lines up with drawing on top
-        const pv = vis.querySelector('.pw-vis'); if(pv){ pv.style.width = (p.w / 2) + 'px'; pv.style.height = (p.h / 2) + 'px'; pv.style.transform = `scale(${B.scale * 2})`; } } }
+    if(vis){
+      const on = p.bg === 'vis' || p.bg === 'html'; vis.hidden = !on; B.el.querySelector('#bdSheet').classList.toggle('on-vis', on);
+      if(on){
+        vis.style.width = B.cv.style.width; vis.style.height = B.cv.style.height;
+        const inner = p.bg === 'html' ? `<div class="bd-html">${p.html || ''}</div>`
+          : (p.key === 'live' ? (p.visHTML ? `<div class="pw-vis">${p.visHTML}</div>` : '') : (B.visHTML ? `<div class="pw-vis">${B.visHTML}</div>` : '<p class="bd-novis">This step has no picture. Use ✏️ My page or 📽️ Slides.</p>'));
+        const sig = (p.id || '') + '|' + inner.length + '|' + inner.slice(0, 80) + inner.slice(-80);
+        if(vis.dataset.sig !== sig){ vis.innerHTML = inner; vis.dataset.sig = sig; vis.dataset.live = p.key === 'live' ? '1' : ''; }
+        const pv = vis.firstElementChild; if(pv && pv.classList && (pv.classList.contains('pw-vis') || pv.classList.contains('bd-html'))){ pv.style.width = (p.w / 2) + 'px'; pv.style.height = (p.h / 2) + 'px'; pv.style.transform = `scale(${B.scale * 2})`; }
+      }
+    }
     paintViews();
     paint();
   }
@@ -408,7 +417,7 @@
     paintAll(); scheduleSave();
   }
   function paper(g, p){
-    if(p.bg === 'vis'){ g.clearRect(0, 0, p.w, p.h); return; }
+    if(p.bg === 'vis' || p.bg === 'html'){ g.clearRect(0, 0, p.w, p.h); return; }
     g.fillStyle = '#fffdf6'; g.fillRect(0, 0, p.w, p.h);
     if(p.bg === 'img'){ const im = B.imgs.get(p.bgImg); if(im && im.complete) g.drawImage(im, 0, 0, p.w, p.h); else loadImg(p.bgImg); return; }
     g.save();
