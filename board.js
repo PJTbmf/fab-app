@@ -6,7 +6,7 @@
 (function(){
   'use strict';
   const PAGE_W = 1600, PAGE_H = 1000, MAX_IMG = 1600, BOOK_W = 1240, MAX_PDF_PAGES = 40;
-  const COLS = ['#2b2f3a', '#e84432', '#2f6fed', '#437039', '#f3bb17', '#9b6bd1', '#ef915e', '#ffffff'];
+  const COLS = ['#2b2f3a', '#FE4D02', '#2f6fed', '#4F7A2E', '#f3bb17', '#9b6bd1', '#ef915e', '#ffffff'];
   const COLN = ['Black', 'Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Orange', 'White'];
   const STICKERS = ['⭐', '✅', '👍', '❤️', '🌈', '🦊', '🎉', '💡', '❓', '🏅'];
   const PAPERS = [{ k:'plain', n:'Plain' }, { k:'lines', n:'Lines' }, { k:'squares', n:'Squares' }, { k:'dots', n:'Dots' }];
@@ -249,7 +249,7 @@
     g.fillStyle = '#fffdf6'; g.fillRect(0, 0, p.w, p.h);
     if(p.bg === 'img'){ const im = B.imgs.get(p.bgImg); if(im && im.complete) g.drawImage(im, 0, 0, p.w, p.h); else loadImg(p.bgImg); return; }
     g.save();
-    if(p.bg === 'lines'){ g.strokeStyle = 'rgba(70,130,200,.28)'; g.lineWidth = 2; for(let y = 120; y < p.h; y += 64){ g.beginPath(); g.moveTo(0, y); g.lineTo(p.w, y); g.stroke(); } g.strokeStyle = 'rgba(232,68,50,.45)'; g.beginPath(); g.moveTo(110, 0); g.lineTo(110, p.h); g.stroke(); }
+    if(p.bg === 'lines'){ g.strokeStyle = 'rgba(70,130,200,.28)'; g.lineWidth = 2; for(let y = 120; y < p.h; y += 64){ g.beginPath(); g.moveTo(0, y); g.lineTo(p.w, y); g.stroke(); } g.strokeStyle = 'rgba(254,77,2,.45)'; g.beginPath(); g.moveTo(110, 0); g.lineTo(110, p.h); g.stroke(); }
     else if(p.bg === 'squares'){ g.strokeStyle = 'rgba(70,130,200,.22)'; g.lineWidth = 1.5; for(let x = 0; x <= p.w; x += 50){ g.beginPath(); g.moveTo(x, 0); g.lineTo(x, p.h); g.stroke(); } for(let y = 0; y <= p.h; y += 50){ g.beginPath(); g.moveTo(0, y); g.lineTo(p.w, y); g.stroke(); } }
     else if(p.bg === 'dots'){ g.fillStyle = 'rgba(70,90,120,.35)'; for(let x = 50; x < p.w; x += 50) for(let y = 50; y < p.h; y += 50){ g.beginPath(); g.arc(x, y, 2.6, 0, 7); g.fill(); } }
     g.restore();
@@ -267,7 +267,7 @@
       g.stroke(); g.restore();
     } else if(it.t === 'i'){
       const im = B.imgs.get(it.id);
-      g.save(); g.shadowColor = 'rgba(49,65,40,.22)'; g.shadowBlur = 14; g.shadowOffsetY = 4;
+      g.save(); g.shadowColor = 'rgba(43,26,18,.22)'; g.shadowBlur = 14; g.shadowOffsetY = 4;
       if(im && im.complete){ g.fillStyle = '#fff'; g.fillRect(it.x - 6, it.y - 6, it.w + 12, it.h + 12); g.shadowColor = 'transparent'; g.drawImage(im, it.x, it.y, it.w, it.h); }
       else { g.fillStyle = '#f3ead6'; g.fillRect(it.x, it.y, it.w, it.h); loadImg(it.id); }
       g.restore();

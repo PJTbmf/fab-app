@@ -544,7 +544,7 @@
 .kx-fbar{ width:min(420px,94%); }
 .kx-cap{ display:block; text-align:left; font-family:var(--disp); font-weight:700; font-size:1rem; margin:0 0 3px 2px; color:var(--ink-soft); }
 .kx-row{ display:flex; border:3px solid var(--ink); border-radius:10px; overflow:hidden; height:44px; background:#fff; }
-.kx-row i{ border-left:3px solid var(--ink); background:#fffbf3; }
+.kx-row i{ border-left:3px solid var(--ink); background:#FFF6E6; }
 .kx-row i:first-child{ border-left:0; }
 .kx-row i.on{ background:var(--salmon); }
 `;
