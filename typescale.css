@@ -1,0 +1,35 @@
+/* One set of text sizes for the whole app, so text is in proportion wherever it appears.
+   Loaded last. Sizes grow a little on big screens and shrink a little on phones.
+   Title (screen and page names) · Heading (cards, tiles, sections) · Lead (the main words a child reads: prompts, status, card text)
+   Body (descriptions) · Small (hints, captions, small print; never below 15px) · Button · Badge */
+:root{
+  --t-title:clamp(1.75rem, 1.2rem + 1.6vw, 2.25rem);
+  --t-head:clamp(1.25rem, 1.05rem + .55vw, 1.45rem);
+  --t-lead:clamp(1.2rem, 1.02rem + .5vw, 1.4rem);
+  --t-body:clamp(1.02rem, .96rem + .2vw, 1.1rem);
+  --t-small:.95rem;
+  --t-btn:clamp(1.02rem, .97rem + .15vw, 1.1rem);
+  --t-btn-big:clamp(1.12rem, 1rem + .35vw, 1.3rem);
+  --t-badge:.8rem;
+  --t-display:clamp(1.7rem, 1.2rem + 1.6vw, 2.3rem);
+  --lh-tight:1.2; --lh-body:1.45;
+}
+/* titles: the brand headline font everywhere, the same size on every screen */
+body .page-title, body .screen-title, body .lp-title{ font-family:var(--headline); font-weight:400; font-size:var(--t-title); line-height:var(--lh-tight); letter-spacing:.01em; }
+body .screen-top .screen-title{ color:#FE4D02; text-shadow:2px 2px 0 var(--cream); }
+/* headings */
+body .tile h2, body .wb-tile h3, body :where(.screen:not(#screen-learn,#screen-lesson,#screen-board,#screen-music)) :where(h2,h3){ font-size:var(--t-head); line-height:var(--lh-tight); }
+body .category-tile h2{ font-size:calc(var(--t-head) * 1.08); }
+/* lead text: prompts, game status lines and card text */
+body .c4-status, body .ttt-status, body .ck-status, body .chat-card, body .hello-card, body .bye-card, body .fab-hello .bubble span, body .gc-say, body .gc-steps{ font-size:var(--t-lead); line-height:1.4; }
+body .fab-hello .bubble b{ font-size:calc(var(--t-lead) * 1.08); }
+/* body text */
+body .tile p, body .wb-tile p, body .page-sub, body :where(.screen:not(#screen-learn,#screen-lesson,#screen-board,#screen-music)) :where(p,li){ font-size:var(--t-body); line-height:var(--lh-body); }
+/* small print */
+body .hint, body .gc-who small, body :where(.screen:not(#screen-learn,#screen-lesson,#screen-board,#screen-music)) :where(small,.sub){ font-size:var(--t-small); line-height:1.4; }
+/* buttons */
+body .btn, body .btn-back, body .pill-choice, body .level-btn, body .gc-chip, body .tile .btn{ font-size:var(--t-btn); }
+body .ritual-btn{ font-size:var(--t-btn-big); }
+body .badge{ font-size:var(--t-badge); letter-spacing:.02em; }
+/* big display words (charades, the wheel, affirmations) keep their size but share one scale */
+body .charade-word, body .big-card .big, body .wb-big{ font-size:var(--t-display); line-height:1.2; }
