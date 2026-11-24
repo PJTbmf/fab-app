@@ -238,6 +238,7 @@
         <div class="st-row"><button type="button" class="btn small leaf" id="stMake">Make 4 new codes</button></div>
         <div class="st-codes" id="stCodes">${staffCodes.map(c => `<div><b>${h(animalOf(c))} ${h(c)}</b><input readonly value="${h(location.origin + location.pathname + '?learner=' + c)}" aria-label="App link for ${h(c)}"><button type="button" class="btn small soft" data-stcopy="${h(c)}">Copy link</button></div>`).join('')}</div>
         <p class="hint">A child can use their own link (best in Pencil Spaces: one Web Viewer per child), or type or tap their code on the welcome screen.</p></div>
+      ${window.FabCheck ? FabCheck.celebrateHTML() : ''}
       <div class="me-card"><h2>Soft impact on this device</h2>
         ${codes.length ? `<div style="overflow-x:auto"><table class="st-table"><thead><tr><th>Code</th><th>Days</th><th>Minutes in World</th><th>Stars earned</th><th>Check-ins</th><th>Feelings</th><th>Enjoyment</th><th>Confidence (first → latest)</th><th>How learning felt</th><th>Last seen</th></tr></thead>
           <tbody>${S.map(row).join('')}<tr class="tot"><td>All (${codes.length})</td><td>${all.days}</td><td>${all.mins}</td><td>${all.stars}</td><td>${all.checkins}</td><td>${nFeel ? Math.round(100 * brightOrSettled / nFeel) + '% bright or settled' : '–'}</td><td>${e1 == null ? '–' : '★ ' + e1.toFixed(1)}</td><td>${all.conf.length ? Math.round(100 * confGood / all.conf.length) + '% getting there or strong' : '–'}</td><td>${nSteps ? Math.round(100 * all.steps.right / nSteps) + '% just right' : '–'}</td><td></td></tr></tbody></table></div>`
@@ -255,6 +256,7 @@
         <li><b>Pupil codes only.</b> No names, health information or free text are collected.</li>
         <li><b>Stays on the device.</b> Nothing is sent anywhere. To build a service-wide picture, download the CSV on each device and add it here, or move to a central database later.</li>
         <li><b>Before using with children:</b> include this in BMF's privacy notice, DPIA and AI and data policy, and tell families in plain words. This is a draft for BMF to check.</li></ul></div>`;
+    if(window.FabCheck) FabCheck.celebrateWire(box, renderStaff);
     wireVoices(box, () => { if(q1('#screen-staff') && q1('#screen-staff').classList.contains('active')) renderStaff(); });
     box.querySelector('#stMake').addEventListener('click', () => { staffCodes = staffCodes.concat(typeof pupilMakeCodes === 'function' ? pupilMakeCodes(4) : []); tick(); renderStaff(); });
     box.querySelectorAll('[data-stcopy]').forEach(b => b.addEventListener('click', () => { const link = location.origin + location.pathname + '?learner=' + b.dataset.stcopy; try{ navigator.clipboard.writeText(link); b.textContent = 'Copied ✓'; }catch(e){ const i = b.parentNode.querySelector('input'); if(i) i.select(); b.textContent = 'Press Ctrl+C'; } }));

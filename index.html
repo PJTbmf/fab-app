@@ -2110,6 +2110,8 @@ const Sound = {
   gentle(){ this.tone(392, .3, 'sine', .1); this.tone(494, .3, 'sine', .1, .18); },           /* draw / soft end */
   toggleOn(){ this.tone(660, .12, 'triangle', .22); this.tone(880, .16, 'triangle', .22, .1); } /* clear "sound's on" chime */
 };
+/* Shared with Fab Fox World and the games in frames, which play their sounds through this engine (and its mute switch) */
+window.Sound = Sound;
 /* Warm up the AudioContext on the very first tap/click anywhere on the page.
    Browsers keep AudioContexts suspended until a user gesture confirms them;
    doing this once, early, means the first real game sound doesn't get lost
@@ -7963,7 +7965,7 @@ function pwLadderHTML(s, kid, pickable){
   const rung = i => {
     const stp = s.steps[i], now = kid && kid.step === i, done = secured.includes(i);
     return `<li><button class="pw-rung ${now ? 'now' : ''} ${done ? 'secure' : ''}" ${pickable ? `data-pwpick="${i}"` : 'disabled'}>
-      <span class="pw-rung-n">${done ? '✓' : i + 1}</span><span class="pw-rung-name">${esc(stp.name)}</span>${stp.year ? `<span class="pw-rung-year">${esc(stp.year)}</span>` : ''}</button></li>`;
+      <span class="pw-rung-n">${done ? '✓' : i + 1}</span><span class="pw-rung-name">${esc(stp.name)}${stp.check ? (kid && window.FabCheck && FabCheck.isPassed(kid, i) ? ' 🏅' : ' 🚧') : ''}</span>${stp.year ? `<span class="pw-rung-year">${esc(stp.year)}</span>` : ''}</button></li>`;
   };
   const stages = pwStages(s);
   if(stages.length < 2) return `<ol class="pw-ladder">${s.steps.map((_, i) => rung(i)).reverse().join('')}</ol>`;
@@ -8039,6 +8041,7 @@ function pwChildHTML(s, st, id){
   const stp = s.steps[kid.step];
   if(kid.rest) return `<div class="lp-stop"><div class="fab-say"><span class="fab-char nurse" role="img" aria-label="Nurse Willow"></span><div class="bubble"><b>Have a lovely rest.</b>Taking a break is a great idea. Come back whenever you're ready.</div></div>
     <div class="choice-row"><button class="btn leaf" data-pwact="back">I'm ready</button></div></div>`;
+  if(kid.phase === 'check' && window.FabCheck && stp.check) return FabCheck.html(s, st, kid);
   let body;
   if(kid.phase === 'ido' || kid.phase === 'ready'){
     const vis = kid.phase === 'ido' ? pwVisPanel(stp, kid.ex || pwQuestion(stp), ['overview', 'focus', 'reveal'][Math.min(2, kid.idoStage || 0)]) : pwVisPanel(stp, { ask:'', ans:'' }, 'overview');
@@ -8167,13 +8170,14 @@ function pwTeacherHTML(s, st){
     if(!k) return `<div class="pw-card waiting"><div class="pw-card-name">${esc(pwName(id))}</div><p class="hint">Choosing a step…</p>
       <div class="pw-card-btns"><button class="btn small soft" data-pwset="${esc(id)}" data-pwto="0">Start at step 1</button></div></div>`;
     const stp = s.steps[k.step];
-    const phase = { ido:'👀 I do', wedo:'🤝 We do', ready:'🌟 Ready to practise' }[k.phase] || '';
+    const phase = { ido:'👀 I do', wedo:'🤝 We do', ready:'🌟 Ready to practise', check:'🚧 Checkpoint' }[k.phase] || '';
     const status = k.rest ? '😴 On a break' : k.help ? '🙋 Would like help' : k.offer ? '🌟 Choosing next step' : k.last === 'try' ? '💛 Having another go' : '✏️ Working';
     return `<div class="pw-card ${k.help ? 'help' : ''} ${k.rest ? 'rest' : ''}">
       <div class="pw-card-name">${esc(pwName(id))}</div>
       <div class="pw-card-step">Step ${k.step + 1}: ${esc(stp.name)}${stp.year ? ` <span class="pw-rung-year">${esc(stp.year)}</span>` : ''}</div>
       <div class="pw-card-status">${phase ? phase + ' · ' : ''}${status} · ${k.tap ? '✋ tapping' : '⌨️ typing'}</div>
-      ${k.hintLabel ? `<div class="pw-card-hint">💡 ${esc(k.hintLabel)}</div>` : ''}
+      ${k.hintLabel && k.phase !== 'check' ? `<div class="pw-card-hint">💡 ${esc(k.hintLabel)}</div>` : ''}
+      ${window.FabCheck ? FabCheck.teacherLine(k, stp, id) : ''}
       <div class="pw-card-stats">⭐ ${k.done || 0} correct today · ${'●'.repeat(Math.min(k.streak || 0, PW_STREAK_TO_OFFER))}${'○'.repeat(Math.max(0, PW_STREAK_TO_OFFER - (k.streak || 0)))} in a row · ✓ ${pwToArr(k.secured).length} steps secure</div>
       <div class="pw-card-btns">
         <button class="btn small soft" data-pwset="${esc(id)}" data-pwto="${k.step - 1}" ${k.step === 0 ? 'disabled' : ''}>◀ Easier</button>
@@ -8205,6 +8209,7 @@ function pwCheck(s, kid, value){
     if(kid.stepDone >= PW_STREAK_TO_OFFER && !secured.includes(kid.step)){ secured.push(kid.step); kid.secured = secured; kid.justFound = true; kid.howDone = false; fabWorldTreasure(pwBadge(kid.step).e); }
     if(kid.streak >= PW_STREAK_TO_OFFER && kid.step < s.steps.length - 1) kid.offer = true;
     kid.q = pwQuestion(step);
+    if(window.FabCheck) FabCheck.afterRight(s, kid);
     Sound.jingle();
     return 'right';
   }
@@ -8259,6 +8264,7 @@ function pwClick(t, s, st){
   }
   const cp = t.closest('[data-pwcopy]');
   if(cp){ const code = cp.dataset.pwcopy; try{ navigator.clipboard.writeText(pupilLink(Learn.pack.id, code)); cp.textContent = 'Copied ✓'; }catch(e){ const i = cp.parentNode.querySelector('input'); if(i){ i.select(); cp.textContent = 'Press Ctrl+C'; } } return false; }
+  if(window.FabCheck){ const r = FabCheck.click(t, s, st, me); if(r != null) return r; }
   const stg = t.closest('[data-pwstage]');
   if(stg){ const k = Number(stg.dataset.pwstage); pwOpenStage = pwOpenStage === k ? -1 : k; Sound.tick(); return true; }
   const act = t.closest('[data-pwact]');
@@ -8281,6 +8287,7 @@ function pwClick(t, s, st){
     if(a === 'rest'){ kid.rest = true; Sound.gentle(); return true; }
     if(a === 'back'){ kid.rest = false; Sound.tick(); return true; }
     if(a === 'mode'){ kid.tap = !kid.tap; kid.input = ''; Sound.tick(); return true; }
+    if(a === 'up' && window.FabCheck && s.steps[kid.step].check && !FabCheck.isPassed(kid, kid.step)){ kid.offer = false; FabCheck.afterRight(s, kid); return true; }
     if(a === 'up'){ const keep = kid.done; pwStart(s, st, me, kid.step + 1); st.kids[me].done = keep; pwOpenStage = null; Sound.jingle(); return true; }
     if(a === 'down'){ if(kid.step < 1) return false; const keep = kid.done; pwStart(s, st, me, kid.step - 1); st.kids[me].done = keep; pwOpenStage = null; Sound.tick(); return true; }
     if(a === 'stay'){ kid.offer = false; kid.streak = 0; Sound.tick(); return true; }
@@ -8301,7 +8308,7 @@ function pwClick(t, s, st){
   if(rt && pwIsTeacher(st)){ const k = st.kids[rt.dataset.pwreteach]; if(k){ pwTeachInit(k, s.steps[k.step]); } Sound.tick(); return true; }
   const clear = t.closest('[data-pwclear]');
   if(clear && pwIsTeacher(st)){ const k = st.kids[clear.dataset.pwclear]; if(k) k.help = false; Sound.tick(); return true; }
-  if(!kid || kid.offer || kid.rest || kid.phase === 'ido' || kid.phase === 'ready') return false;
+  if(!kid || kid.offer || kid.rest || kid.phase === 'ido' || kid.phase === 'ready' || kid.phase === 'check') return false;
   const o = t.closest('[data-orient]');
   if(o){ pwCheck(s, kid, Number(o.dataset.orient)); return true; }
   const sh = t.closest('[data-pwshade]');
@@ -8326,7 +8333,7 @@ document.addEventListener('keydown', e => {
   const s = Learn.pack.screens[Learn.step];
   if(!s || s.type !== 'pathway') return;
   const st = Learn.state[Learn.step]; if(!st || pwIsTeacher(st)) return;
-  const kid = pwKid(st, pwMe()); if(!kid || kid.offer || kid.rest || kid.phase === 'ido' || kid.phase === 'ready' || !kid.q || kid.q.mode === 'orient' || kid.q.mode === 'choice' || kid.q.mode === 'shade' || kid.tap) return;
+  const kid = pwKid(st, pwMe()); if(!kid || kid.offer || kid.rest || kid.phase === 'check' || kid.phase === 'ido' || kid.phase === 'ready' || !kid.q || kid.q.mode === 'orient' || kid.q.mode === 'choice' || kid.q.mode === 'shade' || kid.tap) return;
   const map = { Backspace:'⌫', Enter:'✓', r:'r', R:'r' };
   const k = /^[0-9]$/.test(e.key) ? e.key : map[e.key];
   if(!k) return;
@@ -8540,6 +8547,7 @@ if(!Live.start()) learnDeepLink();
 <script src="gamecast.js"></script>
 <script src="home.js"></script>
 <script src="wellbeing.js"></script>
+<script src="checkpoint.js"></script>
 <link rel="stylesheet" href="typescale.css">
 </body>
 </html>
