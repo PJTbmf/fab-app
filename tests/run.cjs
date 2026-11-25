@@ -1106,10 +1106,10 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(st.groups >= 5 && st.uniq === st.groups && st.chips === st.groups && st.w > .85 && st.tile >= 120 && st.pv === 720 && st.pvShown > .5, 'My stuff: ' + JSON.stringify(st));
     await fr.evaluate(() => { document.querySelector('#stChips button:last-child').click(); try{ WORLD.closeScene(true); }catch(e){} document.body.classList.remove('full'); window.dispatchEvent(new Event('resize')); });
     /* Read to me is Miss Bell: a woman's voice whenever the device has one */
-    const v = await page.evaluate(() => { const fake = [{ name:'Microsoft George - English (United Kingdom)', lang:'en-GB' }, { name:'Microsoft Hazel - English (United Kingdom)', lang:'en-GB' }, { name:'Google UK English Male', lang:'en-GB' }], orig = speechSynthesis.getVoices;
+    const v = await page.evaluate(() => { const fake = [{ name:'Microsoft George - English (United Kingdom)', lang:'en-GB' }, { name:'Microsoft Hazel - English (United Kingdom)', lang:'en-GB' }, { name:'Google UK English Male', lang:'en-GB' }, { name:'Google UK English Female', lang:'en-GB' }], orig = speechSynthesis.getVoices;
       speechSynthesis.getVoices = () => fake; const best = FabVoice.bestVoices().map(x => x.name); speechSynthesis.getVoices = () => [fake[0]]; const only = FabVoice.bestVoices().map(x => x.name); speechSynthesis.getVoices = orig;
       return { best, only, male:FabVoice.isMaleVoice(fake[0]), fem:FabVoice.isMaleVoice(fake[1]) }; });
-    assert(v.best.length === 1 && /Hazel/.test(v.best[0]) && v.only.length === 1 && v.male && !v.fem, 'Miss Bell’s voice: ' + JSON.stringify(v));
+    assert(v.best.length === 2 && /Google UK English Female/.test(v.best[0]) && /Hazel/.test(v.best[1]) && v.only.length === 1 && v.male && !v.fem, 'Miss Bell’s voice: ' + JSON.stringify(v));
   });
   await test('Miss Bell’s recorded voice reads the big idea in I do, starts at the right place in the pack file, and stops on a second tap', async () => {
     const idx = await page.evaluate(() => { showScreen('screen-learn'); const p = BUILT_IN_PACKS.find(x => x.id === 'english-flightpath-word-power'), i = p.screens.findIndex(x => x.type === 'pathway'); learnOpen(p); learnGo(i); return i; });
