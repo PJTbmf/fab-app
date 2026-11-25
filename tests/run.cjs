@@ -1101,10 +1101,10 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await fr.waitForFunction(() => { const s = WORLD.scene(); return !!s && s.cls !== 'sc-map'; }, null, { timeout:12000 });
     await fr.evaluate(() => { try{ WORLD.closeScene(true); }catch(e){} });
     /* My stuff */
-    await fr.evaluate(() => WORLD.mStuff('fab'));
-    const st = await fr.evaluate(() => { const box = document.getElementById('stItems'), g = [...box.querySelectorAll('.grp')].map(x => x.textContent), stuff = document.querySelector('.sc-stuff .stuff').getBoundingClientRect(), tile = box.querySelector('.it').getBoundingClientRect(), pv = document.querySelector('.sc-stuff .pv');
-      return { groups:g.length, uniq:new Set(g).size, chips:document.querySelectorAll('#stChips button').length, w:stuff.width / innerWidth, tile:tile.width, pv:pv.width, pvShown:pv.getBoundingClientRect().height / innerHeight }; });
-    assert(st.groups >= 5 && st.uniq === st.groups && st.chips === st.groups && st.w > .85 && st.tile >= 120 && st.pv === 720 && st.pvShown > .5, 'My stuff: ' + JSON.stringify(st));
+    await fr.evaluate(() => WORLD.mStuff('fab')); await fr.waitForSelector('.kbox', { timeout:15000 });
+    const st = await fr.evaluate(() => { const box = document.getElementById('stItems'), stuff = document.querySelector('.sc-stuff .stuff').getBoundingClientRect(), tile = box.querySelector('.kbox').getBoundingClientRect(), stage = document.getElementById('kitStage').getBoundingClientRect(), fox = document.getElementById('kitFox').getBoundingClientRect();
+      return { chips:document.querySelectorAll('#stChips button').length, boxes:box.querySelectorAll('.kbox').length, w:stuff.width / innerWidth, tile:tile.width, stage:stage.height / innerHeight, fox:fox.height / innerHeight }; });
+    assert(st.chips === 6 && st.boxes >= 10 && st.w > .85 && st.tile >= 120 && st.stage > .45 && st.fox > .4, 'My stuff: ' + JSON.stringify(st));
     await fr.evaluate(() => { document.querySelector('#stChips button:last-child').click(); try{ WORLD.closeScene(true); }catch(e){} document.body.classList.remove('full'); window.dispatchEvent(new Event('resize')); });
     /* Read to me is Miss Bell: a woman's voice whenever the device has one */
     const v = await page.evaluate(() => { const fake = [{ name:'Microsoft George - English (United Kingdom)', lang:'en-GB' }, { name:'Microsoft Hazel - English (United Kingdom)', lang:'en-GB' }, { name:'Google UK English Male', lang:'en-GB' }, { name:'Google UK English Female', lang:'en-GB' }], orig = speechSynthesis.getVoices;
@@ -1228,6 +1228,39 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       else assert(r.tall && !r.two && r.padIn && r.padShare > .25, 'upright tablet: the paper sits on top, ' + tag);
       if(w === 2560) assert(r.base >= 24, 'the studio controls grow on a big screen, ' + tag);
     }
+    await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
+  });
+  await test('Fab’s shop: the plain fox wears the kit as one stack, one thing per slot, clashes swap gently, and the boxes follow the books', async () => {
+    await page.setViewportSize({ width:1366, height:700 });
+    await page.evaluate(() => { showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await page.$('.game-frame[data-game="world"]')).contentFrame();
+    await fr.waitForFunction(() => !!window.WORLD && WORLD.KIT && WORLD.KIT.ready, null, { timeout:15000 });
+    const r = await fr.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), S = WORLD.S(), m = WORLD.KIT.m; S.kit = { own:{}, wear:{}, moved:1 }; S.spk = 20; try{ WORLD.closeScene(true); }catch(e){} WORLD.mStuff('fab'); await wait(500);
+      const el = WORLD.scene().el, q = x => el.querySelector(x), chip = t => [...el.querySelectorAll('#stChips button')].find(b => b.textContent === t), boxOf = id => q('.kbox[data-id="' + id + '"]'), fox = q('#kitFox'), layers = () => [...fox.querySelectorAll('img')].map(i => i.dataset.p).join(' > ');
+      chip('Hats and hair').click(); await wait(80);
+      const out = { items:m.items.length, canvas:m.canvas.width + 'x' + m.canvas.height, cats:[...el.querySelectorAll('#stChips button')].map(b => b.textContent).join('|'), boxes:el.querySelectorAll('.kbox').length, pvHidden:getComputedStyle(q('.pv')).display };
+      out.iconSizes = [...new Set([...el.querySelectorAll('.kbox .kpic')].map(p => { const b = p.getBoundingClientRect(); return Math.round(b.width) + 'x' + Math.round(b.height); }))]; out.iconSrc = [...el.querySelectorAll('.kbox img')].every(i => /^shop\/icons\//.test(i.getAttribute('src'))); out.fit = getComputedStyle(q('.kbox img')).objectFit;
+      const cs = getComputedStyle(q('.kbox')), ns = getComputedStyle(q('.kname')); out.box = [cs.backgroundColor, cs.borderTopColor, cs.borderTopWidth, cs.borderTopLeftRadius, getComputedStyle(q('.kpic')).backgroundColor].join(' / '); out.name = ns.fontStyle + ' ' + ns.fontFamily.split(',')[0].replace(/["']/g, '');
+      boxOf('wizard-hat').click(); await wait(80); out.tryOn = layers(); out.trySaved = Object.keys(S.kit.wear).length; out.buy = q('#stGo').textContent;
+      q('#stGo').click(); await wait(80); out.bought = [S.spk, !!S.kit.own['wizard-hat'], S.kit.wear.head, !!boxOf('wizard-hat').querySelector('.ktick.on')].join();
+      boxOf('crown').click(); await wait(60); out.swap = layers(); out.realHead = S.kit.wear.head;
+      const fb = fox.getBoundingClientRect(); out.ratio = fb.width / fb.height; out.fill = [...fox.querySelectorAll('img')].every(i => { const b = i.getBoundingClientRect(); return Math.abs(b.left - fb.left) < .6 && Math.abs(b.top - fb.top) < .6 && Math.abs(b.width - fb.width) < .6 && Math.abs(b.height - fb.height) < .6; }); out.foxH = fb.height;
+      chip('Clothes').click(); await wait(60); boxOf('tutu').click(); await wait(40); boxOf('star-t-shirt').click(); await wait(40); out.stack = layers(); boxOf('smart-suit').click(); await wait(60); out.clash = q('#stMsg').textContent; out.afterClash = layers();
+      chip('Bags and things to hold').click(); await wait(60); boxOf('satchel').click(); await wait(40); boxOf('briefcase').click(); await wait(60); out.bag = q('#stMsg').textContent;
+      out.off = [...el.querySelectorAll('#kitOff [data-off]')].map(b => b.dataset.off).join(); q('#kitOff [data-off=all]').click(); await wait(60); out.bare = layers(); out.wearLeft = Object.keys(S.kit.wear).length;
+      S.kit.own['top-hat'] = 1; WORLD.kitPutOn(S.kit.wear, 'top-hat'); const sp = WORLD.kitSprite(S.kit.wear); out.sprite = sp ? sp.width + 'x' + sp.height : ''; out.price = m.items.every(it => WORLD.kitPrice(it) > 0);
+      out.tabs = [...el.querySelectorAll('.tabs button')].map(b => b.textContent.replace(/^\S+\s/, '')).join('|');
+      try{ WORLD.closeScene(true); }catch(e){} S.kit = { own:{}, wear:{}, moved:1 }; return out; });
+    const j = JSON.stringify(r), B = 'base/plain-fox.png';
+    assert(r.items === 46 && r.canvas === '1006x1470' && r.cats === 'Hats and hair|Glasses and face|Neck and back|Clothes|Shoes|Bags and things to hold' && r.boxes === 14 && r.pvHidden === 'none' && r.price, 'the shop shows the kit in tabs by kind: ' + j);
+    assert(r.iconSizes.length === 1 && parseInt(r.iconSizes[0]) >= 120 && parseInt(r.iconSizes[0]) <= 160 && /^(\d+)x\1$/.test(r.iconSizes[0]) && r.iconSrc && r.fit === 'contain', 'every icon is the same square size, from icons/, never stretched: ' + j);
+    assert(r.box === 'rgb(255, 243, 220) / rgb(43, 26, 18) / 3px / 16px / rgb(255, 212, 131)' && r.name === 'italic Aleo', 'the boxes follow the books (cream card, peach centre, ink outline, italic name): ' + j);
+    assert(r.tryOn === B + ' > layers/10-wizard-hat.png' && r.trySaved === 0 && /4/.test(r.buy) && r.bought === '16,true,wizard-hat,true', 'tapping a box tries it on straight away; buying keeps it and ticks it: ' + j);
+    assert(r.swap === B + ' > layers/07-crown.png' && r.realHead === 'wizard-hat', 'one hat at a time, and a hat that is only being tried is not saved: ' + j);
+    assert(Math.abs(r.ratio - 1006 / 1470) < .004 && r.fill && r.foxH > 250, 'the stack keeps 1006:1470 and every layer fills it: ' + j);
+    assert(r.stack === B + ' > layers/28-star-t-shirt.png > layers/37-tutu.png > layers/07-crown.png' && /Fab took off the tutu to wear the smart suit/.test(r.clash) && r.afterClash === B + ' > layers/34-smart-suit.png > layers/07-crown.png', 'layers go from the lowest z up, and the tutu comes off for the suit: ' + j);
+    assert(/Fab took off the satchel to carry the briefcase/.test(r.bag) && /all/.test(r.off) && r.bare === B && r.wearLeft === 0 && r.sprite === '503x735', 'the satchel gives way to the briefcase, everything comes off, and the world gets one stacked picture: ' + j);
+    assert(/^Fab’s shop\|Pip’s fur\|/.test(r.tabs), 'Fab’s fur is no longer recoloured: ' + j);
     await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
   });
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
