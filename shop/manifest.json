@@ -1,0 +1,660 @@
+{
+  "name": "Fab Fox shop accessories",
+  "version": 1,
+  "canvas": {
+    "width": 1006,
+    "height": 1470,
+    "note": "Every layer is exactly this size. Draw the base fox, then each worn layer, all at x=0 y=0, at the same scale."
+  },
+  "base": "base/plain-fox.png",
+  "fox_box_in_canvas": {
+    "left": 110,
+    "top": 261,
+    "right": 895,
+    "bottom": 1359
+  },
+  "feet_anchor": {
+    "x": 502,
+    "y": 1359,
+    "note": "Bottom centre of the fox. Use this point to stand the fox on the ground in the world."
+  },
+  "icon_size": {
+    "width": 512,
+    "height": 512,
+    "note": "Square, transparent, item centred with a 10% margin on every side."
+  },
+  "slots": [
+    {
+      "slot": "back",
+      "z": 0,
+      "what": "Capes, drawn first so everything else covers them"
+    },
+    {
+      "slot": "feet",
+      "z": 1,
+      "what": "Shoes"
+    },
+    {
+      "slot": "body",
+      "z": 2,
+      "what": "Tops, coats and outfits"
+    },
+    {
+      "slot": "waist",
+      "z": 3,
+      "what": "Skirts"
+    },
+    {
+      "slot": "neck",
+      "z": 4,
+      "what": "Things round the neck"
+    },
+    {
+      "slot": "bag",
+      "z": 5,
+      "what": "Bags worn across the body"
+    },
+    {
+      "slot": "right-paw",
+      "z": 6,
+      "what": "Things held in the right paw (viewer's right)"
+    },
+    {
+      "slot": "left-paw",
+      "z": 7,
+      "what": "Things held in the left paw (viewer's left)"
+    },
+    {
+      "slot": "mouth",
+      "z": 8,
+      "what": "Moustaches"
+    },
+    {
+      "slot": "eyes",
+      "z": 9,
+      "what": "Glasses and eye wear"
+    },
+    {
+      "slot": "head",
+      "z": 10,
+      "what": "Hats, hair and helmets"
+    }
+  ],
+  "items": [
+    {
+      "number": 1,
+      "id": "trilby",
+      "name": "Trilby",
+      "category": "Hats and hair",
+      "slot": "head",
+      "z": 10,
+      "layer": "layers/01-trilby.png",
+      "icon": "icons/01-trilby.png",
+      "preview": "worn-previews/01-trilby.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 2,
+      "id": "top-hat",
+      "name": "Top hat",
+      "category": "Hats and hair",
+      "slot": "head",
+      "z": 10,
+      "layer": "layers/02-top-hat.png",
+      "icon": "icons/02-top-hat.png",
+      "preview": "worn-previews/02-top-hat.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 3,
+      "id": "cowboy-hat",
+      "name": "Cowboy hat",
+      "category": "Hats and hair",
+      "slot": "head",
+      "z": 10,
+      "layer": "layers/03-cowboy-hat.png",
+      "icon": "icons/03-cowboy-hat.png",
+      "preview": "worn-previews/03-cowboy-hat.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 4,
+      "id": "bobble-hat",
+      "name": "Bobble hat",
+      "category": "Hats and hair",
+      "slot": "head",
+      "z": 10,
+      "layer": "layers/04-bobble-hat.png",
+      "icon": "icons/04-bobble-hat.png",
+      "preview": "worn-previews/04-bobble-hat.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 5,
+      "id": "baseball-cap",
+      "name": "Baseball cap",
+      "category": "Hats and hair",
+      "slot": "head",
+      "z": 10,
+      "layer": "layers/05-baseball-cap.png",
+      "icon": "icons/05-baseball-cap.png",
+      "preview": "worn-previews/05-baseball-cap.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 6,
+      "id": "bandana",
+      "name": "Bandana",
+      "category": "Hats and hair",
+      "slot": "head",
+      "z": 10,
+      "layer": "layers/06-bandana.png",
+      "icon": "icons/06-bandana.png",
+      "preview": "worn-previews/06-bandana.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 7,
+      "id": "crown",
+      "name": "Crown",
+      "category": "Hats and hair",
+      "slot": "head",
+      "z": 10,
+      "layer": "layers/07-crown.png",
+      "icon": "icons/07-crown.png",
+      "preview": "worn-previews/07-crown.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 8,
+      "id": "flower-crown",
+      "name": "Flower crown",
+      "category": "Hats and hair",
+      "slot": "head",
+      "z": 10,
+      "layer": "layers/08-flower-crown.png",
+      "icon": "icons/08-flower-crown.png",
+      "preview": "worn-previews/08-flower-crown.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 9,
+      "id": "party-hat",
+      "name": "Party hat",
+      "category": "Hats and hair",
+      "slot": "head",
+      "z": 10,
+      "layer": "layers/09-party-hat.png",
+      "icon": "icons/09-party-hat.png",
+      "preview": "worn-previews/09-party-hat.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 10,
+      "id": "wizard-hat",
+      "name": "Wizard hat",
+      "category": "Hats and hair",
+      "slot": "head",
+      "z": 10,
+      "layer": "layers/10-wizard-hat.png",
+      "icon": "icons/10-wizard-hat.png",
+      "preview": "worn-previews/10-wizard-hat.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 11,
+      "id": "mohawk",
+      "name": "Mohawk",
+      "category": "Hats and hair",
+      "slot": "head",
+      "z": 10,
+      "layer": "layers/11-mohawk.png",
+      "icon": "icons/11-mohawk.png",
+      "preview": "worn-previews/11-mohawk.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 12,
+      "id": "headphones",
+      "name": "Headphones",
+      "category": "Hats and hair",
+      "slot": "head",
+      "z": 10,
+      "layer": "layers/12-headphones.png",
+      "icon": "icons/12-headphones.png",
+      "preview": "worn-previews/12-headphones.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 13,
+      "id": "hair-bow",
+      "name": "Hair bow",
+      "category": "Hats and hair",
+      "slot": "head",
+      "z": 10,
+      "layer": "layers/13-hair-bow.png",
+      "icon": "icons/13-hair-bow.png",
+      "preview": "worn-previews/13-hair-bow.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 14,
+      "id": "space-helmet",
+      "name": "Space helmet",
+      "category": "Hats and hair",
+      "slot": "head",
+      "z": 10,
+      "layer": "layers/14-space-helmet.png",
+      "icon": "icons/14-space-helmet.png",
+      "preview": "worn-previews/14-space-helmet.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 15,
+      "id": "round-glasses",
+      "name": "Round glasses",
+      "category": "Glasses and face",
+      "slot": "eyes",
+      "z": 9,
+      "layer": "layers/15-round-glasses.png",
+      "icon": "icons/15-round-glasses.png",
+      "preview": "worn-previews/15-round-glasses.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 16,
+      "id": "chunky-glasses",
+      "name": "Chunky glasses",
+      "category": "Glasses and face",
+      "slot": "eyes",
+      "z": 9,
+      "layer": "layers/16-chunky-glasses.png",
+      "icon": "icons/16-chunky-glasses.png",
+      "preview": "worn-previews/16-chunky-glasses.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 17,
+      "id": "sunglasses",
+      "name": "Sunglasses",
+      "category": "Glasses and face",
+      "slot": "eyes",
+      "z": 9,
+      "layer": "layers/17-sunglasses.png",
+      "icon": "icons/17-sunglasses.png",
+      "preview": "worn-previews/17-sunglasses.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 18,
+      "id": "heart-sunglasses",
+      "name": "Heart sunglasses",
+      "category": "Glasses and face",
+      "slot": "eyes",
+      "z": 9,
+      "layer": "layers/18-heart-sunglasses.png",
+      "icon": "icons/18-heart-sunglasses.png",
+      "preview": "worn-previews/18-heart-sunglasses.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 19,
+      "id": "future-visor",
+      "name": "Future visor",
+      "category": "Glasses and face",
+      "slot": "eyes",
+      "z": 9,
+      "layer": "layers/19-future-visor.png",
+      "icon": "icons/19-future-visor.png",
+      "preview": "worn-previews/19-future-visor.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 20,
+      "id": "moustache",
+      "name": "Moustache",
+      "category": "Glasses and face",
+      "slot": "mouth",
+      "z": 8,
+      "layer": "layers/20-moustache.png",
+      "icon": "icons/20-moustache.png",
+      "preview": "worn-previews/20-moustache.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 21,
+      "id": "monocle",
+      "name": "Monocle",
+      "category": "Glasses and face",
+      "slot": "eyes",
+      "z": 9,
+      "layer": "layers/21-monocle.png",
+      "icon": "icons/21-monocle.png",
+      "preview": "worn-previews/21-monocle.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 22,
+      "id": "eye-patch",
+      "name": "Eye patch",
+      "category": "Glasses and face",
+      "slot": "eyes",
+      "z": 9,
+      "layer": "layers/22-eye-patch.png",
+      "icon": "icons/22-eye-patch.png",
+      "preview": "worn-previews/22-eye-patch.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 23,
+      "id": "bow-tie",
+      "name": "Bow tie",
+      "category": "Neck and back",
+      "slot": "neck",
+      "z": 4,
+      "layer": "layers/23-bow-tie.png",
+      "icon": "icons/23-bow-tie.png",
+      "preview": "worn-previews/23-bow-tie.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 24,
+      "id": "stripy-scarf",
+      "name": "Stripy scarf",
+      "category": "Neck and back",
+      "slot": "neck",
+      "z": 4,
+      "layer": "layers/24-stripy-scarf.png",
+      "icon": "icons/24-stripy-scarf.png",
+      "preview": "worn-previews/24-stripy-scarf.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 25,
+      "id": "gold-medal",
+      "name": "Gold medal",
+      "category": "Neck and back",
+      "slot": "neck",
+      "z": 4,
+      "layer": "layers/25-gold-medal.png",
+      "icon": "icons/25-gold-medal.png",
+      "preview": "worn-previews/25-gold-medal.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 26,
+      "id": "neckerchief",
+      "name": "Neckerchief",
+      "category": "Neck and back",
+      "slot": "neck",
+      "z": 4,
+      "layer": "layers/26-neckerchief.png",
+      "icon": "icons/26-neckerchief.png",
+      "preview": "worn-previews/26-neckerchief.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 27,
+      "id": "superhero-cape",
+      "name": "Superhero cape",
+      "category": "Neck and back",
+      "slot": "back",
+      "z": 0,
+      "layer": "layers/27-superhero-cape.png",
+      "icon": "icons/27-superhero-cape.png",
+      "preview": "worn-previews/27-superhero-cape.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 28,
+      "id": "star-t-shirt",
+      "name": "Star T-shirt",
+      "category": "Clothes",
+      "slot": "body",
+      "z": 2,
+      "layer": "layers/28-star-t-shirt.png",
+      "icon": "icons/28-star-t-shirt.png",
+      "preview": "worn-previews/28-star-t-shirt.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 29,
+      "id": "stripy-t-shirt",
+      "name": "Stripy T-shirt",
+      "category": "Clothes",
+      "slot": "body",
+      "z": 2,
+      "layer": "layers/29-stripy-t-shirt.png",
+      "icon": "icons/29-stripy-t-shirt.png",
+      "preview": "worn-previews/29-stripy-t-shirt.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 30,
+      "id": "football-kit",
+      "name": "Football kit",
+      "category": "Clothes",
+      "slot": "body",
+      "z": 2,
+      "layer": "layers/30-football-kit.png",
+      "icon": "icons/30-football-kit.png",
+      "preview": "worn-previews/30-football-kit.webp",
+      "cannot_wear_with": [
+        "tutu"
+      ]
+    },
+    {
+      "number": 31,
+      "id": "hoodie",
+      "name": "Hoodie",
+      "category": "Clothes",
+      "slot": "body",
+      "z": 2,
+      "layer": "layers/31-hoodie.png",
+      "icon": "icons/31-hoodie.png",
+      "preview": "worn-previews/31-hoodie.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 32,
+      "id": "dungarees",
+      "name": "Dungarees",
+      "category": "Clothes",
+      "slot": "body",
+      "z": 2,
+      "layer": "layers/32-dungarees.png",
+      "icon": "icons/32-dungarees.png",
+      "preview": "worn-previews/32-dungarees.webp",
+      "cannot_wear_with": [
+        "tutu"
+      ]
+    },
+    {
+      "number": 33,
+      "id": "raincoat",
+      "name": "Raincoat",
+      "category": "Clothes",
+      "slot": "body",
+      "z": 2,
+      "layer": "layers/33-raincoat.png",
+      "icon": "icons/33-raincoat.png",
+      "preview": "worn-previews/33-raincoat.webp",
+      "cannot_wear_with": [
+        "tutu"
+      ]
+    },
+    {
+      "number": 34,
+      "id": "smart-suit",
+      "name": "Smart suit",
+      "category": "Clothes",
+      "slot": "body",
+      "z": 2,
+      "layer": "layers/34-smart-suit.png",
+      "icon": "icons/34-smart-suit.png",
+      "preview": "worn-previews/34-smart-suit.webp",
+      "cannot_wear_with": [
+        "tutu"
+      ]
+    },
+    {
+      "number": 35,
+      "id": "space-suit",
+      "name": "Space suit",
+      "category": "Clothes",
+      "slot": "body",
+      "z": 2,
+      "layer": "layers/35-space-suit.png",
+      "icon": "icons/35-space-suit.png",
+      "preview": "worn-previews/35-space-suit.webp",
+      "cannot_wear_with": [
+        "tutu"
+      ]
+    },
+    {
+      "number": 36,
+      "id": "light-up-jacket",
+      "name": "Light-up jacket",
+      "category": "Clothes",
+      "slot": "body",
+      "z": 2,
+      "layer": "layers/36-light-up-jacket.png",
+      "icon": "icons/36-light-up-jacket.png",
+      "preview": "worn-previews/36-light-up-jacket.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 37,
+      "id": "tutu",
+      "name": "Tutu",
+      "category": "Clothes",
+      "slot": "waist",
+      "z": 3,
+      "layer": "layers/37-tutu.png",
+      "icon": "icons/37-tutu.png",
+      "preview": "worn-previews/37-tutu.webp",
+      "cannot_wear_with": [
+        "football-kit",
+        "dungarees",
+        "raincoat",
+        "smart-suit",
+        "space-suit"
+      ]
+    },
+    {
+      "number": 38,
+      "id": "trainers",
+      "name": "Trainers",
+      "category": "Shoes",
+      "slot": "feet",
+      "z": 1,
+      "layer": "layers/38-trainers.png",
+      "icon": "icons/38-trainers.png",
+      "preview": "worn-previews/38-trainers.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 39,
+      "id": "wellies",
+      "name": "Wellies",
+      "category": "Shoes",
+      "slot": "feet",
+      "z": 1,
+      "layer": "layers/39-wellies.png",
+      "icon": "icons/39-wellies.png",
+      "preview": "worn-previews/39-wellies.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 40,
+      "id": "rocket-boots",
+      "name": "Rocket boots",
+      "category": "Shoes",
+      "slot": "feet",
+      "z": 1,
+      "layer": "layers/40-rocket-boots.png",
+      "icon": "icons/40-rocket-boots.png",
+      "preview": "worn-previews/40-rocket-boots.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 41,
+      "id": "satchel",
+      "name": "Satchel",
+      "category": "Bags and things to hold",
+      "slot": "bag",
+      "z": 5,
+      "layer": "layers/41-satchel.png",
+      "icon": "icons/41-satchel.png",
+      "preview": "worn-previews/41-satchel.webp",
+      "cannot_wear_with": [
+        "briefcase",
+        "berry-basket"
+      ]
+    },
+    {
+      "number": 42,
+      "id": "briefcase",
+      "name": "Briefcase",
+      "category": "Bags and things to hold",
+      "slot": "right-paw",
+      "z": 6,
+      "layer": "layers/42-briefcase.png",
+      "icon": "icons/42-briefcase.png",
+      "preview": "worn-previews/42-briefcase.webp",
+      "cannot_wear_with": [
+        "satchel"
+      ]
+    },
+    {
+      "number": 43,
+      "id": "balloon",
+      "name": "Balloon",
+      "category": "Bags and things to hold",
+      "slot": "left-paw",
+      "z": 7,
+      "layer": "layers/43-balloon.png",
+      "icon": "icons/43-balloon.png",
+      "preview": "worn-previews/43-balloon.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 44,
+      "id": "star-wand",
+      "name": "Star wand",
+      "category": "Bags and things to hold",
+      "slot": "right-paw",
+      "z": 6,
+      "layer": "layers/44-star-wand.png",
+      "icon": "icons/44-star-wand.png",
+      "preview": "worn-previews/44-star-wand.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 45,
+      "id": "ice-cream",
+      "name": "Ice cream",
+      "category": "Bags and things to hold",
+      "slot": "left-paw",
+      "z": 7,
+      "layer": "layers/45-ice-cream.png",
+      "icon": "icons/45-ice-cream.png",
+      "preview": "worn-previews/45-ice-cream.webp",
+      "cannot_wear_with": []
+    },
+    {
+      "number": 46,
+      "id": "berry-basket",
+      "name": "Berry basket",
+      "category": "Bags and things to hold",
+      "slot": "right-paw",
+      "z": 6,
+      "layer": "layers/46-berry-basket.png",
+      "icon": "icons/46-berry-basket.png",
+      "preview": "worn-previews/46-berry-basket.webp",
+      "cannot_wear_with": [
+        "satchel"
+      ]
+    }
+  ]
+}
