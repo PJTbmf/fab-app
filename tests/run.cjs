@@ -753,10 +753,13 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await c.close(); await ctx.close();
     await page.evaluate(() => showScreen('screen-hub'));
   });
-  await test('Time Machine: a Roman street to explore, three missions, a scripted baker, and a passport stamp', async () => {
-    await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); }catch(e){} showScreen('screen-learn'); });
+  await test('Explorer Worlds: three doors, Ancient Rome to explore, three missions, a scripted baker, and a passport stamp', async () => {
+    await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); localStorage.removeItem('fab-explore-real'); localStorage.removeItem('fab-explore-roam'); }catch(e){} showScreen('screen-learn'); });
     await page.locator('#learnTimeBtn').click();
-    assert(await page.locator('.tm-era').count() === 6 && await page.locator('.tm-era:not(.soon)').count() === 1, 'six worlds, one open');
+    assert(/Explorer Worlds/.test(await page.locator('#tmTitle').innerText()), 'it is called Explorer Worlds');
+    assert(await page.locator('.tm-era').count() === 6 && await page.locator('.tm-era:not(.soon)').count() === 4, 'six worlds, four open');
+    const doors = await page.locator('.tm-door').allInnerTexts();
+    assert(doors.length === 3 && /Time Machine/.test(doors[0]) && /Rocket/.test(doors[1]) && /Submarine/.test(doors[2]), 'three ways to travel: ' + doors.join(' | '));
     await page.locator('[data-tm="era"][data-id="rome"]').click();
     assert(await page.locator('#tmStreet svg').count() === 1 && await page.locator('.tm-spot[data-tm="spot"]').count() === 9, 'a street with nine things to find');
     assert(await page.locator('#tmPanel .fab-char.bell').count() === 1, 'Miss Bell explains (I do)');
@@ -767,20 +770,22 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await page.locator('.tm-tabs [data-tm="tab"][data-id="missions"]').click();
     assert(await page.locator('#tmPanel .fab-char.fab').count() === 1, 'Fab leads the missions (You do)');
     await page.locator('[data-tm="act"][data-id="sort"]').click();
-    await page.locator('[data-tm="pick"][data-id="bike"]').click(); await page.locator('[data-tm="bin"][data-id="then"]').click();
+    const sort = await page.evaluate(() => FabExplore.worlds.rome.sort.items.map(x => [x.id, x.a]));
+    const slip = sort.find(x => !x[1]);
+    await page.locator(`[data-tm="pick"][data-id="${slip[0]}"]`).click(); await page.locator('[data-tm="bin"][data-id="a"]').click();
     const fix = await page.locator('.tm-notebox').innerText();
     assert(await page.locator('.tm-notebox .fab-char.doc').count() === 1 && !/wrong|incorrect/i.test(fix), 'Doctor McPhee fixes a slip kindly: ' + fix);
-    for(const [id, then] of await page.evaluate(() => FabTime.SORT.map(x => [x.id, x.then]))){ await page.locator(`[data-tm="pick"][data-id="${id}"]`).click(); await page.locator(`[data-tm="bin"][data-id="${then ? 'then' : 'now'}"]`).click(); }
+    for(const [id, isA] of sort){ await page.locator(`[data-tm="pick"][data-id="${id}"]`).click(); await page.locator(`[data-tm="bin"][data-id="${isA ? 'a' : 'b'}"]`).click(); }
     assert(await page.locator('.tm-notebox .fab-char.elder').count() === 1, 'Mr Elder celebrates the sort');
     await page.locator('[data-tm="act"][data-id=""]').click();
     await page.locator('[data-tm="act"][data-id="match"]').click();
-    for(const id of await page.evaluate(() => FabTime.MATCH.map(x => x.id))){ await page.locator(`[data-tm="mobj"][data-id="${id}"]`).click(); await page.locator(`[data-tm="muse"][data-id="${id}"]`).click(); }
+    for(const id of await page.evaluate(() => FabExplore.worlds.rome.match.items.map(x => x.id))){ await page.locator(`[data-tm="mobj"][data-id="${id}"]`).click(); await page.locator(`[data-tm="muse"][data-id="${id}"]`).click(); }
     await page.locator('[data-tm="act"][data-id=""]').click();
     assert(await page.locator('.tm-stamp.got').count() === 1 && await page.locator('.tm-mis.done').count() === 3, 'all three missions earn the Rome stamp');
     const stars1 = await page.evaluate(() => parseInt(localStorage.getItem('fabworld-pending-local') || '0', 10));
     assert(stars1 - stars0 === 6, 'three missions earn 6 stars, got ' + (stars1 - stars0));
     assert(await page.evaluate(() => JSON.parse(localStorage.getItem('fabworld-treasure-local') || '[]').includes('💎')), 'a gem for Fab Fox World');
-    await page.locator('.tm-tabs [data-tm="tab"][data-id="marcus"]').click();
+    await page.locator('.tm-tabs [data-tm="tab"][data-id="who"]').click();
     assert(await page.locator('.tm-q').count() === 7 && await page.locator('#tmPanel input, #tmPanel textarea').count() === 0, 'tap questions only, no typing');
     for(const id of ['job', 'eat', 'count']) await page.locator(`[data-tm="ask"][data-id="${id}"]`).click();
     assert(/VIII/.test(await page.locator('#tmAnswer').innerText()), 'Marcus answers from his script');
@@ -789,15 +794,98 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(await page.locator('#tmPanel .fab-char.lark').count() === 1, 'Mrs Lark offers a place to stop');
     await page.locator('[data-tm="leave"]').click();
     assert(await page.evaluate(() => document.getElementById('screen-learn').classList.contains('active')), 'back to the Learning Hub');
-    /* the Time Machine place in Fab Fox World opens it, and Back returns to the world */
+    /* the Explorer Station in Fab Fox World opens it, and Back returns to the world */
     await page.evaluate(() => { showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
     const fr = await (await page.$('.game-frame[data-game="world"]')).contentFrame();
     await fr.waitForFunction(() => !!window.WORLD);
-    assert(await fr.evaluate(() => { const p = WORLD.PLACES.find(x => x.id === 'time'); if(!p) return false; WORLD.doAct(p, p.act[0]); return true; }), 'the world has a Time Machine place');
+    assert(await fr.evaluate(() => { const p = WORLD.PLACES.find(x => x.id === 'time'); if(!p || !/Explorer Station/.test(p.n)) return false; WORLD.doAct(p, p.act[0]); return true; }), 'the world has an Explorer Station');
     await page.waitForFunction(() => document.getElementById('screen-time').classList.contains('active'));
     await page.locator('#tmBack').click(); await page.locator('#tmBack').click();
     assert(await page.evaluate(() => document.getElementById('screen-world').classList.contains('active')), 'Back returns to Fab Fox World');
     await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); }catch(e){} showScreen('screen-hub'); });
+  });
+  await test('Explorer Worlds: Ancient Egypt, the Victorians and the Space Station each play through to a stamp, kindly', async () => {
+    await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); }catch(e){} window.fabOpenExplore('screen-learn'); });
+    const all = await page.evaluate(() => FabExplore.order.map(id => { const w = FabExplore.worlds[id]; return { id, door:w.door, n:w.n, spots:w.spots.map(s => ({ id:s.id, snd:s.snd, ok:FabExplore.sounds.has(s.snd), words:(s.t + ' ' + s.k).split(/\s+/).length })), find:w.find, sort:w.sort.items.map(x => [x.id, x.a]), match:w.match.items.map(x => x.id), qs:w.who.qs.map(q => q.id), text:JSON.stringify([w.hello, w.spots, w.sort, w.match, w.who.hello, w.who.qs, w.real]), teach:w.teach.join(' ') }; }));
+    assert(all.map(w => w.id).join() === 'rome,egypt,victorian,space', 'four worlds in order: ' + all.map(w => w.id).join());
+    assert(all.find(w => w.id === 'space').door === 'space' && all.filter(w => w.door === 'past').length === 3, 'the Space Station is reached by rocket, the others by time machine');
+    for(const w of all){
+      assert(w.spots.length >= 9 && w.spots.every(s => s.ok), w.id + ': every stop has a sound');
+      assert(w.spots.every(s => s.words <= 60), w.id + ': each stop is a short read');
+      assert(!/\b(died|dead|deaths?|kill\w*|graves?|tombs?|mummy|mummies|coffins?|wars?|blood\w*|diseases?|plagues?|cancer|hospitals?|workhouses?|caned|beaten|explod\w*|crash\w*|erupt\w*|gladiators?|slaves?)\b/i.test(w.text), w.id + ': child-facing text stays gentle');
+      assert(!/\b(color|center|favorite|math\b|gray)\b/.test(w.text), w.id + ': British spelling');
+      assert(/Kept gentle|leaves out/.test(w.teach), w.id + ': teachers are told what is left out');
+    }
+    for(const w of all.filter(x => x.id !== 'rome')){
+      await page.locator(`[data-tm="era"][data-id="${w.id}"]`).click();
+      assert(await page.locator('#tmStreet svg').count() === 1 && await page.locator('.tm-spot[data-tm="spot"]').count() === w.spots.length, w.id + ': a scene with every stop marked');
+      for(const id of w.find) await page.evaluate(i => document.querySelector('.tm-spot[data-tm="spot"][data-id="' + i + '"]').click(), id);
+      assert(/Mission 1 is done/.test(await page.locator('#tmPanel .tm-yes').innerText()), w.id + ': finding three things finishes mission 1');
+      await page.locator('.tm-tabs [data-tm="tab"][data-id="missions"]').click();
+      await page.locator('[data-tm="act"][data-id="sort"]').click();
+      for(const [id, isA] of w.sort){ await page.locator(`[data-tm="pick"][data-id="${id}"]`).click(); await page.locator(`[data-tm="bin"][data-id="${isA ? 'a' : 'b'}"]`).click(); }
+      await page.locator('[data-tm="act"][data-id=""]').click();
+      await page.locator('[data-tm="act"][data-id="match"]').click();
+      for(const id of w.match){ await page.locator(`[data-tm="mobj"][data-id="${id}"]`).click(); await page.locator(`[data-tm="muse"][data-id="${id}"]`).click(); }
+      await page.locator('[data-tm="act"][data-id=""]').click();
+      assert(await page.locator('.tm-mis.done').count() === 3, w.id + ': three missions done');
+      await page.locator('.tm-tabs [data-tm="tab"][data-id="who"]').click();
+      assert(await page.locator('#tmPanel input, #tmPanel textarea').count() === 0 && await page.locator('.tm-q').count() === w.qs.length, w.id + ': tap questions only');
+      for(const q of w.qs.slice(0, 3)) await page.locator(`[data-tm="ask"][data-id="${q}"]`).click();
+      assert((await page.locator('#tmAnswer').innerText()).length > 20, w.id + ': the guide answers from a script');
+      await page.locator('#tmBack').click();
+      assert(await page.evaluate(id => !!FabExplore.pass()[id].stamp, w.id) && await page.locator('.tm-passport .tm-stamp.got').count() === all.findIndex(x => x.id === w.id), w.id + ': the passport shows the stamp');
+    }
+    await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); }catch(e){} showScreen('screen-hub'); });
+  });
+  await test('Explorer Worlds media: sounds made in the app, credited photos, and real views that stay off until tapped', async () => {
+    await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); localStorage.removeItem('fab-explore-real'); localStorage.removeItem('fab-explore-roam'); }catch(e){} window.fabOpenExplore('screen-learn', 'egypt'); });
+    const media = await page.evaluate(() => FabExplore.order.map(id => { const w = FabExplore.worlds[id]; return { id, photos:w.spots.filter(s => s.photo).map(s => Object.assign({ spot:s.id }, s.photo)), real:(w.real || []).map(r => ({ id:r.id, pano:r.pano, t:r.t, url:FabExplore.svUrl(r) })) }; }));
+    for(const m of media){
+      assert(m.photos.length >= 4, m.id + ': at least four real photographs, got ' + m.photos.length);
+      for(const ph of m.photos){
+        assert(/^explore\/[a-z0-9-]+\.jpg$/.test(ph.src), m.id + '/' + ph.spot + ': the photo is stored in the app, not hot-linked: ' + ph.src);
+        assert(ph.alt && ph.alt.length > 15 && ph.cap && ph.by && ph.by.length > 3, m.id + '/' + ph.spot + ': alt text, caption and credit');
+        const r = await page.evaluate(async u => { const x = await fetch(u); return [x.status, +(x.headers.get('content-length') || 0)]; }, ph.src);
+        assert(r[0] === 200, m.id + '/' + ph.spot + ': the photo file exists');
+      }
+      assert(m.real.length >= 2, m.id + ': at least two real views');
+      for(const r of m.real){
+        assert(/^https:\/\/www\.google\.com\/maps\/embed\?pb=/.test(r.url) && !/key=/.test(r.url), m.id + '/' + r.id + ': Street View needs no key');
+        assert(!/^(CIHM|CIAB|AF1Q)/.test(r.pano), m.id + '/' + r.id + ': Google’s own photograph, not a visitor’s upload');
+        assert(r.t.split(/\s+/).length <= 45, m.id + '/' + r.id + ': a short caption');
+      }
+    }
+    /* a stop: listen, then see a real one */
+    await page.evaluate(() => document.querySelector('.tm-spot[data-tm="spot"][data-id="cat"]').click());
+    await page.locator('[data-tm="hear"]').click();
+    assert(await page.locator('.tm-photo').count() === 0, 'the photo waits until it is asked for');
+    await page.locator('[data-tm="photo"]').click();
+    assert(await page.locator('.tm-photo img').count() === 1 && /Photo:/.test(await page.locator('.tm-photo figcaption').innerText()), 'the photo shows with its credit');
+    await page.waitForFunction(() => { const i = document.querySelector('.tm-photo img'); return i && i.complete && i.naturalWidth > 100; });
+    /* real views: nothing from Google until a place is tapped; arrows only */
+    await page.locator('.tm-tabs [data-tm="tab"][data-id="real"]').click();
+    assert(await page.locator('#screen-time iframe').count() === 0, 'no Google frame before a place is tapped');
+    await page.locator('[data-tm="real"][data-id="sphinx"]').click();
+    const f = page.locator('#tmSv');
+    assert(await f.count() === 1 && /maps\/embed\?pb=/.test(await f.getAttribute('src')), 'the real view opens');
+    assert((await f.getAttribute('sandbox')) === 'allow-scripts allow-same-origin' && (await f.getAttribute('referrerpolicy')) === 'no-referrer', 'the view cannot open new tabs and sends no page address');
+    assert(await page.locator('.tm-svshield').count() === 1 && await f.evaluate(e => e.hasAttribute('inert')), 'children look but cannot wander');
+    const src0 = await f.getAttribute('src');
+    await page.locator('[data-tm="turn"][data-id="45"]').click();
+    const src1 = await f.getAttribute('src');
+    assert(src1 !== src0 && /!3f45(!|$)/.test(src1), 'Turn right faces a new way: ' + src1.slice(-40));
+    await page.locator('[data-tm="turn"][data-id="0"]').click();
+    assert(await f.getAttribute('src') === src0, 'Look back at the start');
+    await page.locator('#tmPanel [data-tm="real"][data-id=""]').click();
+    assert(await page.locator('#screen-time iframe').count() === 0, 'closing the view removes the Google frame');
+    /* staff can switch real views off on a device */
+    await page.evaluate(() => { document.querySelector('.tm-teach').open = true; });
+    await page.locator('[data-tm="realtoggle"]').click();
+    assert(await page.locator('.tm-tabs [data-tm="tab"][data-id="real"]').count() === 0 && await page.evaluate(() => localStorage.getItem('fab-explore-real')) === 'off', 'real views switched off');
+    await page.locator('[data-tm="realtoggle"]').click();
+    assert(await page.locator('.tm-tabs [data-tm="tab"][data-id="real"]').count() === 1, 'and back on');
+    await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); localStorage.removeItem('fab-explore-real'); }catch(e){} showScreen('screen-hub'); });
   });
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
 
