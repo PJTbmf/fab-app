@@ -1075,6 +1075,40 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(await page.locator('.tm-tabs [data-tm="tab"][data-id="real"]').count() === 1, 'and back on');
     await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); localStorage.removeItem('fab-explore-real'); }catch(e){} showScreen('screen-hub'); });
   });
+  await test('Fab Fox World style rules: the drawn map with name plaques, Fab’s den, drawn dock icons, My stuff filling the screen, and Miss Bell’s voice', async () => {
+    await page.setViewportSize({ width:1600, height:900 });
+    await page.evaluate(() => { showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await page.$('.game-frame[data-game="world"]')).contentFrame();
+    await fr.waitForFunction(() => !!window.WORLD);
+    await fr.evaluate(() => { try{ WORLD.closeScene(true); }catch(e){} document.body.classList.add('full'); window.dispatchEvent(new Event('resize')); });
+    const names = await fr.evaluate(() => WORLD.PLACES.map(p => p.n));
+    assert(names.includes('Fab’s den') && !names.some(n => /treehouse/i.test(n)), 'Fab’s home is called Fab’s den: ' + names[0]);
+    await fr.waitForFunction(() => WORLD.placeArt(), null, { timeout:8000 });
+    const dock = await fr.evaluate(() => [...document.querySelectorAll('.dock .ib')].map(b => ({ svg:!!b.querySelector('i svg'), emoji:/\p{Extended_Pictographic}/u.test(b.querySelector('i').textContent), w:b.getBoundingClientRect().width, icon:b.querySelector('i svg').getBoundingClientRect().width })));
+    assert(dock.length >= 5 && dock.every(d => d.svg && !d.emoji && d.icon > d.w * .5), 'the dock icons are drawn, not emoji, and fill their buttons: ' + JSON.stringify(dock));
+    /* the map */
+    await fr.evaluate(() => document.getElementById('mapBtn').click());
+    await fr.waitForSelector('.mapbox.v2 .mp', { state:'attached' });
+    await fr.waitForFunction(() => { const i = document.querySelector('.mapbox.v2 .mapimg'); return i.complete && i.naturalWidth > 0; }, null, { timeout:8000 });
+    const map = await fr.evaluate(() => { const box = document.querySelector('.mapbox.v2'), ps = [...box.querySelectorAll('.mp')], f = getComputedStyle(ps[0].querySelector('.plq')), r = box.getBoundingClientRect();
+      const lb = box.querySelector('.mphere b').getBoundingClientRect(), over = [...box.querySelectorAll('.plq')].some(q => { const o = q.getBoundingClientRect(); return !(o.right < lb.left || o.left > lb.right || o.bottom < lb.top || o.top > lb.bottom); });
+      return { n:ps.length, den:ps.some(b => b.textContent === 'Fab’s den'), two:ps.some(b => b.querySelector('.plq br')), italic:f.fontStyle, px:parseFloat(f.fontSize), here:!!box.querySelector('.mphere canvas'), over, pins:box.querySelectorAll('.pin').length, wide:r.width / innerWidth, fits:r.bottom <= innerHeight + 1, tiny:box.classList.contains('tiny') }; });
+    assert(map.n === 15 && map.den && map.two && map.italic === 'italic' && map.px >= 13 && map.here && !map.over && map.pins === 0 && map.wide > .6 && map.fits && !map.tiny, 'the map: ' + JSON.stringify(map));
+    await fr.evaluate(() => { WORLD.S().go = 'pop'; document.querySelector('.mp[data-id="shed"]').click(); });
+    await fr.waitForFunction(() => { const s = WORLD.scene(); return !!s && s.cls !== 'sc-map'; }, null, { timeout:12000 });
+    await fr.evaluate(() => { try{ WORLD.closeScene(true); }catch(e){} });
+    /* My stuff */
+    await fr.evaluate(() => WORLD.mStuff('fab'));
+    const st = await fr.evaluate(() => { const box = document.getElementById('stItems'), g = [...box.querySelectorAll('.grp')].map(x => x.textContent), stuff = document.querySelector('.sc-stuff .stuff').getBoundingClientRect(), tile = box.querySelector('.it').getBoundingClientRect(), pv = document.querySelector('.sc-stuff .pv');
+      return { groups:g.length, uniq:new Set(g).size, chips:document.querySelectorAll('#stChips button').length, w:stuff.width / innerWidth, tile:tile.width, pv:pv.width, pvShown:pv.getBoundingClientRect().height / innerHeight }; });
+    assert(st.groups >= 5 && st.uniq === st.groups && st.chips === st.groups && st.w > .85 && st.tile >= 120 && st.pv === 720 && st.pvShown > .5, 'My stuff: ' + JSON.stringify(st));
+    await fr.evaluate(() => { document.querySelector('#stChips button:last-child').click(); try{ WORLD.closeScene(true); }catch(e){} document.body.classList.remove('full'); window.dispatchEvent(new Event('resize')); });
+    /* Read to me is Miss Bell: a woman's voice whenever the device has one */
+    const v = await page.evaluate(() => { const fake = [{ name:'Microsoft George - English (United Kingdom)', lang:'en-GB' }, { name:'Microsoft Hazel - English (United Kingdom)', lang:'en-GB' }, { name:'Google UK English Male', lang:'en-GB' }], orig = speechSynthesis.getVoices;
+      speechSynthesis.getVoices = () => fake; const best = FabVoice.bestVoices().map(x => x.name); speechSynthesis.getVoices = () => [fake[0]]; const only = FabVoice.bestVoices().map(x => x.name); speechSynthesis.getVoices = orig;
+      return { best, only, male:FabVoice.isMaleVoice(fake[0]), fem:FabVoice.isMaleVoice(fake[1]) }; });
+    assert(v.best.length === 1 && /Hazel/.test(v.best[0]) && v.only.length === 1 && v.male && !v.fem, 'Miss Bell’s voice: ' + JSON.stringify(v));
+  });
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
 
   await browser.close(); server.close();
