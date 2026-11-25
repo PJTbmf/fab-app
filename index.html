@@ -7883,7 +7883,8 @@ function pwStart(s, st, id, stepIdx){
     step: stepIdx, q: pwQuestion(s.steps[stepIdx]), streak:0, done: prev.done || 0, stepDone:0, tries:0,
     secured: pwToArr(prev.secured), help: !!prev.help, rest:false, last:null, msg:null, hintLabel:null,
     offer:false, input:'', tap: prev.tap == null ? true : !!prev.tap,
-    taught: pwToArr(prev.taught), justFound:false, phase:'ydo', ex:null, idoStage:0, wedoDone:0, wtries:0
+    taught: pwToArr(prev.taught), justFound:false, phase:'ydo', ex:null, idoStage:0, wedoDone:0, wtries:0,
+    best: prev.best && typeof prev.best === 'object' ? prev.best : {}
   };
   const k = st.kids[id];
   if(s.steps[stepIdx].teach && !k.taught.includes(stepIdx)) pwTeachInit(k, s.steps[stepIdx]);
@@ -8039,9 +8040,11 @@ function pwTreasureLine0(e){
   if(t.spend) return 'It is worth stars to spend in My stuff in Fab Fox World.';
   return 'Collect ' + t.need + ' in Fab Fox World to make ' + t.make + '.';
 }
+/* The poster of what I can do now (flightposter.js): offered once a step is climbed. */
+function pwPosterBtn(kid, big){ try{ const s = Learn.pack && Learn.pack.screens[Learn.step]; return window.FabFlightPoster && s && s.type === 'pathway' ? FabFlightPoster.button(s, kid, big) : ''; }catch(e){ return ''; } }
 function pwMissionHTML(kid){
   const bd = pwBadge(kid.step);
-  if(kid.justFound) return `<div class="pw-found" role="status"><span class="big" aria-hidden="true">${bd.e}</span> <b>You won a ${esc(bd.n)}!</b> It is waiting in Fab Fox World. ${esc(pwTreasureLine(bd.e))} Keep going if you like, or take a rest whenever you want.${typeof fabHowHTML === 'function' ? fabHowHTML(kid) : ''}</div>`;
+  if(kid.justFound) return `<div class="pw-found" role="status"><span class="big" aria-hidden="true">${bd.e}</span> <b>You won a ${esc(bd.n)}!</b> It is waiting in Fab Fox World. ${esc(pwTreasureLine(bd.e))} Keep going if you like, or take a rest whenever you want.${typeof fabHowHTML === 'function' ? fabHowHTML(kid) : ''}${pwPosterBtn(kid, true)}</div>`;
   if(kid.phase === 'wedo' || pwToArr(kid.secured).includes(kid.step)) return '';
   return `<div class="pw-mission">🎯 <b>Today's mission:</b> win the ${esc(bd.n)} ${bd.e} for Fab Fox World by getting 3 answers right. ${esc(pwTreasureLine(bd.e))} There's no timer, so take your time.</div>`;
 }
@@ -8089,7 +8092,7 @@ function pwChildHTML(s, st, id){
       <div class="pw-stephead"><span class="pw-steptag">Step ${kid.step + 1}</span> ${esc(stp.name)}</div><button type="button" class="pw-pathbtn" data-pwdrawer aria-controls="pwDrawer">🗺️ My flightpath</button>
       ${kid.phase === 'ido' ? pwIdoHTML(s, kid, stp) : pwReadyHTML(stp)}
       <div class="pw-flags">${kid.phase === 'ido' ? '<button class="btn small soft" data-pwact="practise">⏭️ Skip to practice</button>' : ''}<button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '✋ Your teacher knows' : "🙋 I'd like help"}</button><button class="btn small soft" data-pwact="rest">😴 I need a break</button></div>
-    </div>${pwCentreHTML(vis)}<div class="pw-drawer-back" data-pwdrawer-close aria-hidden="true"></div><aside class="pw-side" id="pwDrawer" aria-label="My flightpath"><div class="pw-side-head"><div class="pw-side-title">My flightpath</div><button type="button" class="pw-drawer-x" data-pwdrawer-close aria-label="Close My flightpath">✕</button></div>${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside></div>`;
+    </div>${pwCentreHTML(vis)}<div class="pw-drawer-back" data-pwdrawer-close aria-hidden="true"></div><aside class="pw-side" id="pwDrawer" aria-label="My flightpath"><div class="pw-side-head"><div class="pw-side-title">My flightpath</div><button type="button" class="pw-drawer-x" data-pwdrawer-close aria-label="Close My flightpath">✕</button></div>${window.FabFlightPoster ? FabFlightPoster.button(s, kid) : ''}${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside></div>`;
   }
   if(kid.offer){
     body = `<div class="pw-offer"><span class="fab-char elder" role="img" aria-label="Mr Elder, the head teacher, cheering" style="width:96px;margin:0 auto"></span><p class="pw-ask">Brilliant! Three in a row.</p>
@@ -8120,7 +8123,7 @@ function pwChildHTML(s, st, id){
       <div class="pw-stephead"><span class="pw-steptag">Step ${kid.step + 1}</span> ${esc(stp.name)}</div><button type="button" class="pw-pathbtn" data-pwdrawer aria-controls="pwDrawer">🗺️ My flightpath</button>
       <div class="pw-streak" aria-label="${kid.streak} in a row" ${kid.phase === 'wedo' ? 'hidden' : ''}>${[0,1,2].map(i => `<span class="${i < kid.streak ? 'on' : ''}">⭐</span>`).join('')}</div>
       ${pwMissionHTML(kid)}
-      ${kid.phase !== 'wedo' && (kid.done || 0) > 0 ? `<div class="pw-sparkles">🦊 Your learning has earned <b>${kid.done}</b> sparkle${kid.done === 1 ? '' : 's'} for Fab Fox World today. Thank you!</div>` : ''}
+      ${kid.phase !== 'wedo' && (kid.done || 0) > 0 ? `<div class="pw-sparkles">🦊 Your learning has earned <b>${kid.done}</b> star${kid.done === 1 ? '' : 's'} today. Each one turns into a berry for Fab’s basket. Thank you!</div>` : ''}
       ${body}
       <div class="pw-flags">
         ${window.FabHelp ? FabHelp.btn(kid) : `<button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '✋ Your teacher knows' : "🙋 I'd like help"}</button>`}
@@ -8128,7 +8131,7 @@ function pwChildHTML(s, st, id){
         ${kid.step > 0 && !kid.offer ? '<button class="btn small soft" data-pwact="down">⬇️ An easier step</button>' : ''}
       </div>
     </div>${pwCentreHTML(vis2)}
-    <div class="pw-drawer-back" data-pwdrawer-close aria-hidden="true"></div><aside class="pw-side" id="pwDrawer" aria-label="My flightpath"><div class="pw-side-head"><div class="pw-side-title">My flightpath</div><button type="button" class="pw-drawer-x" data-pwdrawer-close aria-label="Close My flightpath">✕</button></div>${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside>
+    <div class="pw-drawer-back" data-pwdrawer-close aria-hidden="true"></div><aside class="pw-side" id="pwDrawer" aria-label="My flightpath"><div class="pw-side-head"><div class="pw-side-title">My flightpath</div><button type="button" class="pw-drawer-x" data-pwdrawer-close aria-label="Close My flightpath">✕</button></div>${window.FabFlightPoster ? FabFlightPoster.button(s, kid) : ''}${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside>
   </div>`;
 }
 
@@ -8244,6 +8247,7 @@ function pwCheck(s, kid, value){
   if(right){
     kid.done = (kid.done || 0) + 1; kid.streak = (kid.streak || 0) + 1; kid.stepDone = (kid.stepDone || 0) + 1; fabWorldAward(1);
     kid.last = 'right'; kid.msg = null; kid.tries = 0;
+    if(window.FabFlightPoster) FabFlightPoster.note(kid, q);
     const secured = pwToArr(kid.secured);
     kid.justFound = false;
     if(kid.stepDone >= PW_STREAK_TO_OFFER && !secured.includes(kid.step)){ secured.push(kid.step); kid.secured = secured; kid.justFound = true; kid.howDone = false; fabWorldTreasure(pwBadge(kid.step).e); }
@@ -8319,6 +8323,7 @@ function pwClick(t, s, st){
     if(a === 'guide'){ st.guide = true; return true; }
     if(a === 'grid'){ st.guide = false; return true; }
     if(!kid) return false;
+    if(a === 'poster'){ if(window.FabFlightPoster) FabFlightPoster.open(s, kid, Learn.pack); Sound.tick(); return false; }
     if(a === 'idoguess'){ kid.idoGuess = act.dataset.v != null ? act.dataset.v : null; Sound.tick(); return true; }
     if(a === 'idonext'){ kid.idoStage = Math.min(2, (kid.idoStage || 0) + 1); Sound.tick(); return true; }
     if(a === 'wedo'){ kid.phase = 'wedo'; kid.wedoDone = 0; kid.wtries = 0; kid.last = null; kid.q = pwQuestion(s.steps[kid.step]); Sound.tick(); return true; }
@@ -8596,6 +8601,7 @@ if(!Live.start()) learnDeepLink();
 <script src="timemachine.js"></script>
 <script src="explorer-worlds.js"></script>
 <script src="proud.js"></script>
+<script src="flightposter.js"></script>
 <script src="explorer-make.js"></script>
 <script src="explorer-voices.js"></script>
 <link rel="stylesheet" href="typescale.css">

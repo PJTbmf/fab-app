@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fab Code · BeMoreFab Virtual School</title>
+<link rel="icon" href="icon.png">
+<link rel="stylesheet" href="code/fonts.css">
+<link rel="stylesheet" href="code/fabcode.css">
+</head>
+<body>
+<!-- Fab Code (working title): the coding area, a first playable draft. Built on Blockly (lib/blockly, Apache 2.0).
+     It is its own page on purpose: nothing in the app links here yet, so getting around the app is unchanged.
+     The junior level: picture blocks that snap under "Go", a stage in the Fab Fox World look, Dad setting the task. -->
+<div id="fc" class="fc" data-view="home">
+  <header class="fc-top">
+    <button type="button" class="fc-b fc-back" id="fcBack" hidden></button>
+    <h1 class="fc-title"><span class="fc-word">Fab Code</span><span class="fc-draft">first draft</span></h1>
+    <div class="fc-where" id="fcWhere" aria-live="polite"></div>
+    <ol class="fc-dots" id="fcDots" aria-label="Puzzles"></ol>
+  </header>
+
+  <main class="fc-home" id="fcHome"></main>
+
+  <main class="fc-work" id="fcWork" hidden>
+    <section class="fc-brief" id="fcBrief" aria-label="What to do"></section>
+    <section class="fc-blocks" aria-label="My blocks">
+      <div class="fc-blocklabel"><span>Blocks</span><span>My code</span></div>
+      <div id="fcBlockly" class="fc-blockly"></div>
+    </section>
+    <section class="fc-stage" aria-label="The stage">
+      <div class="fc-canvaswrap" id="fcWrap"><canvas id="fcStage" role="img" aria-label="Fab on the grass"></canvas></div>
+      <div class="fc-ctrl" id="fcCtrl"></div>
+    </section>
+  </main>
+  <p class="fc-live" id="fcLive" role="status" aria-live="polite"></p>
+</div>
+<script src="lib/blockly/blockly_compressed.js"></script>
+<script src="lib/blockly/en.js"></script>
+<script src="code/fabcode.js"></script>
+</body>
+</html>

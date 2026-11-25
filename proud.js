@@ -5,7 +5,7 @@
    It follows the Fab Fox World style rules: flat warm colour, thick ink outline, a little wonky, italic serif on plaques, no shadows.
 
    Use:  FabProud.page({
-           theme:'rome' | 'egypt' | 'victorian' | 'space' | 'fab',
+           theme:'rome' | 'egypt' | 'victorian' | 'space' | 'maths' | 'english' | 'science' | 'fab',
            kicker:'A report by Explorer AB12',            // small line over the title (Fab code only, never a name)
            title:'All about the Romans', lead:'This report is about…',
            cards:[ { h:'The temple', text:'…', pic:{ src, alt, cap } },   // words, with an optional picture beside them
@@ -28,7 +28,11 @@
     rome:{ a:'#B4432F', b:'#E8B64C', c:'#A9C3DC', d:'#E7B4A6', band:['#B4432F', '#E8B64C', '#4F7CA8', '#FFF6E6'] },
     egypt:{ a:'#A0612D', b:'#F0B913', c:'#9AD1C7', d:'#F6D08F', band:['#2A9D8F', '#F0B913', '#A0612D', '#FFF6E6'] },
     victorian:{ a:'#8C2F39', b:'#E8B64C', c:'#BFD88E', d:'#E3C9A0', band:['#8C2F39', '#E8B64C', '#4F7A2E', '#FFF6E6'] },
-    space:{ a:'#22335B', b:'#F0B913', c:'#CFE7F2', d:'#F4B58F', band:['#22335B', '#F0B913', '#EF8247', '#CFE7F2'] }
+    space:{ a:'#22335B', b:'#F0B913', c:'#CFE7F2', d:'#F4B58F', band:['#22335B', '#F0B913', '#EF8247', '#CFE7F2'] },
+    /* the flightpath posters, by subject */
+    maths:{ a:'#1D5C7A', b:'#F0B913', c:'#CFE7F2', d:'#F4B58F', band:['#1D5C7A', '#F0B913', '#CFE7F2', '#FE4D02'] },
+    english:{ a:'#3F6B2A', b:'#F0B913', c:'#BFD88E', d:'#F4B58F', band:['#3F6B2A', '#F0B913', '#BFD88E', '#FE4D02'] },
+    science:{ a:'#6A3D7C', b:'#F0B913', c:'#CFE7F2', d:'#BFD88E', band:['#6A3D7C', '#F0B913', '#BFD88E', '#CFE7F2'] }
   };
   const css = document.createElement('style'); css.textContent = `
 .proud.proud{--ink:#2B1A12;--pad:clamp(16px,3.4vw,40px);position:relative;max-width:1000px;margin:0 auto;background:#FFF6E6;border:4px solid var(--ink);border-radius:22px 30px 24px 32px / 30px 22px 32px 24px;padding:0 var(--pad) 0;color:var(--ink);overflow:hidden;box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}
