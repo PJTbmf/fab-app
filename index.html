@@ -2240,7 +2240,23 @@ function fabGameMount(id){
   if(!map[id]) return;
   const fr = document.querySelector('.game-frame[data-game="'+map[id]+'"]');
   if(fr && !fr.getAttribute('srcdoc')) fr.srcdoc = fabGameDoc(FAB_GAMES[map[id]]);
+  fabFitGames();
 }
+/* Games were drawn for a space about 1100 x 760. On a bigger screen each game is magnified to fill the room that is
+   left under the page header (up to 1.7 times) and never runs off the bottom. Fab Fox World sizes itself. */
+function fabFitGames(){
+  document.querySelectorAll('.game-frame').forEach(fr => {
+    ['width', 'height', 'min-height', 'transform', 'transform-origin', 'margin-bottom'].forEach(k => fr.style.removeProperty(k)); fr.dataset.zoom = '1';
+    if(fr.dataset.game === 'world' || !fr.offsetWidth) return;
+    const r = fr.getBoundingClientRect(), full = fr.classList.contains('fab-full-frame');
+    const H = full ? r.height : Math.max(480, window.innerHeight - (r.top + window.scrollY) - 8), z = Math.min(1.7, r.width / 1100, H / 760);
+    if(!(z > 1.04)) return;
+    fr.style.setProperty('width', (r.width / z).toFixed(1) + 'px', 'important'); fr.style.setProperty('height', (H / z).toFixed(1) + 'px', 'important'); fr.style.setProperty('min-height', '0', 'important');
+    fr.style.setProperty('transform-origin', '0 0'); fr.style.setProperty('transform', 'scale(' + z.toFixed(4) + ')'); fr.style.setProperty('margin-bottom', (H - H / z).toFixed(1) + 'px');
+    fr.dataset.zoom = z.toFixed(2);
+  });
+}
+window.addEventListener('resize', () => { clearTimeout(fabFitGames.t); fabFitGames.t = setTimeout(fabFitGames, 120); });
 /* The games arrive with their own bunting and title; inside the app the page already has both,
    so hide them, let the paper background show through, and use the app's easier-to-read type. */
 function fabGameDoc(html){
