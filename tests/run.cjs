@@ -1249,7 +1249,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       chip('Bags and things to hold').click(); await wait(60); boxOf('satchel').click(); await wait(40); boxOf('briefcase').click(); await wait(60); out.bag = q('#stMsg').textContent;
       out.off = [...el.querySelectorAll('#kitOff [data-off]')].map(b => b.dataset.off).join(); q('#kitOff [data-off=all]').click(); await wait(60); out.bare = layers(); out.wearLeft = Object.keys(S.kit.wear).length;
       S.kit.own['top-hat'] = 1; WORLD.kitPutOn(S.kit.wear, 'top-hat'); const sp = WORLD.kitSprite(S.kit.wear); out.sprite = sp ? sp.width + 'x' + sp.height : ''; out.price = m.items.every(it => WORLD.kitPrice(it) > 0);
-      out.tabs = [...el.querySelectorAll('.tabs button')].map(b => b.textContent.replace(/^\S+\s/, '')).join('|');
+      out.tabs = [...el.querySelectorAll('.tabs button')].map(b => b.textContent.trim()).join('|');   /* the tabs carry drawings now, so the words are the whole text */
       try{ WORLD.closeScene(true); }catch(e){} S.kit = { own:{}, wear:{}, moved:1 }; return out; });
     const j = JSON.stringify(r), B = 'base/plain-fox.png';
     assert(r.items === 46 && r.canvas === '1006x1470' && r.cats === 'Hats and hair|Glasses and face|Neck and back|Clothes|Shoes|Bags and things to hold' && r.boxes === 14 && r.pvHidden === 'none' && r.price, 'the shop shows the kit in tabs by kind: ' + j);
@@ -1295,7 +1295,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(r.size[0] >= 400 && r.size[1] >= 500 && r.row && r.fits && r.icons, 'the 3D workshop uses the screen (side panel, plan, 3D view in a row) with drawn icons: ' + j);
     assert(r.chs === 'steps,wall,tower,bridge,house,rocket,' && /Dad says/.test(r.brief) && /Step 1 of 3/.test(r.brief) && /Show me the model/.test(r.brief) && /Tired\?/.test(r.brief) && r.listHidden, 'a challenge gives a brief, steps, a model to look at and a low-energy route: ' + j);
     assert(/too tall/.test(r.tooTall) && /Step 2 of 3/.test(r.step2) && /"done":true/.test(r.done) && r.gain === 2 && r.won && /You built/.test(r.cheer), 'building the model step by step finishes the challenge and earns berries: ' + j);
-    assert(/Keep it in My makes\|Make it your own\|Build it for real\|Next challenge/.test(r.next) && /You will need/.test(r.real), '“What next?” offers four ways on, and the real-life steps open: ' + j);
+    assert(/Keep it in My makes\|Make it your own\|Build it for real\|Put it on show\|Code with Fox Blocks\|Next challenge/.test(r.next) && /You will need/.test(r.real), '“What next?” offers six ways on, and the real-life steps open: ' + j);
     assert(parseInt(r.draw) >= 400 && /,6,true$/.test(r.draw), 'Draw it in 3D fills the screen too: ' + j);
     await page.setViewportSize({ width:1800, height:900 }); await page.waitForTimeout(300);
     const big = await fr.evaluate(async () => { mCad('blocks'); await new Promise(res => setTimeout(res, 400)); const el = WORLD.scene().el, w = el.querySelector('#cadEd').getBoundingClientRect().width, w3 = el.querySelector('#cad3d').getBoundingClientRect().width; WORLD.closeScene(true); return [Math.round(w), Math.round(w3)]; });
@@ -1380,7 +1380,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     const cp = await codePage('?learner=code-fox-1');
     const home = await cp.evaluate(() => ({ cards:[...document.querySelectorAll('.fc-card')].map(c => c.querySelector('h2').textContent + ':' + !!c.querySelector('canvas')).join('|'), dad:!!document.querySelector('.fc-hello .fc-who.dad'),
       text:document.body.innerText, name:document.querySelector('.fc-word').textContent + '|' + document.title, back:(document.querySelector('.fc-foot a') || {}).getAttribute('href'), v:Blockly.VERSION, font:getComputedStyle(document.querySelector('.fc-bubble')).fontFamily }));
-    assert(home.cards === 'To the bramble bush:true|Fab’s dance:true' && home.dad && home.back === 'index.html' && /^Aleo/.test(home.font) && home.name === 'Fox Blocks|Fox Blocks · BeMoreFab Virtual School', 'the home page: two projects with pictures, Dad, and a way back: ' + JSON.stringify(home).slice(0, 400));
+    assert(home.cards === 'To the bramble bush:true|Fab’s dance:true|Score a goal:true' && home.dad && home.back === 'index.html' && /^Aleo/.test(home.font) && home.name === 'Fox Blocks|Fox Blocks · BeMoreFab Virtual School', 'the home page: three projects with pictures, Dad, and a way back: ' + JSON.stringify(home).slice(0, 400));
     assert(/^13\./.test(home.v) && !/\p{Extended_Pictographic}/u.test(home.text), 'Blockly 13 is loaded and there are no emoji: ' + home.v);
     await cp.click('.fc-card[data-p="bush"]'); await cp.waitForTimeout(500);
     const look = await cp.evaluate(() => { const ws = FabCode.ws(), go = ws.getBlocksByType('fab_go')[0], fly = ws.getFlyout().getWorkspace().getTopBlocks(true).map(b => b.type).join();
@@ -1447,11 +1447,11 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(/stopped 5 squares from the bush/.test(r.far) && /edge of the grass/.test(r.edge) && /walked right past the bush/.test(r.past) && /2 berries are still on the grass/.test(r.berries) && /no code yet/.test(r.empty), 'tips say what happened and what to look at, never “wrong”: ' + j);
     assert(/hop first, and then spin/.test(r.d1) && /only takes 2 blocks/.test(r.d2) && /hopped 3 times/.test(r.d2b) && /2 moves of 1 kind/.test(r.d3) && r.none === 0, 'the dance challenges give tips too, and nothing is ticked until it is done: ' + j);
     assert(r.way === 'true|[[0,4],[1,4],[2,4],[2,3],[2,2],[3,2],[4,2],[4,1],[4,0]]', '“Show me the way” draws the model route: ' + r.way);
-    assert(r.solved.join() === 'b1:true:1:-,b2:true:3:-,b3:true:3:-,b4:true:4:3,b5:true:2:-,b6:true:1:3,d1:true:2:-,d2:true:1:-,d3:true:3:-', '“Add the next block for me” builds each model answer, and every one solves its puzzle: ' + r.solved);
-    assert(r.done === 'b1,b2,b3,b4,b5,b6,d1,d2,d3' && r.kept === '[["repeat",3,[["right",1],["up",1]]],["right",1]]', 'finished puzzles are ticked and the code is kept: ' + j);
+    assert(r.solved.join() === 'b1:true:1:-,b2:true:3:-,b3:true:3:-,b4:true:4:3,b5:true:2:-,b6:true:1:3,d1:true:2:-,d2:true:1:-,d3:true:3:-,g1:true:2:-,g2:true:2:-,g3:true:4:-,g4:true:2:-', '“Add the next block for me” builds each model answer, and every one solves its puzzle: ' + r.solved);
+    assert(r.done === 'b1,b2,b3,b4,b5,b6,d1,d2,d3,g1,g2,g3,g4' && r.kept === '[["repeat",3,[["right",1],["up",1]]],["right",1]]', 'finished puzzles are ticked and the code is kept: ' + j);
     assert(r.running === 'true|Stop' && r.stopped === 'true|false|null', 'Stop ends a long dance at once: ' + j);
     assert(/^Tap again to clear\|/.test(r.arm) && r.cleared === '[]', 'clearing the blocks takes two taps: ' + j);
-    assert(r.home === '6 of 6 done|3 of 3 done', 'the home page shows what is done: ' + r.home);
+    assert(r.home === '6 of 6 done|3 of 3 done|4 of 4 done', 'the home page shows what is done: ' + r.home);
     /* the page fills the screen */
     const boxes = async () => cp.evaluate(() => { const b = s => { const r = document.querySelector(s).getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom)]; };
       const btns = [...document.querySelectorAll('.fc-ctrl .fc-b')].map(x => x.getBoundingClientRect()), clash = btns.some((a, i) => btns.some((c, k) => k > i && a.left < c.right - 1 && c.left < a.right - 1 && a.top < c.bottom - 1 && c.top < a.bottom - 1));
@@ -1467,6 +1467,98 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(b.tile >= 38 && b.stage[3] <= b.brief[1] + 1 && b.brief[3] <= b.blocks[1] + 1 && b.blocks[3] <= b.h && b.blocks[3] - b.blocks[1] >= 250 && b.sw <= b.w && b.sh <= b.h && !b.clash, 'on a phone the stage, the task and the blocks stack with nothing off the screen: ' + JSON.stringify(b));
     await cp.close();
   });
+  await test('Fox Blocks, the next level: Score a goal. Kick, jump, “repeat until” and “if, else”, a ball and cones that move, and code only counts when it works wherever they land', async () => {
+    const cp = await codePage('?learner=code-fox-3');
+    await cp.setViewportSize({ width:1366, height:768 }); await cp.waitForTimeout(300);
+    const r = await cp.evaluate(async () => {
+      const out = {}, F = FabCode, wait = ms => new Promise(res => setTimeout(res, ms)); F.speed = 40;
+      const run = async (prog, rnd) => { if(prog) F.setProgram(prog); F.rand = () => rnd; const x = await F.run(); return (x.ok ? 'ok' : 'tip') + ':' + (x.tip || '') + ':' + JSON.stringify(F.state().ball); };
+      out.home = F.projects.map(p => p.id + p.levels.length).join() + '|' + [...document.querySelectorAll('.fc-card')].length;
+      /* 1. walk, then kick */
+      F.rand = () => 0; F.open('goal', 0); await wait(250);
+      out.blocks1 = F.ws().getFlyout().getWorkspace().getTopBlocks(true).map(b => b.type).join();
+      const q = s => { const b = document.querySelector(s).getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.right), Math.round(b.bottom)]; };
+      out.long = [document.getElementById('fc').classList.contains('long'), q('.fc-stage')[3] <= q('.fc-blocks')[1] + 1, q('.fc-brief')[2] <= q('.fc-blocks')[0] + 1, q('.fc-blocks')[2] - q('.fc-blocks')[0] >= innerWidth * .7, F.state().tile >= 60, document.documentElement.scrollWidth <= innerWidth && document.documentElement.scrollHeight <= innerHeight].join('|');
+      out.g1a = await run([['right', 3], ['kick']], 0); out.g1b = await run([['right', 1], ['kick']], 0); out.g1c = await run([['right', 2]], 0); out.g1 = await run([['right', 2], ['kick']], 0);
+      out.win1 = document.querySelector('.fc-win .fc-bubble').textContent.replace(/\s+/g, ' ').trim() + '|' + [...document.querySelectorAll('.fc-win .fc-b')].map(b => b.textContent.trim()).join(',');
+      /* 2. the ball lands somewhere new on every Go: counting squares can score once, but it is not ticked */
+      F.rand = () => 0; F.open('goal', 1); await wait(200); out.ball0 = JSON.stringify(F.state().ball);
+      out.g2lucky = await run([['right', 3], ['kick']], .3); out.done2 = !!F.state().done.g2;
+      out.g2miss = await run(null, .9); out.g2bump = await run(null, 0);
+      out.g2 = await run([['until', 'ball', [['right', 1]]], ['kick']], .6); out.done2b = !!F.state().done.g2;
+      /* 3. cones: jump over them */
+      F.rand = () => 0; F.open('goal', 2); await wait(200); out.cones3 = F.state().cones;
+      out.g3cone = await run([['right', 2]], 0); out.g3miss = await run([['right', 1], ['jump'], ['kick']], 0); out.g3 = await run([['right', 1], ['jump'], ['jump'], ['kick']], 0);
+      /* 4. the cones move: Dad has started the code, and the box leads with the new block */
+      F.rand = () => 0; F.open('goal', 3); await wait(250);
+      out.begin = JSON.stringify(F.program()) + '|' + F.ws().getFlyout().getWorkspace().getTopBlocks(true).map(b => b.type).join();
+      out.g4empty = await run(null, 0);
+      out.g4cone = await run([['until', 'ball', [['right', 1]]], ['kick']], 0);
+      out.g4lucky = await run(null, .99); out.done4 = !!F.state().done.g4;
+      const sol = [['until', 'ball', [['ifelse', 'cone', [['jump']], [['right', 1]]]]], ['kick']]; out.g4 = [];
+      for(const v of [0, .25, .45, .65, .99]) out.g4.push(await run(sol, v));
+      out.kept = JSON.stringify(F.program()) === JSON.stringify(sol);
+      const c = () => document.querySelector('.fc-ctrl [data-a="clear"]'); c().click(); c().click(); out.cleared = JSON.stringify(F.program());
+      out.done = Object.keys(F.state().done).join(); out.star = localStorage.getItem('fabworld-pending-code-fox-3');
+      out.look = [...document.querySelectorAll('#fcBlockly .blocklyDraggable')].length > 3 && !/\p{Extended_Pictographic}/u.test(document.getElementById('fcBrief').textContent);
+      try{ localStorage.removeItem(F.key); localStorage.removeItem('fabworld-pending-code-fox-3'); }catch(e){}
+      return out; });
+    const j = JSON.stringify(r);
+    assert(r.home === 'bush6,dance3,goal4|3', 'Score a goal is a third project with four puzzles: ' + j);
+    assert(r.blocks1 === 'fab_right,fab_left,fab_kick' && r.long === 'true|true|true|true|true|true', 'the long pitch sits across the top with the blocks full width underneath, and nothing leaves the screen: ' + j);
+    assert(/^tip:Fab walked into the ball/.test(r.g1a) && /^tip:Fab kicked, but the ball was not on the next square/.test(r.g1b) && /^tip:The ball has not gone in yet/.test(r.g1c) && r.g1 === 'ok::[7,1]', 'walk to the square before the ball, then kick it into the net; tips say what happened: ' + j);
+    assert(/^You did it!\s*Goal! Fab scored with 2 blocks\. Walk, then kick/.test(r.win1) && /Next puzzle,Try it another way,All projects/.test(r.win1), 'Mr Elder celebrates and “What next?” follows: ' + r.win1);
+    assert(r.ball0 === '[3,1]' && /^tip:Goal! But the ball lands somewhere new each time\. Try “repeat until”/.test(r.g2lucky) && r.done2 === false && /^tip:Fab kicked, but the ball was not/.test(r.g2miss) && /^tip:Fab walked into the ball/.test(r.g2bump), 'counting squares can score once, but it is not ticked, and the tip points to “repeat until”: ' + j);
+    assert(r.g2 === 'ok::[7,1]' && r.done2b === true, '“repeat until next to the ball” works wherever the ball lands: ' + j);
+    assert(r.cones3 === 2 && /^tip:Fab bumped into a cone\. A cone needs jumping over/.test(r.g3cone) && /^tip:Fab kicked, but the ball was not/.test(r.g3miss) && r.g3 === 'ok::[7,1]', 'cones are jumped over: ' + j);
+    assert(r.begin === '[["until","ball",[]],["kick"]]|fab_ifelse,fab_jump,fab_right,fab_kick,fab_until', 'the last puzzle starts with Dad’s code, and the new “if” block is first in the box: ' + j);
+    assert(/^tip:Fab went round and round/.test(r.g4empty) && /^tip:Fab bumped into a cone/.test(r.g4cone) && /^tip:Goal! But the cones move each time\. Try “if a cone is ahead”/.test(r.g4lucky) && r.done4 === false, 'an empty loop, a cone in the way and a lucky goal each get a tip, and nothing is ticked: ' + j);
+    assert(r.g4.length === 5 && r.g4.every(x => x === 'ok::[7,1]') && r.kept && r.cleared === '[["until","ball",[]],["kick"]]', '“if a cone is ahead, jump, else walk” scores with every cone layout, and clearing goes back to Dad’s starting code: ' + j);
+    assert(r.done === 'g1,g2,g3,g4' && r.star === '4' && r.look, 'four puzzles, four stars waiting for Fab’s basket, and no emoji in the task: ' + j);
+    await cp.close();
+  });
+
+  await test('World, round 23: a build goes on show outside Dad’s Workshop, the 3D picture is sharp, “What next?” offers Fox Blocks, and the floating controls follow the style rules', async () => {
+    await page.setViewportSize({ width:1920, height:1080 });
+    await page.evaluate(() => { showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await page.$('.game-frame[data-game="world"]')).contentFrame();
+    await fr.waitForFunction(() => !!window.WORLD && WORLD.KIT && WORLD.KIT.ready, null, { timeout:15000 });
+    const r = await fr.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), S = WORLD.S(), emo = /\p{Extended_Pictographic}/u, out = {}; try{ WORLD.closeScene(true); }catch(e){}
+      const cs = (s, k) => getComputedStyle(document.querySelector(s))[k], ink = 'rgb(43, 26, 18)';
+      out.style = [cs('.mini', 'borderTopColor') === ink && cs('.mini', 'boxShadow') === 'none', cs('.mini-big', 'borderTopColor') === ink && cs('.mini-big', 'backgroundColor') === 'rgb(255, 246, 230)', cs('.stick', 'borderTopColor') === ink && cs('.stick', 'boxShadow') === 'none', cs('#knob', 'backgroundColor') === 'rgb(240, 185, 19)' && cs('#knob', 'borderTopColor') === ink, cs('.turn .tb', 'borderTopColor') === ink && cs('.turn .tb', 'boxShadow') === 'none', cs('.joy', 'borderTopColor') === ink && cs('.joy', 'boxShadow') === 'none'].join('|');
+      cheer('Well done', 'A lovely build'); out.toast = [cs('#cheer', 'borderTopColor') === ink, cs('#cheer', 'boxShadow') === 'none', cs('#cheer', 'backgroundColor') === 'rgb(255, 246, 230)', cs('#cheer b', 'fontStyle') === 'italic'].join('|');
+      S.missions = 30; delete S.onShow; mCad('blocks'); await wait(400); let el = WORLD.scene().el;
+      const v3 = document.getElementById('cad3d'); out.sharp = [v3.width >= 780, Math.abs(v3.width / v3.height - 520 / 420) < .01, v3.width >= v3.clientWidth * .95].join('|') + '|' + v3.width + 'x' + v3.height + ' shown ' + v3.clientWidth;
+      out.row = [...el.querySelectorAll('#cadViewBtns .cadb')].map(b => b.textContent.trim() + ':' + !!b.querySelector('svg') + ':' + !emo.test(b.textContent)).join('|');
+      el.querySelector('[data-a="show"]').click(); await wait(100); out.none = !S.onShow + '|' + el.querySelector('.sub').textContent;
+      el.querySelector('.cadch[data-ch]').click(); for(let i = 0; i < 4; i++){ await wait(250); const b = [...el.querySelectorAll('#cadGoal button')].find(x => /Build this step/.test(x.textContent)); if(b) b.click(); } await wait(300);
+      out.next = [...el.querySelectorAll('.cadnext button')].map(b => b.textContent.trim() + ':' + !!b.querySelector('svg')).join('|');
+      const pn = el.querySelector('#cadGoal').getBoundingClientRect(), sr = el.getBoundingClientRect(); out.fits = pn.bottom <= sr.bottom + 1;
+      [...el.querySelectorAll('.cadnext button')].find(b => /Put it on show/.test(b.textContent)).click(); await wait(150);
+      out.show = S.onShow ? S.onShow.m + '|' + Object.keys(S.onShow.cells).length + '|' + document.getElementById('cheer').textContent.replace(/\s+/g, ' ').trim() : '';
+      /* the table in the world */
+      WORLD.closeScene(true); try{ WORLD.coll().length = 0; }catch(e){} teleportTo(ONSHOW.x + 60, ONSHOW.y + 170); await wait(500);
+      const dad = WORLD.PLACES.find(x => x.id === 'workshop'); out.where = Math.round(Math.hypot(ONSHOW.x - dad.x, ONSHOW.y - dad.y)) < 260;
+      const pic = onShowPic(1), g = pic.getContext('2d'), d = g.getImageData(0, 0, pic.width, pic.height).data; let solid = 0, clear = 0; for(let i = 3; i < d.length; i += 4){ if(d[i] > 200) solid++; else if(d[i] === 0) clear++; }
+      out.pic = [pic.width + 'x' + pic.height, solid > 2500, clear > solid, d[3] === 0].join('|');
+      /* Code with Fox Blocks from What next */
+      mCad('blocks'); await wait(300); el = WORLD.scene().el; el.querySelector('.cadch[data-ch]').click(); for(let i = 0; i < 4; i++){ await wait(250); const b = [...el.querySelectorAll('#cadGoal button')].find(x => /Build this step/.test(x.textContent)); if(b) b.click(); } await wait(300);
+      [...el.querySelectorAll('.cadnext button')].find(b => /Code with Fox Blocks/.test(b.textContent)).click(); await wait(300); out.code = WORLD.scene().cls + '|' + !!WORLD.scene().el.querySelector('iframe.codeframe');
+      WORLD.closeScene(true); delete S.onShow; S.missions = 0; S.cadDone = {}; return out; });
+    const j = JSON.stringify(r);
+    assert(r.style === 'true|true|true|true|true|true', 'the mini-map, the joystick, the look buttons and the joy bar have ink outlines and no shadows: ' + j);
+    assert(r.toast === 'true|true|true|true', 'the pop-up card is paper cream with an ink outline: ' + j);
+    assert(/^true\|true\|true\|/.test(r.sharp), 'on a big screen the 3D picture has as many dots as it is shown at: ' + r.sharp);
+    assert(/Put it on show:true:true$/.test(r.row) && /^true\|Build something first/.test(r.none), 'the 3D view has a drawn “Put it on show” button, and an empty build gets a gentle nudge: ' + j);
+    assert(r.next === 'Keep it in My makes:true|Make it your own:true|Build it for real:true|Put it on show:true|Code with Fox Blocks:true|Next challenge:true' && r.fits, '“What next?” offers the show table and Fox Blocks, with drawn icons, and still fits: ' + j);
+    assert(/^blocks\|6\|It is on show!\s*Find it on the table outside Dad’s Workshop\.$/.test(r.show) && r.where && r.pic === '520x420|true|true|true', 'the build is kept for the table outside Dad’s Workshop and drawn with a clear background: ' + j);
+    assert(r.code === 'sc-code|true', '“Code with Fox Blocks” opens Fox Blocks from the workshop: ' + j);
+    /* the 3D view: a flat sky and ink-edged hills */
+    const sky = await fr.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)); document.getElementById('v3Btn').click(); await wait(500); const on = document.getElementById('v3Btn').getAttribute('aria-pressed'); const bg = getComputedStyle(document.querySelector('.stage')).backgroundColor; document.getElementById('v3Btn').click(); await wait(200); return on + '|' + bg; });
+    assert(/^(true\|rgb\(207, 231, 242\)|false\|)/.test(sky), 'the 3D view sits on the flat glass-blue sky: ' + sky);
+    await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
+  });
+
   await test('The landing page is unchanged: only Fab Fox World opens Fox Blocks (the navigation review is still to come)', async () => {
     const files = ['index.html', 'home.js', 'me.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8'));
     assert(!files.some(t => /code\.html/.test(t)), 'the landing page and the hubs must not link to the coding page until the navigation review is done');
@@ -1502,7 +1594,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     const j = JSON.stringify(r);
     assert(/^The STEM Den\|1\|\d+\|16$/.test(r.place) && +r.place.split('|')[2] < 450 && r.art === '440x380', 'the STEM Den is a sixteenth place on Rainbow Hill, close to Dad’s Workshop, with its own drawing: ' + j);
     assert(r.map === 'The STEM Den|true|true|true|true|true' && r.there, 'it is on the map under Dad’s Workshop with its building drawn in, and tapping it takes Fab there: ' + j);
-    assert(r.title === 'The STEM Den' && r.stem === 'Fox Blocks: to the bramble bush:true:true|Fox Blocks: Fab’s dance:true:true|Build it in 3D:true:true', 'the STEM Den offers the two Fox Blocks projects and the way to Dad’s Workshop, with drawn icons: ' + j);
+    assert(r.title === 'The STEM Den' && r.stem === 'Fox Blocks: to the bramble bush:true:true|Fox Blocks: Fab’s dance:true:true|Fox Blocks: score a goal:true:true|Build it in 3D:true:true', 'the STEM Den offers the three Fox Blocks projects and the way to Dad’s Workshop, with drawn icons: ' + j);
     assert(r.shop === 'Dad’s Workshop|Design and build,Draw it in 3D,Fox Blocks,Tower drop' && r.cards === 'true|true|true|true', 'Dad’s Workshop has four benches as flat cards that fill the screen: ' + j);
     assert(r.frame === 'true|true|true|true' && r.inside === 'Fox Blocks|true|true|true', 'Fox Blocks opens inside the world, full size, with the world’s own close button: ' + j);
     assert(r.solved === 'true|true' && /^1\|\+1 berry\s*Your Fox Blocks stars turned into berries/.test(r.berries) && /\|true$/.test(r.berries), 'a puzzle solved there arrives as a berry when Fox Blocks is closed: ' + j);
@@ -1533,7 +1625,67 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(/Dad says: Five dots make a house/.test(r.brief) && /Dot 1 of 5: tap the dot numbered 1\./.test(r.brief) && /Show me the model/.test(r.brief) && /Tired\?/.test(r.brief) && r.hidden, 'a challenge gives Dad’s brief, the first dot, a model to look at and a low-energy route: ' + j);
     assert(/^Look for the dot with 1 on it\. .*\|0$/.test(r.miss) && r.two === '2 of 5 dots joined' && r.three === '3 of 5 dots joined|[4,1]', 'a tap on another dot gives a gentle hint and joins nothing; Fab can join a dot for you: ' + j);
     assert(/Last step: tap dot 1 again to close the shape\./.test(r.last) && /^true\|true\|2\|You drew a house!/.test(r.done) && r.ticked, 'closing the shape finishes the challenge and earns two berries: ' + j);
-    assert(r.next === 'Keep it in My makes:true|Make it your own:true|Build it for real:true|Next challenge:true' && r.nextOne === 'A fox face|0|false' && r.back, '“What next?” offers four ways on, the next challenge starts clean, and the list comes back: ' + j);
+    assert(r.next === 'Keep it in My makes:true|Make it your own:true|Build it for real:true|Put it on show:true|Code with Fox Blocks:true|Next challenge:true' && r.nextOne === 'A fox face|0|false' && r.back, '“What next?” offers six ways on, the next challenge starts clean, and the list comes back: ' + j);
+    await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
+  });
+  /* ---------- big screens (bigscreen.js) ---------- */
+  await test('Big screens: the menus grow as one piece, lessons get wider with bigger words, and a laptop, a tablet and Fab Fox World are left alone', async () => {
+    const bp = await newPage('/index.html');
+    await bp.waitForFunction(() => window.FabBig);
+    const page1 = async () => bp.evaluate(() => { const m = document.querySelector('main').getBoundingClientRect(), s = document.querySelector('.screen.active'); return { id:s.id, az:+FabBig.zoom().toFixed(2), main:Math.round(m.width), zoom:+(+getComputedStyle(s).zoom).toFixed(2), sw:document.documentElement.scrollWidth, w:innerWidth, root:getComputedStyle(document.documentElement).fontSize }; });
+    await bp.setViewportSize({ width:1366, height:768 }); await bp.waitForTimeout(150); let a = await page1();
+    assert(a.az === 1 && a.main <= 980 && a.zoom === 1 && a.root === '16px', 'a laptop is left exactly as it was: ' + JSON.stringify(a));
+    await bp.setViewportSize({ width:820, height:1100 }); await bp.waitForTimeout(150); a = await page1();
+    assert(a.az === 1 && a.zoom === 1 && a.sw <= a.w, 'an upright tablet is left alone: ' + JSON.stringify(a));
+    await bp.setViewportSize({ width:2560, height:1300 }); await bp.waitForTimeout(150);
+    for(const id of ['screen-hub', 'screen-games', 'screen-wellbeing', 'screen-learn']){
+      await bp.evaluate(i => showScreen(i), id); await bp.waitForTimeout(200); a = await page1();
+      assert(a.id === id && a.az > 1.6 && a.zoom === a.az && a.main >= 1600 && a.sw <= a.w + 1 && a.root === '16px', id + ' grows to fill a big screen without spilling sideways: ' + JSON.stringify(a));
+    }
+    const tile = await bp.evaluate(() => { showScreen('screen-hub'); const t = document.querySelector('#screen-hub .category-tile, #screen-hub .tile'), r = t.getBoundingClientRect(), h = t.querySelector('h2').getBoundingClientRect(); return [Math.round(r.width), Math.round(h.height)]; });
+    assert(tile[0] >= 300 && tile[1] >= 36, 'the hub tiles and their words are big on a big screen: ' + tile);
+    await bp.evaluate(() => { showScreen('screen-world'); }); await bp.waitForTimeout(200); a = await page1();
+    assert(a.id === 'screen-world' && a.zoom === 1, 'Fab Fox World sizes itself and is not zoomed: ' + JSON.stringify(a));
+    const lesson = async () => bp.evaluate(() => { const bar = [...document.querySelectorAll('.bd-tools .bd-tool')].filter(b => b.offsetParent), rs = bar.map(b => b.getBoundingClientRect());
+      const clash = rs.some((x, i) => rs.some((c, k) => k > i && x.left < c.right - 1 && c.left < x.right - 1 && x.top < c.bottom - 1 && c.top < x.bottom - 1)), over = bar.filter(b => b.scrollWidth > b.clientWidth + 2).length;
+      return { stage:Math.round(document.querySelector('.lp-stage').getBoundingClientRect().width), root:parseFloat(getComputedStyle(document.documentElement).fontSize), ask:parseFloat(getComputedStyle(document.querySelector('.pw-ask')).fontSize), clash, over, sw:document.documentElement.scrollWidth, w:innerWidth, zoom:+getComputedStyle(document.getElementById('screen-lesson')).zoom }; });
+    await bp.evaluate(() => { const pk = BUILT_IN_PACKS.find(x => x.id === 'maths-flightpath-multiplication-division'); learnOpen(pk); learnGo(1); const s = pk.screens[1], st = Learn.state[1], me = pwMe(); pwStart(s, st, me, 2); const k = st.kids[me]; pwTaught(k); k.phase = 'ydo'; k.q = pwQuestion(s.steps[2]); learnRender(); });
+    await bp.waitForTimeout(400); let l = await lesson();
+    assert(l.stage >= 2300 && l.root > 22 && l.ask > 34 && !l.clash && !l.over && l.sw <= l.w + 1 && l.zoom === 1, 'a lesson fills a big screen: wider panels, bigger words, tool labels inside their buttons: ' + JSON.stringify(l));
+    await bp.setViewportSize({ width:3840, height:1800 }); await bp.waitForTimeout(300); l = await lesson();
+    assert(l.stage >= 3300 && l.root > 30 && !l.clash && !l.over && l.sw <= l.w + 1, 'and a very big screen: ' + JSON.stringify(l));
+    await bp.setViewportSize({ width:1366, height:768 }); await bp.waitForTimeout(300); l = await lesson();
+    assert(l.root === 16 && l.stage <= 1340 && !l.clash, 'back on a laptop the lesson is as it was: ' + JSON.stringify(l));
+    await bp.close();
+  });
+  /* ---------- drawn icons on the app's own pages (icons.js) ---------- */
+  await test('Drawn icons: the hub tiles, the Learning Hub cards, the flightpath buttons, the Learning Board tools and the My stuff tabs carry drawings, not emoji', async () => {
+    const ip = await newPage('/index.html');
+    await ip.setViewportSize({ width:1366, height:768 }); await ip.waitForFunction(() => window.FabIcon); await ip.waitForTimeout(200);
+    const r = await ip.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), emo = /\p{Extended_Pictographic}/u, out = {};
+      const ok = el => !!el && !!el.querySelector('svg.fi') && !emo.test(el.textContent);
+      out.tiles = [...document.querySelectorAll('#screen-hub .category-tile')].map(t => ok(t.querySelector('.emoji')) && t.querySelector('svg.fi').getBoundingClientRect().width >= 40).join();
+      out.ritual = [...document.querySelectorAll('#screen-hub .ritual-btn')].map(ok).join();
+      showScreen('screen-learn'); await wait(250); out.cards = [...document.querySelectorAll('#learnTools .lt-card')].map(c => ok(c.querySelector('i')) && c.querySelector('svg.fi').getBoundingClientRect().width >= 36).join(); out.title = ok(document.querySelector('#screen-learn .screen-title'));
+      const pk = BUILT_IN_PACKS.find(x => x.id === 'maths-flightpath-multiplication-division'); learnOpen(pk); learnGo(1); const s = pk.screens[1], st = Learn.state[1], me = pwMe(); pwStart(s, st, me, 2); const k = st.kids[me]; pwTaught(k); k.phase = 'ydo'; k.q = pwQuestion(s.steps[2]); learnRender(); await wait(400);
+      const L = document.getElementById('screen-lesson'), btn = t => [...L.querySelectorAll('button')].find(b => b.textContent.trim() === t);
+      out.lesson = ['My flightpath', 'Type my answer', 'I’d like help', 'I need a break', 'An easier step'].map(t => t + ':' + ok(btn(t))).join('|');
+      out.streak = [...L.querySelectorAll('.pw-streak span')].map(ok).join(); out.mission = !!L.querySelector('.pw-mission svg.fi');
+      const tools = [...L.querySelectorAll('.bd-tools .bd-tool')].filter(b => b.offsetParent); out.tools = tools.length + '|' + tools.filter(b => b.querySelector('i svg.fi') && !emo.test(b.querySelector('i').textContent)).length;
+      pwCheck(s, k, k.q.ans); learnRender(); await wait(300); out.again = ok([...L.querySelectorAll('button')].find(b => b.textContent.trim() === 'I need a break')) + '|' + L.querySelectorAll('.pw-streak span.on svg.fi').length;
+      out.names = FabIcon.names.length; return out; });
+    const j = JSON.stringify(r);
+    assert(r.tiles === 'true,true,true,true' && r.ritual === 'true,true' && r.cards.split(',').every(x => x === 'true') && r.cards.split(',').length >= 3 && r.title, 'the landing page and the Learning Hub: ' + j);
+    assert(r.lesson === 'My flightpath:true|Type my answer:true|I’d like help:true|I need a break:true|An easier step:true' && r.streak === 'true,true,true' && r.mission, 'the flightpath buttons, the three stars and the mission line: ' + j);
+    assert(+r.tools.split('|')[0] >= 9 && +r.tools.split('|')[1] >= 9 && r.again === 'true|1' && r.names >= 30, 'the Learning Board tools, and the drawings come back after the lesson redraws: ' + j);
+    await ip.close();
+    await page.setViewportSize({ width:1366, height:700 });
+    await page.evaluate(() => { showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await page.$('.game-frame[data-game="world"]')).contentFrame();
+    await fr.waitForFunction(() => !!window.WORLD && WORLD.KIT && WORLD.KIT.ready, null, { timeout:15000 });
+    const tabs = await fr.evaluate(async () => { try{ WORLD.closeScene(true); }catch(e){} WORLD.mStuff(); await new Promise(res => setTimeout(res, 300)); const el = WORLD.scene().el, bs = [...el.querySelectorAll('.tabs button')], rs = bs.map(b => b.getBoundingClientRect());
+      const out = bs.map(b => b.textContent.trim() + ':' + !!b.querySelector('svg') + ':' + !/\p{Extended_Pictographic}/u.test(b.textContent)).join('|') + '#' + rs.every((a, i) => rs.every((c, k) => k <= i || a.right <= c.left + 1 || a.bottom <= c.top + 1)); WORLD.closeScene(true); return out; });
+    assert(tabs === 'Fab’s shop:true:true|Pip’s fur:true:true|Dress Pip:true:true|Pip’s nest:true:true|Decorate:true:true#true', 'the five My stuff tabs have drawn icons and do not overlap: ' + tabs);
     await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
   });
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
