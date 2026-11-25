@@ -580,7 +580,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       return out;
     });
     assert(r.groups === 'nurse,elder,yellow,green,fab', 'one friend per job: ' + r.groups);
-    assert(/Bubble Breathing/.test(r.today) && !/Beat Maker/.test(r.today), 'a little energy suggests calm things: ' + r.today);
+    assert(/Bubble Breathing/.test(r.today) && !/Beat Maker|Music/.test(r.today), 'a little energy suggests calm things: ' + r.today);
     assert(r.gain === 1 && r.helloHidden, 'an activity sends a star and the panel fills the page: ' + JSON.stringify(r));
     await pg.close();
   });
@@ -1002,6 +1002,8 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     const paper = await page.locator('.mk-paper').innerText();
     assert(/All about the Victorians/.test(paper) && /The steam train/.test(paper) && /The penny-farthing/.test(paper) && /Did you know\?/.test(paper), 'the report reads as a report: ' + paper.slice(0, 160));
     assert(await page.locator('.mk-paper .mk-fig img').count() === 1 && await page.locator('.mk-paper .mk-map').count() === 1, 'the child’s tile and mind map are in the report');
+    const proud = await page.evaluate(() => { const p = document.querySelector('.mk-paper.proud'), f = p && p.querySelector('.proud-pic'), pr = p && p.getBoundingClientRect(), fr = f && f.getBoundingClientRect(); return p ? { cards:p.querySelectorAll('.proud-sec').length, heads:p.querySelectorAll('.proud-sec h3').length, band:p.querySelectorAll('.proud-band').length, seal:!!p.querySelector('.proud-seal svg'), bg:getComputedStyle(p).backgroundColor, picShare:fr.width / pr.width, kicker:(p.querySelector('.proud-kicker') || {}).textContent, title:getComputedStyle(p.querySelector('.proud-title')).fontSize } : null; });
+    assert(proud && proud.cards >= 3 && proud.heads === proud.cards && proud.band === 2 && proud.seal && proud.bg !== 'rgb(255, 255, 255)' && proud.picShare < .4 && parseFloat(proud.title) >= 30 && /report/i.test(proud.kicker), 'the finished report is a proud page with the picture in proportion: ' + JSON.stringify(proud));
     assert(await page.locator('.tm-notebox .fab-char.elder').count() === 1 && await page.locator('[data-mk="print"]').count() === 1, 'Mr Elder celebrates, and it can be printed');
     /* sentence starters: typing is saved without losing the place */
     await page.locator('[data-mk="open"][data-id="report"]').click();
@@ -1108,6 +1110,49 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       speechSynthesis.getVoices = () => fake; const best = FabVoice.bestVoices().map(x => x.name); speechSynthesis.getVoices = () => [fake[0]]; const only = FabVoice.bestVoices().map(x => x.name); speechSynthesis.getVoices = orig;
       return { best, only, male:FabVoice.isMaleVoice(fake[0]), fem:FabVoice.isMaleVoice(fake[1]) }; });
     assert(v.best.length === 1 && /Hazel/.test(v.best[0]) && v.only.length === 1 && v.male && !v.fem, 'Miss Bell’s voice: ' + JSON.stringify(v));
+  });
+  await test('Miss Bell’s recorded voice reads the big idea in I do, starts at the right place in the pack file, and stops on a second tap', async () => {
+    const idx = await page.evaluate(() => { showScreen('screen-learn'); const p = BUILT_IN_PACKS.find(x => x.id === 'english-flightpath-word-power'), i = p.screens.findIndex(x => x.type === 'pathway'); learnOpen(p); learnGo(i); return i; });
+    await page.waitForSelector('[data-pwpick="0"]', { state:'attached' });
+    await page.evaluate(() => document.querySelector('[data-pwpick="0"]').click());
+    await page.waitForSelector('.pw-teach .pw-idea .say-btn');
+    const info = await page.evaluate(i => { const kid = Learn.state[i].kids.local, p = BUILT_IN_PACKS.find(x => x.id === 'english-flightpath-word-power'), st = p.screens[i].steps[0], idea = document.querySelector('.pw-idea').textContent.replace('🔊', '').trim();
+      return { phase:kid.phase, first:kid.ex.ask === st.params.items[0].ask, ask:kid.ex.ask, hint:kid.ex.vars.hint, clip:FabVoice.bellClip(idea), askClip:!!FabVoice.bellClip(kid.ex.ask), thinkClip:!!FabVoice.bellClip(kid.ex.vars.hint), lines:Object.keys(FAB_BELL.clips).length, files:FAB_BELL.files.length, none:FabVoice.bellClip('What is 3 × 4?') }; }, idx);
+    assert(info.phase === 'ido' && info.first && info.clip && /^voice\/bell-english-word-power/.test(info.clip.file) && info.lines >= 60 && info.none === null, 'the big idea has a recording and Miss Bell models the first question: ' + JSON.stringify(info));
+    const size = await page.evaluate(async f => (await (await fetch(f)).blob()).size, info.clip.file);
+    assert(size > 50000 && size < 3800000, 'the pack file is there and small enough to upload in one go: ' + size);
+    await page.locator('.pw-idea .say-btn').click();
+    await page.waitForFunction(() => { const b = FabVoice.bellNow(); return !!b && !b.paused && b.t > 0; }, null, { timeout:8000 });
+    const now = await page.evaluate(() => FabVoice.bellNow());
+    assert(now.t >= info.clip.start - .3 && now.t <= info.clip.end + .3 && /bell-english-word-power\.mp3$/.test(now.file), 'the recording plays from its own place in the file: ' + JSON.stringify(now) + ' ' + JSON.stringify(info.clip));
+    await page.locator('.pw-idea .say-btn').click();
+    assert(await page.evaluate(() => FabVoice.bellNow()) === null, 'a second tap stops Miss Bell');
+    /* her model question and her thinking: recorded when the lines exist, the device voice otherwise */
+    await page.locator('.pw-ask .say-btn').first().click();
+    const q = await page.evaluate(() => ({ said:window.__fabSaid, bell:!!FabVoice.bellNow() }));
+    assert(info.askClip ? (q.said === info.ask && q.bell) : (q.said.indexOf(info.ask) === 0 && !q.bell), 'the question: ' + JSON.stringify(q));
+    await page.evaluate(() => FabVoice.bellStop());
+    await page.locator('[data-pwact="idonext"]').click();
+    await page.waitForSelector('.pw-teach .fab-say.bell .bubble .say-btn');
+    await page.locator('.pw-teach .fab-say.bell .bubble .say-btn').click();
+    const th = await page.evaluate(() => ({ said:window.__fabSaid, bell:!!FabVoice.bellNow() }));
+    assert(th.said === info.hint.replace(/\s+/g, ' ').trim() && th.bell === info.thinkClip, 'her thinking: ' + JSON.stringify(th));
+    await page.evaluate(() => { FabVoice.bellStop(); showScreen('screen-hub'); });
+  });
+  await test('Music is one place: the same keyboard from both hubs, with the beat maker a tap away and back again', async () => {
+    const r = await page.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms));
+      showScreen('screen-wellbeing'); await wait(300);
+      const tile = document.querySelector('[data-wb2="beat"]'), name = tile.querySelector('h3').textContent; tile.click(); await wait(500);
+      const onMusic = document.getElementById('screen-music').classList.contains('active'), back = FabMusic.state().backTo, btn = !!document.getElementById('muBeatBtn');
+      document.getElementById('muBeatBtn').click(); await wait(2600);
+      const fr = document.querySelector('.game-frame[data-game="world"]'), W = fr && fr.contentWindow, sc = W && W.WORLD && W.WORLD.scene();
+      const inBeat = !!sc && sc.cls === 'sc-beat', onWorld = document.getElementById('screen-world').classList.contains('active');
+      if(W && W.WORLD) W.WORLD.closeScene(true); await wait(500);
+      const home = document.getElementById('screen-music').classList.contains('active'), back2 = FabMusic.state().backTo;
+      document.getElementById('muBack').click(); await wait(300);
+      return { name, onMusic, back, btn, inBeat, onWorld, home, back2, end:document.getElementById('screen-wellbeing').classList.contains('active'), learn:document.querySelector('#learnMusicBtn b').textContent };
+    });
+    assert(r.name === 'Music' && r.learn === 'Music' && r.onMusic && r.back === 'screen-wellbeing' && r.btn && r.inBeat && r.onWorld && r.home && r.back2 === 'screen-wellbeing' && r.end, 'one Music place: ' + JSON.stringify(r));
   });
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
 
