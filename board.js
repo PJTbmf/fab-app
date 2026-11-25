@@ -196,7 +196,7 @@
         </div>
         <div class="bd-extra">
           <button type="button" class="bd-btn soft" id="bdLive" aria-pressed="false" hidden>📡<span class="bd-lbl"> Show everyone</span></button>
-          <button type="button" class="bd-btn soft" id="bdLink" data-cvlaunch aria-label="Show a link">🎬<span class="bd-lbl"> Show a link</span></button>
+          <button type="button" class="bd-btn soft" id="bdLink" data-cvlaunch aria-label="Cinema: show a video or a page">🎬<span class="bd-lbl"> Cinema</span></button>
           <button type="button" class="bd-btn soft" id="bdSave" aria-label="Save picture">💾<span class="bd-lbl"> Save picture</span></button>
         </div>
       </div>

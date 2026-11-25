@@ -360,7 +360,7 @@
       w.className = 'cvl-wrap'; w.hidden = true;
       w.innerHTML = `<div class="cvl" role="dialog" aria-modal="true" aria-labelledby="cvlTitle">
         <button type="button" class="cvl-x" aria-label="Close">✕</button>
-        <h2 id="cvlTitle">🎬 Show a link</h2>
+        <h2 id="cvlTitle">🎬 Cinema: show a video or a page</h2>
         <p class="cvl-sub">Paste a link or an embed code. Vimeo, Google Slides, Drive and OneDrive videos, BBC embed codes and many learning sites open inside the app. YouTube does too, with safety guards, but it may show adverts.</p>
         <div class="cvl-row"><input id="cvlUrl" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://… or <iframe …>" aria-label="Link or embed code to show">
           <button type="button" class="cv-btn leaf" id="cvlGo">Show it</button></div>

@@ -32,7 +32,7 @@
     { door:'sea', e:'🐠', n:'Ocean Explorers', when:'Right now, under the sea' }
   ];
   const WORLDS = {}, ORDER = [];
-  const V = { era:null, tab:'explore', hot:null, back:'screen-learn', act:null, sort:null, match:null, ask:null, note:null, stop:false, flash:'', photo:false, real:null, turn:0 };
+  const V = { era:null, tab:'explore', hot:null, back:'screen-learn', act:null, sort:null, match:null, ask:null, note:null, stop:false, flash:'', photo:false, real:null, turn:0, own:false, ownq:'', miss:'' };
   const W = () => WORLDS[V.era] || null;
   function add(w){ WORLDS[w.id] = w; if(!ORDER.includes(w.id)) ORDER.push(w.id); try{ if(!V.era && q1('#screen-time') && q1('#screen-time').classList.contains('active')) render(); }catch(e){} }
 
@@ -215,7 +215,7 @@
     scene:street, spots:SPOTS, find:FIND,
     sort:{ h:'Then or not yet?', ask:'Which things did the Romans have?', a:['🏛️ The Romans had it', 'about 2,000 years ago'], b:['⏳ Not invented yet', 'it came much later'], items:SORT },
     match:{ h:'What is it for?', ask:'Match each Roman thing to its job.', pick:'Tap a Roman thing, then tap its job.', items:MATCH },
-    who:{ n:'Marcus', role:'a Roman baker', at:[1132, 418], spot:'bakery', hello:{ h:'Salve! That means hello.', t:'I am Marcus, the baker on this street. Tap a question and I will tell you about my life.' }, qs:MARCUS,
+    who:{ n:'Marcus', voice:'m', role:'a Roman baker', at:[1132, 418], spot:'bakery', hello:{ h:'Salve! That means hello.', t:'I am Marcus, the baker on this street. Tap a question and I will tell you about my life.' }, qs:MARCUS,
       note:'Marcus is a made-up baker. His answers come from what we know about Roman towns.',
       face:face({ alt:'Marcus, a Roman baker', top:'#fff3dc', skin:'#d9a06b', hair:`<path d="M26 50 q34 -46 68 0 q-34 -18 -68 0 Z" fill="#3a2414" stroke="${INK}" stroke-width="3"/>` }) },
     teach:[
@@ -254,7 +254,7 @@
     if(!s) return `<div class="fab-say"><span class="fab-char bell" role="img" aria-label="Miss Bell"></span><div class="bubble"><b>${h(w.hello.h)}</b>${h(w.hello.t)}</div></div>`;
     const ph = s.photo && V.photo ? `<figure class="tm-photo"><img src="${h(s.photo.src)}" alt="${h(s.photo.alt)}" loading="lazy" decoding="async"><figcaption>${h(s.photo.cap)} <small>Photo: ${h(s.photo.by)}</small></figcaption></figure>` : '';
     return `<div class="fab-say"><span class="fab-char bell" role="img" aria-label="Miss Bell"></span><div class="bubble"><b><span aria-hidden="true">${s.e}</span> ${h(s.n)}</b><span id="tmFact">${h(s.t)}</span><span class="tm-know">💡 ${h(s.k)}</span></div></div>
-      <div class="choice-row tm-row">${window.speechSynthesis ? '<button type="button" class="btn small soft" data-tm="say">🔊 Read it to me</button>' : ''}${s.snd && Snd.has(s.snd) ? '<button type="button" class="btn small soft" data-tm="hear">👂 Listen</button>' : ''}${s.photo ? `<button type="button" class="btn small soft" data-tm="photo" aria-expanded="${!!V.photo}">${V.photo ? '📷 Hide the photo' : '📷 See a real one'}</button>` : ''}<button type="button" class="btn small leaf" data-tm="nexthot">${h(w.next || 'Next one ➡️')}</button></div>${ph}${V.flash ? `<p class="tm-yes" role="status">${h(V.flash)}</p>` : ''}`;
+      <div class="choice-row tm-row">${Say.ok ? `<button type="button" class="btn small soft" data-tm="say" data-saykey="spot:${s.id}" data-idle="🔊 Read it to me">${Say.label('spot:' + s.id, '🔊 Read it to me')}</button>` : ''}${s.snd && Snd.has(s.snd) ? '<button type="button" class="btn small soft" data-tm="hear">👂 Listen</button>' : ''}${s.photo ? `<button type="button" class="btn small soft" data-tm="photo" aria-expanded="${!!V.photo}">${V.photo ? '📷 Hide the photo' : '📷 See a real one'}</button>` : ''}<button type="button" class="btn small leaf" data-tm="nexthot">${h(w.next || 'Next one ➡️')}</button></div>${ph}${V.flash ? `<p class="tm-yes" role="status">${h(V.flash)}</p>` : ''}`;
   }
   function missionsHTML(w, p){
     const me = p[w.id], done = k => me.m.includes(k);
@@ -291,10 +291,15 @@
   }
   function whoHTML(w, p){
     const who = w.who, cur = who.qs.find(x => x.id === V.ask), me = p[w.id];
+    const dunno = who.dunno || 'What a good question! I do not know the answer to that one. Ask your teacher. They would love to find out with you.';
+    const head = V.miss ? '“' + h(V.miss) + '”' : cur ? (V.ownq ? 'You asked: “' + h(V.ownq) + '”' : h(cur.q)) : h(who.hello.h);
+    const body = V.miss ? h(dunno) : cur ? (V.ownq ? `<small class="tm-heard">${h(who.n)} hears: ${h(cur.q)}</small>` : '') + h(cur.a) : h(who.hello.t);
+    const k = V.miss ? 'ans:miss' : cur ? 'ans:' + cur.id : '';
     return `<div class="tm-marcus"><div class="tm-marcus-say">${who.face}
-      <div class="bubble"><b>${cur ? h(cur.q) : h(who.hello.h)}</b><span id="tmAnswer">${cur ? h(cur.a) : h(who.hello.t)}</span></div></div>
-      <div class="tm-qs" role="group" aria-label="Questions to ask ${h(who.n)}">${who.qs.map(m => `<button type="button" class="tm-q ${me.asked.includes(m.id) ? 'asked' : ''} ${V.ask === m.id ? 'sel' : ''}" data-tm="ask" data-id="${m.id}">${h(m.q)}</button>`).join('')}</div>
-      ${cur && window.speechSynthesis ? '<div class="choice-row tm-row"><button type="button" class="btn small soft" data-tm="sayans">🔊 Hear it again</button></div>' : ''}
+      <div class="bubble"><b>${head}</b><span id="tmAnswer">${body}</span></div></div>
+      <div class="tm-qs" role="group" aria-label="Questions to ask ${h(who.n)}">${who.qs.map(m => `<button type="button" class="tm-q ${me.asked.includes(m.id) ? 'asked' : ''} ${V.ask === m.id ? 'sel' : ''}" data-tm="ask" data-id="${m.id}">${h(m.q)}</button>`).join('')}<button type="button" class="tm-q tm-ownbtn ${V.own ? 'sel' : ''}" data-tm="own" aria-expanded="${!!V.own}">✏️ Ask your own question</button></div>
+      ${V.own ? `<form class="tm-own" data-tmform="own"><label for="tmOwn">Type your question for ${h(who.n)}</label><div class="tm-ownrow"><input id="tmOwn" type="text" maxlength="90" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="What would you like to know?"><button type="submit" class="btn small leaf">Ask</button></div></form>` : ''}
+      ${k && Say.ok ? `<div class="choice-row tm-row"><button type="button" class="btn small soft" data-tm="sayans" data-saykey="${k}" data-idle="🔊 Hear it again">${Say.label(k, '🔊 Hear it again')}</button></div>` : ''}
       ${me.chat ? '<p class="tm-yes">⭐ You asked great questions. That earned a star.</p>' : `<p class="hint">Ask three questions to earn a star. ${h(who.note)}</p>`}</div>`;
   }
   /* Street View without a key: the same address Google Maps gives under Share › Embed a map */
@@ -321,7 +326,7 @@
       ${(w.packs || []).length ? `<li><b>Practise it.</b> ${w.packs.map(k => `<button type="button" class="btn small soft" data-tm="pack" data-id="${k.id}" data-step="${k.step}">${h(k.label)}</button>`).join(' ')}</li>` : ''}
       <li><b>Sounds and photos.</b> The sounds are made by the app to give the idea; they are not recordings. Each photo is free to reuse and has its credit underneath; the full list with links is in <a href="explore/CREDITS.html" target="_blank" rel="noopener">photo credits</a>.</li>
       ${(w.real || []).length ? `<li><b>Real-world views.</b> “See it for real” shows Google’s own Street View photographs at viewpoints we have checked. Children can turn to look around but cannot walk away from the viewpoint or open Google Maps. The photographs show real places, so passers-by may appear (Google blurs faces). Google receives the device’s internet address when a view opens; nothing loads until a place is tapped. <button type="button" class="btn small soft" data-tm="realtoggle">${realOn() ? 'Switch real-world views off on this device' : 'Switch real-world views on for this device'}</button> <button type="button" class="btn small soft" data-tm="roamtoggle" aria-pressed="${roamOn()}">${roamOn() ? 'Free look is on: switch back to arrows only' : 'Teacher screen-share: switch on free look'}</button></li>` : ''}
-      <li><b>No typing, no AI chat.</b> Children only tap questions. ${h(w.who.n)}’s answers are fixed scripts.</li></ul></details>`;
+      <li><b>No AI chat.</b> ${h(w.who.n)}’s answers are fixed scripts. Children tap a question, or type one of their own: the app matches it to one of the fixed answers, or ${h(w.who.n)} suggests asking you. Typed questions are not saved and are not sent anywhere.</li><li><b>Voices.</b> The app uses the best matching voice on this device (a woman’s, man’s or girl’s voice where the device has one). ⏸️ Pause stops at the end of a sentence, for talking points.</li></ul></details>`;
   }
   function panelHTML(w){
     const p = pass();
@@ -370,7 +375,54 @@
     learnOpen(pack);
     if(i >= 0){ Learn.step = i; const st = Learn.state[i] = Learn.state[i] || {}; if(!(st.kids && st.kids[pwMe()])) pwStart(pack.screens[i], st, pwMe(), Math.min(step, pack.screens[i].steps.length - 1)); learnRender(); }
   }
-  function quiet(){ Snd.stop(); try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(e){} }
+  /* ---------- voices: the device's best matching voice, spoken a sentence at a time so it can pause ---------- */
+  const Say = (() => {
+    const S = window.speechSynthesis; let q = [], i = 0, st = 'idle', opt = {}, tok = 0, key = '';
+    const FEM = /female|sonia|libby|maisie|hazel|susan|kate|serena|martha|stephanie|samantha|karen|moira|tessa|fiona|zira|jenny|aria|emma|amy|olivia|abbi|bella|hollie|catherine|victoria/i;
+    const MALE = /\bmale\b|ryan|thomas|george|daniel|arthur|oliver|david|mark\b|\bguy\b|brian|alfie|elliot|ethan|noah|rishi|james|gordon|aaron|\bfred\b/i;
+    const isF = v => FEM.test(v.name), isM = v => MALE.test(v.name) && !/female/i.test(v.name);
+    function pick(g, list){
+      const vs = (list || (S ? S.getVoices() : []) || []).filter(v => /^en/i.test(v.lang || '')); if(!vs.length) return null;
+      const want = g === 'm' ? isM : isF, not = g === 'm' ? isF : isM;
+      const sc = v => (want(v) ? 8 : 0) - (not(v) ? 8 : 0) + (/en[-_]GB/i.test(v.lang) ? 4 : 0) + (/natural|neural|online/i.test(v.name) ? 3 : 0) + (/google/i.test(v.name) ? 1 : 0) + (g === 'g' && /maisie/i.test(v.name) ? 2 : 0);
+      return vs.slice().sort((a, b) => sc(b) - sc(a))[0];
+    }
+    function pitch(v, g){ const right = v && (g === 'm' ? isM(v) : isF(v)); return g === 'm' ? (right ? 1 : .8) : g === 'g' ? (right ? 1.25 : 1.4) : (right ? 1.05 : 1.25); }
+    const split = t => (String(t).match(/[^.!?]+[.!?]+["’”)]*\s*|[^.!?]+$/g) || []).map(x => x.trim()).filter(Boolean);
+    function paint(){ document.querySelectorAll('[data-saykey]').forEach(b => { b.textContent = label(b.dataset.saykey, b.dataset.idle); b.setAttribute('aria-pressed', String(key === b.dataset.saykey && st !== 'idle')); }); }
+    function label(k, idle){ return key === k && st === 'speaking' ? '⏸️ Pause' : key === k && st === 'paused' ? '▶️ Carry on' : idle; }
+    function next(){
+      if(st !== 'speaking') return; if(i >= q.length){ st = 'idle'; key = ''; paint(); return; }
+      const u = new SpeechSynthesisUtterance(q[i]), v = pick(opt.g); if(v){ u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
+      u.rate = .92; u.pitch = pitch(v, opt.g); const my = tok;
+      u.onend = () => { if(my !== tok) return; i++; setTimeout(next, 160); }; u.onerror = () => { if(my !== tok) return; i++; next(); };
+      try{ S.speak(u); }catch(e){ st = 'idle'; key = ''; paint(); }
+    }
+    function speak(text, o){ if(!S) return; tok++; try{ S.cancel(); }catch(e){} opt = o || {}; key = opt.key || ''; q = split(text); i = 0; st = 'speaking'; paint(); next(); }
+    function pause(){ if(st !== 'speaking') return; tok++; try{ S.cancel(); }catch(e){} st = 'paused'; paint(); }
+    function resume(){ if(st !== 'paused') return; tok++; st = 'speaking'; paint(); next(); }
+    function stop(){ tok++; try{ S && S.cancel(); }catch(e){} q = []; i = 0; st = 'idle'; key = ''; paint(); }
+    function toggle(k, text, g){ if(key === k && st === 'speaking') return pause(); if(key === k && st === 'paused') return resume(); speak(text, { g, key:k }); }
+    try{ if(S){ S.getVoices(); S.addEventListener && S.addEventListener('voiceschanged', () => S.getVoices()); } }catch(e){}
+    return { speak, pause, resume, stop, toggle, label, pick, split, pitch, state:() => ({ st, key, i, n:q.length }), ok:!!S };
+  })();
+  /* ---------- a child's own question: matched to one of the guide's fixed answers, never stored, never sent ---------- */
+  const Own = (() => {
+    const STOP = new Set('a an the is are am was were do does did you your yours i me my we our it its to of in on at for with and or but what when where who why how can could would will have has had there this that they them he she his her be been much many any some like get got go going about from up into as by so if not no yes please tell ever really very all day'.split(' '));
+    const SYN = { food:'eat', dinner:'eat', lunch:'eat', breakfast:'eat', meal:'eat', hungry:'eat', drink:'eat', bed:'sleep', night:'sleep', tired:'sleep', dream:'sleep', job:'work', lesson:'school', learn:'school', teacher:'school', class:'school', game:'play', toy:'play', fun:'play', hobby:'play', mum:'family', dad:'family', mother:'family', father:'family', brother:'family', sister:'family', parent:'family', friend:'family', home:'live', house:'live', quick:'fast', speed:'fast', wear:'clothes', dress:'clothes', bath:'wash', shower:'wash', clean:'wash', toilet:'wash', teeth:'wash', number:'count', maths:'count', read:'write', pen:'write', pencil:'write', gravity:'float', weightless:'float', fly:'float', coin:'money', pay:'money', buy:'money', cost:'money', dark:'light', lamp:'light', candle:'light', nile:'river', water:'river', window:'see', look:'see', view:'see', earth:'see', cool:'hot', sun:'hot', weather:'hot', victoria:'queen', king:'queen' };
+    const KEYS = { job:'work', eat:'eat bread', home:'live', school:'school', fun:'play', games:'play', count:'count', money:'money', learn:'school write', pen:'write ink', write:'write ink slate', river:'river boat flood', hot:'hot', light:'light', queen:'queen', float:'float fall', sleep:'sleep', wash:'wash hair', work:'work science experiment', see:'see', family:'family miss phone call', fast:'fast far high' };
+    const stem = x => x.length > 4 ? x.replace(/(ing|ed|es|s)$/, '') : x.length > 3 ? x.replace(/s$/, '') : x;
+    const toks = t => [...new Set(String(t).toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(x => x && !STOP.has(x)).map(stem).map(x => SYN[x] || x))];
+    function match(text, qs){
+      const u = toks(text); if(!u.length) return null;
+      const sets = qs.map(m => toks(m.q + ' ' + (KEYS[m.id] || '') + ' ' + (m.k || '')));
+      const df = {}; sets.forEach(k => k.forEach(x => { df[x] = (df[x] || 0) + 1; }));
+      let best = null, bs = 0; sets.forEach((k, n) => { const sc = u.filter(x => k.includes(x) && df[x] < 3).length; if(sc > bs){ bs = sc; best = qs[n]; } });
+      return bs >= 1 ? best : null;
+    }
+    return { match, toks };
+  })();
+  function quiet(){ Snd.stop(); Say.stop(); }
   function leave(){
     quiet();
     const b = V.back || 'screen-learn'; V.stop = false; V.real = null;
@@ -386,9 +438,9 @@
     const me = p[w.id];
     if(a === 'scroll'){ const st = q1('#tmStreet'); if(st){ const d = Number(id) * st.clientWidth * .6; try{ st.scrollBy({ left:d, behavior:'smooth' }); }catch(err){ st.scrollLeft += d; } } return; }
     if(a === 'spot'){ see(w, id); render(); const pn = q1('#tmPanel'); if(pn) try{ pn.scrollIntoView({ block:'nearest', behavior:'smooth' }); }catch(err){} return; }
-    if(a === 'tab'){ quiet(); V.tab = id; V.act = null; V.note = null; V.real = null; if(id === 'who') scrollToSpot(w.who.spot); snd('tick'); render(); return; }
-    if(a === 'say'){ const s = w.spots.find(x => x.id === V.hot); Snd.stop(); if(s && window.fabReadAloud) fabReadAloud(s.n + '. ' + s.t + ' ' + s.k); return; }
-    if(a === 'hear'){ const s = w.spots.find(x => x.id === V.hot); try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(err){} if(s) Snd.play(s.snd); return; }
+    if(a === 'tab'){ quiet(); V.tab = id; V.act = null; V.note = null; V.real = null; V.own = false; V.miss = ''; V.ownq = ''; if(id === 'who') scrollToSpot(w.who.spot); snd('tick'); render(); return; }
+    if(a === 'say'){ const s = w.spots.find(x => x.id === V.hot); Snd.stop(); if(s) Say.toggle('spot:' + s.id, s.n + '. ' + s.t + ' ' + s.k, 'f'); return; }
+    if(a === 'hear'){ const s = w.spots.find(x => x.id === V.hot); Say.stop(); if(s) Snd.play(s.snd); return; }
     if(a === 'photo'){ V.photo = !V.photo; snd('tick'); render(); return; }
     if(a === 'nexthot'){ const i = w.spots.findIndex(x => x.id === V.hot), n = w.spots[(i + 1) % w.spots.length]; see(w, n.id); render(); scrollToSpot(n.id); return; }
     if(a === 'act'){
@@ -412,11 +464,18 @@
         if(M.done.length === w.match.items.length){ const first = missionDone(w, 3, p); V.note = { k:'win', h:'Every one matched!', t:first ? 'That earned 2 stars for Fab Fox World.' : 'Brilliant matching.' }; } }
       else { M.sel = null; V.note = { k:'fix', h:'Not quite. Try a different job.', t:'Think about what ' + it.n + ' looks like, and where you saw it.' }; snd('gentle'); }
       render(); return; }
-    if(a === 'ask'){
-      V.ask = id; const m = w.who.qs.find(x => x.id === id); Snd.stop();
-      if(!me.asked.includes(id)){ me.asked.push(id); if(me.asked.length >= 3 && !me.chat){ me.chat = 1; award(1); snd('jingle'); } else snd('tick'); savePass(p); } else snd('tick');
-      render(); if(m && window.fabReadAloud) fabReadAloud(m.a); return; }
-    if(a === 'sayans'){ const m = w.who.qs.find(x => x.id === V.ask); if(m && window.fabReadAloud) fabReadAloud(m.a); return; }
+    if(a === 'ask' || a === 'ownask'){
+      let m = null;
+      if(a === 'ownask'){ const el = q1('#tmOwn'), text = el ? el.value.replace(/\s+/g, ' ').trim().slice(0, 90) : ''; if(!text){ if(el) el.focus(); return; }
+        m = Own.match(text, w.who.qs); V.own = false;
+        if(!m){ V.ask = null; V.ownq = ''; V.miss = text; Snd.stop(); snd('gentle'); render(); Say.speak(w.who.dunno || 'What a good question! I do not know the answer to that one. Ask your teacher. They would love to find out with you.', { g:w.who.voice || 'f', key:'ans:miss' }); return; }
+        V.ownq = text; }
+      else { m = w.who.qs.find(x => x.id === id); V.ownq = ''; }
+      if(!m) return; V.ask = m.id; V.miss = ''; Snd.stop();
+      if(!me.asked.includes(m.id)){ me.asked.push(m.id); if(me.asked.length >= 3 && !me.chat){ me.chat = 1; award(1); snd('jingle'); } else snd('tick'); savePass(p); } else snd('tick');
+      render(); Say.speak(m.a, { g:w.who.voice || 'f', key:'ans:' + m.id }); return; }
+    if(a === 'own'){ V.own = !V.own; snd('tick'); render(); const el = q1('#tmOwn'); if(el) el.focus(); return; }
+    if(a === 'sayans'){ const m = w.who.qs.find(x => x.id === V.ask), dn = w.who.dunno || 'What a good question! I do not know the answer to that one. Ask your teacher. They would love to find out with you.'; if(V.miss) Say.toggle('ans:miss', dn, w.who.voice || 'f'); else if(m) Say.toggle('ans:' + m.id, m.a, w.who.voice || 'f'); return; }
     if(a === 'real'){ V.real = id || null; V.turn = 0; snd('tick'); render(); const sv = q1('.tm-sv'); if(sv) try{ sv.scrollIntoView({ block:'nearest', behavior:'smooth' }); }catch(err){} return; }
     if(a === 'turn'){ const cur = (w.real || []).find(r => r.id === V.real), f = q1('#tmSv'); if(!cur || !f) return; const d = +id || 0; V.turn = d ? V.turn + d : 0; snd('tick');
       const wait = q1('#tmSvWait'); if(wait){ wait.hidden = false; const off = () => { setTimeout(() => { wait.hidden = true; }, 700); f.removeEventListener('load', off); }; f.addEventListener('load', off); setTimeout(() => { wait.hidden = true; }, 6000); }
@@ -483,6 +542,9 @@ body:has(#screen-time.active) main{max-width:1240px}
 .tm-svshield{position:absolute;left:0;right:0;top:0;bottom:26px;z-index:2}
 .tm-svwait{position:absolute;inset:0;z-index:3;display:grid;place-items:center;background:rgba(34,26,20,.72);color:#fff;font-weight:800;font-size:1.3rem}
 .tm-svwait[hidden]{display:none}
+.tm-ownbtn{border-style:dashed}
+.tm-own{margin:12px 0 0;display:grid;gap:6px}.tm-own label{font-weight:800}.tm-ownrow{display:flex;gap:10px;flex-wrap:wrap}.tm-own input{flex:1 1 260px;min-height:52px;font:inherit;font-size:1.15rem;padding:8px 14px;border:3px solid var(--ink,#2B1A12);border-radius:14px;background:#fff}.tm-own input:focus-visible{outline:4px solid var(--sky,#5aa9e6);outline-offset:2px}
+.tm-heard{display:block;font-size:.9rem;opacity:.8;margin-bottom:4px}
 .tm-sv iframe{display:block;width:100%;height:100%;border:0}
 .tm-svcap{margin:8px 0 0}
 .tm-missions{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:10px}
@@ -538,12 +600,13 @@ body:has(#screen-time.active) main{max-width:1240px}
     const main = q1('main'); if(main && !q1('#screen-time')) main.insertAdjacentHTML('beforeend', HTML);
     const scr = q1('#screen-time'); if(!scr) return;
     scr.addEventListener('click', onClick);
+    scr.addEventListener('submit', e => { const f = e.target.closest('[data-tmform]'); if(!f) return; e.preventDefault(); onClick({ target:{ closest:() => ({ dataset:{ tm:'ownask' } }) } }); });
     q1('#tmBack').addEventListener('click', () => { snd('tick'); if(V.stop){ V.stop = false; render(); return; } if(V.era){ if(V.act){ V.act = null; V.note = null; render(); return; } quiet(); V.era = null; V.real = null; q1('#tmBody').innerHTML = ''; render(); return; } leave(); });
     scr.addEventListener('keydown', e => { const stt = e.target.closest && e.target.closest('#tmStreet'); if(!stt) return; if(e.key === 'ArrowRight'){ stt.scrollBy({ left:160 }); e.preventDefault(); } if(e.key === 'ArrowLeft'){ stt.scrollBy({ left:-160 }); e.preventDefault(); } });
     const tools = q1('#learnTools');
-    if(tools && !q1('#learnTimeBtn')){ tools.insertAdjacentHTML('beforeend', `<button type="button" class="lt-card" id="learnTimeBtn"><i aria-hidden="true">🧭</i><b>${NAME}</b><span>Ancient Rome, Egypt, the Victorians and the Space Station</span></button>`); q1('#learnTimeBtn').addEventListener('click', () => { snd('tick'); open('screen-learn'); }); }
+    if(tools && !q1('#learnTimeBtn')){ tools.insertAdjacentHTML('beforeend', `<button type="button" class="lt-card" id="learnTimeBtn"><i aria-hidden="true">🧭</i><b>${NAME}</b><span>Rome, Egypt, the Victorians, space</span></button>`); q1('#learnTimeBtn').addEventListener('click', () => { snd('tick'); open('screen-learn'); }); }
   }
   window.fabOpenTime = window.fabOpenExplore = open;
-  window.FabExplore = window.FabTime = { open, add, state:V, pass, worlds:WORLDS, order:ORDER, world:W, sounds:Snd, svUrl, kit:{ INK, h, wrap, face, person, loaf, column, amphora, roof, cypress } };
+  window.FabExplore = window.FabTime = { open, add, state:V, pass, worlds:WORLDS, order:ORDER, world:W, sounds:Snd, say:Say, own:Own, svUrl, kit:{ INK, h, wrap, face, person, loaf, column, amphora, roof, cypress } };
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

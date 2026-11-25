@@ -125,7 +125,7 @@
       { id:'bricks', e:'🧱', n:'mud bricks', use:'building houses' },
       { id:'boat', e:'⛵', n:'a boat', use:'travelling along the Nile' }
     ] },
-    who:{ n:'Nakht', role:'an Egyptian scribe', at:[1125, 470], spot:'papyrus', hello:{ h:'Welcome, friend!', t:'I am Nakht, a scribe. Tap a question and I will tell you about my life beside the river.' },
+    who:{ n:'Nakht', voice:'m', role:'an Egyptian scribe', at:[1125, 470], spot:'papyrus', hello:{ h:'Welcome, friend!', t:'I am Nakht, a scribe. Tap a question and I will tell you about my life beside the river.' },
       note:'Nakht is a made-up scribe. His answers come from what we know about life in Ancient Egypt.',
       face:face({ alt:'Nakht, an Egyptian scribe', top:'#fff6e0', skin:'#b9774a', hair:`<path d="M22 66 q-6 -58 38 -60 q44 2 38 60 l-10 0 q4 -38 -28 -40 q-32 2 -28 40 Z" fill="#1d1410" stroke="${INK}" stroke-width="3"/>`, extra:`<path d="M34 100 q26 16 52 0" fill="none" stroke="#3f6ea8" stroke-width="7"/><path d="M36 108 q24 14 48 0" fill="none" stroke="#e7b43a" stroke-width="5"/>` }),
       qs:[
@@ -262,7 +262,7 @@
       { id:'pump', e:'🚰', n:'the pump', use:'fetching water' },
       { id:'post', e:'📮', n:'a pillar box', use:'posting letters' }
     ] },
-    who:{ n:'Ada', role:'a Victorian schoolgirl', at:[400, 506], spot:'slate', hello:{ h:'Good morning!', t:'I’m Ada and I’m nine. Tap a question and I’ll tell you about my school and my street.' },
+    who:{ n:'Ada', voice:'g', role:'a Victorian schoolgirl', at:[400, 506], spot:'slate', hello:{ h:'Good morning!', t:'I’m Ada and I’m nine. Tap a question and I’ll tell you about my school and my street.' },
       note:'Ada is a made-up schoolgirl. Her answers come from what we know about Victorian childhood.',
       face:face({ alt:'Ada, a Victorian schoolgirl', top:'#5a6fa8', skin:'#f1c9a5', hair:`<path d="M26 56 q0 -48 34 -48 q34 0 34 48 q-12 -24 -34 -24 q-22 0 -34 24 Z" fill="#8a5a2c" stroke="${INK}" stroke-width="3"/><path d="M27 60 q-10 24 -3 44 M93 60 q10 24 3 44" stroke="#8a5a2c" stroke-width="10" fill="none" stroke-linecap="round"/><circle cx="23" cy="104" r="6" fill="#c8102e" stroke="${INK}" stroke-width="2"/><circle cx="97" cy="104" r="6" fill="#c8102e" stroke="${INK}" stroke-width="2"/>`, extra:`<path d="M42 102 h36 v28 h-36 Z" fill="#fff" stroke="${INK}" stroke-width="3"/>` }),
       qs:[
@@ -377,7 +377,7 @@
       { id:'arm', e:'🦾', n:'the robot arm', use:'moving heavy things' },
       { id:'gym', e:'🏃', n:'the running machine', use:'keeping muscles and bones strong' }
     ] },
-    who:{ n:'Zara', role:'an astronaut', at:[1340, 372], spot:'garden', hello:{ h:'Hello from space!', t:'I’m Zara, and I live on the space station for six months. Tap a question and I’ll tell you what it’s like.' },
+    who:{ n:'Zara', voice:'f', role:'an astronaut', at:[1340, 372], spot:'garden', hello:{ h:'Hello from space!', t:'I’m Zara, and I live on the space station for six months. Tap a question and I’ll tell you what it’s like.' },
       note:'Zara is a made-up astronaut. Her answers come from what real astronauts have told us about living on the station.',
       face:face({ alt:'Zara, an astronaut', top:'#2f5aa8', skin:'#8a5a3c', hair:`<g fill="#1d1410"><circle cx="38" cy="30" r="17"/><circle cx="60" cy="18" r="19"/><circle cx="82" cy="30" r="17"/><circle cx="27" cy="50" r="12"/><circle cx="93" cy="50" r="12"/></g>`, extra:`<circle cx="82" cy="114" r="8" fill="#f0b913" stroke="${INK}" stroke-width="2.5"/>` }),
       qs:[
