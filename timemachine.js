@@ -543,6 +543,18 @@ body:has(#screen-time.active) main{max-width:1240px}
 .tm-svshield{position:absolute;left:0;right:0;top:0;bottom:26px;z-index:2}
 .tm-svwait{position:absolute;inset:0;z-index:3;display:grid;place-items:center;background:rgba(34,26,20,.72);color:#fff;font-weight:800;font-size:1.3rem}
 .tm-svwait[hidden]{display:none}
+/* reading size: the words we read together are big */
+#screen-time{--t-small:1.08rem;--t-body:1.25rem;--t-lead:1.45rem;--t-head:1.75rem}
+#screen-time .tm-panel{font-size:1.25rem;line-height:1.5}
+#screen-time .fab-say{max-width:940px}#screen-time .fab-say .fab-char{width:108px}
+#screen-time .bubble{font-size:1.5rem;line-height:1.5;padding:14px 22px}#screen-time .bubble b{font-size:1.6rem}
+#screen-time .tm-know{font-size:1.35rem;padding:8px 14px;margin-top:10px}
+#screen-time .tm-q{font-size:1.3rem;min-height:58px;padding:10px 20px}
+#screen-time .hint{font-size:1.1rem}#screen-time .tm-yes{font-size:1.3rem}
+#screen-time .tm-svcap,#screen-time .tm-photo figcaption{font-size:1.4rem;line-height:1.45}#screen-time .tm-photo figcaption small{font-size:.95rem}
+#screen-time .pill-choice{font-size:1.2rem}#screen-time .btn.small{font-size:1.2rem;min-height:52px}
+#screen-time .tm-heard{font-size:1.05rem}#screen-time .tm-teach{font-size:1.05rem;line-height:1.45}#screen-time .tm-face{width:108px}
+@media (max-width:640px){#screen-time .bubble{font-size:1.3rem}#screen-time .bubble b{font-size:1.4rem}#screen-time .tm-panel{font-size:1.15rem}}
 .tm-ownbtn{border-style:dashed}
 .tm-own{margin:12px 0 0;display:grid;gap:6px}.tm-own label{font-weight:800}.tm-ownrow{display:flex;gap:10px;flex-wrap:wrap}.tm-own input{flex:1 1 260px;min-height:52px;font:inherit;font-size:1.15rem;padding:8px 14px;border:3px solid var(--ink,#2B1A12);border-radius:14px;background:#fff}.tm-own input:focus-visible{outline:4px solid var(--sky,#5aa9e6);outline-offset:2px}
 .tm-heard{display:block;font-size:.9rem;opacity:.8;margin-bottom:4px}
