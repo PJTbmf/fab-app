@@ -295,6 +295,7 @@
     if(/Natural|Neural|Premium|Enhanced/i.test(n)) s += 30;
     if(/Libby|Sonia|Martha|Kate|Serena|Stephanie|Google UK English Female|Hazel|Susan|Fiona|Moira|Tessa|Karen|Mia|Bella|Holly|Abbi|Hollie|Olivia/i.test(n)) s += 18;
     if(/Daniel|Arthur|Oliver|Ryan|Thomas|George|Male|Fred|Albert|Bahh|Bells|Boing|Bubbles|Cellos|Wobble|Whisper|Zarvox|Trinoids|Organ|Junior|Ralph|Jester|Superstar|Grandma|Grandpa|Rocko|Eddy|Flo|Reed|Sandy|Shelley|Bad News|Good News/i.test(n)) s -= 40;
+    if(/Google UK English Female/i.test(n)) s += 12; /* smoother than the old Windows voices (Hazel, Susan) */
     if(v.localService === false) s += 4;
     return s;
   }
@@ -302,9 +303,27 @@
   const MALE_VOICE = /\b(Daniel|Arthur|Oliver|Ryan|Thomas|George|Male|Fred|Albert|Ralph|Junior|Grandpa|Rocko|Eddy|Reed|Alex|Aaron|Bruce|David|Mark|James|Guy|Brian|Liam|Noah|Elliot|Alfie|Ethan|Tom|Lee|Rishi|Gordon|William|Nathan|Evan|Christopher|Eric|Roger|Steffan|Andrew|Davis|Jason|Tony|Connor|Duncan|Mitchell|Prabhat|Sam|Luke|Wayne|Abeo|Chilemba|Elimu|James)\b/i;
   function isMaleVoice(v){ return MALE_VOICE.test(String((v && v.name) || '')); }
   function bestVoices(){ try{ const vs = (window.speechSynthesis && speechSynthesis.getVoices()) || []; const all = vs.map(v => ({ v, s:voiceScore(v) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s).map(x => x.v), women = all.filter(v => !isMaleVoice(v)); return women.length ? women : all; }catch(e){ return []; } }
-  function chosenVoice(){ const vs = bestVoices(); let want = null; try{ want = localStorage.getItem(VOICE_KEY); }catch(e){} return vs.find(v => v.name === want) || vs[0] || null; }
+  function chosenVoice(){ const vs = bestVoices(); let want = null; try{ want = localStorage.getItem(VOICE_KEY); if(want && vs.length && !vs.some(v => v.name === want)){ localStorage.removeItem(VOICE_KEY); want = null; } }catch(e){} return vs.find(v => v.name === want) || vs[0] || null; }
   function voiceLabel(v){ const n = String(v.name || 'Voice').replace(/^(Microsoft|Google|Apple)\s+/i, '').replace(/\s*[-(].*$/, '').replace(/\bOnline\b/i, '').trim(); return n || 'Voice'; }
-  function readAloud(text, voice){
+  /* Miss Bell's own voice. Her fixed lines (the big idea of every step, and her model example and thinking on the fixed-bank steps)
+     are recorded once with an open-source British voice and kept in voice/bell/, one file per subject pack. bell-voices.js lists where
+     each line sits, by a fingerprint of its words, so a line only ever plays for exactly the words on screen. Anything else
+     (questions made fresh each time, such as sums) is read by the device's best woman's voice. */
+  const bellNorm = t => String(t == null ? '' : t).replace(/\s+/g, ' ').trim();
+  const bellKey = t => { let n = 5381; for(let j = 0; j < t.length; j++) n = ((n << 5) + n + t.charCodeAt(j)) >>> 0; return n.toString(36) + '-' + t.length.toString(36); };
+  function bellClip(text){ const B = window.FAB_BELL; if(!B || !B.clips) return null; const c = B.clips[bellKey(bellNorm(text))]; return c ? { file:'voice/' + B.files[c[0]] + '.mp3', start:c[1], end:c[1] + c[2] } : null; }
+  let bellNow = null;
+  function bellStop(){ const b = bellNow; bellNow = null; if(b){ try{ b.a.pause(); }catch(e){} } }
+  function bellPlay(clip, text, fallback){
+    const a = new Audio(clip.file + '#t=' + Math.max(0, clip.start - .04).toFixed(2) + ',' + (clip.end + .08).toFixed(2)), me = { a, text, file:clip.file }; bellNow = me;
+    const fail = () => { if(bellNow === me){ bellNow = null; fallback(); } };
+    a.addEventListener('timeupdate', () => { if(a.currentTime >= clip.end + .1){ a.pause(); if(bellNow === me) bellNow = null; } });
+    a.addEventListener('ended', () => { if(bellNow === me) bellNow = null; });
+    a.addEventListener('pause', () => { if(bellNow === me && a.currentTime >= clip.end) bellNow = null; });
+    a.addEventListener('error', fail, { once:true });
+    try{ const pr = a.play(); if(pr && pr.catch) pr.catch(fail); }catch(e){ fail(); }
+  }
+  function deviceSay(text, voice){
     try{ const sp = window.speechSynthesis; if(!sp || !window.SpeechSynthesisUtterance) return false; sp.cancel();
       const go = () => { try{
         const u = new SpeechSynthesisUtterance(text), v = voice || chosenVoice();
@@ -316,6 +335,13 @@
       if(voice || have) go();
       else { let done = false; const once = () => { if(done) return; done = true; go(); }; try{ sp.addEventListener('voiceschanged', once, { once:true }); }catch(e){} setTimeout(once, 600); }
       return true; }catch(e){ return false; }
+  }
+  /* Read to me: Miss Bell's recording when there is one for these exact words (tap again to stop), otherwise the device voice. */
+  function readAloud(text, voice){
+    try{ window.speechSynthesis && speechSynthesis.cancel(); }catch(e){}
+    const was = bellNow; bellStop();
+    if(!voice){ const clip = bellClip(text); if(clip){ if(was && was.text === text) return true; bellPlay(clip, text, () => deviceSay(text)); return true; } }
+    return deviceSay(text, voice);
   }
   /* Ask for the voice list as soon as the app opens, so it is ready before the first tap. */
   try{ if(window.speechSynthesis){ speechSynthesis.getVoices(); speechSynthesis.addEventListener && speechSynthesis.addEventListener('voiceschanged', () => { try{ speechSynthesis.getVoices(); }catch(e){} }); } }catch(e){}
@@ -334,16 +360,22 @@
     }));
     try{ if(window.speechSynthesis && !wireVoices.hooked){ wireVoices.hooked = true; speechSynthesis.addEventListener('voiceschanged', () => { try{ rerender && rerender(); }catch(e){} }); } }catch(e){}
   }
-  window.FabVoice = { bestVoices, chosenVoice, voiceScore, voiceLabel, isMaleVoice };
+  window.FabVoice = { bestVoices, chosenVoice, voiceScore, voiceLabel, isMaleVoice, bellClip, bellKey, bellNow:() => bellNow && { text:bellNow.text, file:bellNow.file, t:bellNow.a.currentTime, paused:bellNow.a.paused }, bellStop };
   function sayBtn(label, fn){ const b = document.createElement('button'); b.type = 'button'; b.className = 'say-btn'; b.textContent = '🔊'; b.setAttribute('aria-label', label); b.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); fn(); }); return b; }
   function addSay(root){
-    if(!window.speechSynthesis) return;
+    if(!window.speechSynthesis && !window.FAB_BELL) return;
+    root.querySelectorAll('.pw-idea:not([data-say])').forEach(p => { const txt = p.textContent.trim(); if(!txt) return; p.dataset.say = '1';
+      p.appendChild(sayBtn('Miss Bell reads the big idea', () => { window.__fabSaid = txt; readAloud(txt); })); });
+    root.querySelectorAll('.pw-teach .fab-say.bell .bubble:not([data-say])').forEach(b => { const txt = [...b.childNodes].filter(n => n.nodeName !== 'B').map(n => n.textContent).join(' ').replace(/\s+/g, ' ').trim(); if(!txt) return; b.dataset.say = '1';
+      b.appendChild(sayBtn('Miss Bell reads her thinking', () => { window.__fabSaid = txt; readAloud(txt); })); });
     root.querySelectorAll('.pw-ask:not([data-say])').forEach(p => {
       p.dataset.say = '1';
       p.appendChild(sayBtn('Read this to me', () => {
         const box = p.closest('.pw-main') || p.parentNode;
         const ch = [...new Set([...box.querySelectorAll('.pw-choices button, button.pw-choice')].map(x => x.textContent.trim()).filter(Boolean))];
-        const qt = p.textContent.replace('🔊', '').trim(); window.__fabSaid = qt + (/[?.!]$/.test(qt) ? '' : '.') + (ch.length ? ' Is it: ' + ch.join(', or ') + '?' : '');
+        const qt = p.textContent.replace('🔊', '').trim();
+        if(bellClip(qt)){ window.__fabSaid = qt; readAloud(qt); return; } /* Miss Bell's own example: her recording of the question */
+        window.__fabSaid = qt + (/[?.!]$/.test(qt) ? '' : '.') + (ch.length ? ' Is it: ' + ch.join(', or ') + '?' : '');
         readAloud(window.__fabSaid);
       }));
     });

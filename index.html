@@ -1957,7 +1957,7 @@ body.bd-dock .lp-stage, body.bd-dock .lp-nav, body.bd-dock .lp-tips{ max-width:n
   <div class="learn-tools" id="learnTools">
     <button type="button" class="lt-card" id="learnBoardBtn"><i aria-hidden="true">📋</i><b>Canvas</b><span>Draw, write, add pictures</span></button>
     <button type="button" class="lt-card" id="learnLinkBtn" data-cvlaunch><i aria-hidden="true">🎬</i><b>Cinema</b><span>Watch a video or a page</span></button>
-    <button type="button" class="lt-card" id="learnMusicBtn" data-music-open><i aria-hidden="true">🎹</i><b>Music</b><span>Play songs on a big keyboard</span></button>
+    <button type="button" class="lt-card" id="learnMusicBtn" data-music-open><i aria-hidden="true">🎹</i><b>Music</b><span>Play the keyboard or make a beat</span></button>
   </div>
   <div class="learn-filters" id="learnFilters">
     <button class="pill-choice selected" data-subject="all">All</button>
@@ -2228,6 +2228,18 @@ function fabOpenMusic(){
   try{ wf && wf.contentWindow && wf.contentWindow.postMessage('fabworld-sleep', '*'); }catch(e){}
   FabMusic.open(null, { back:'screen-world' });
   return true;
+}
+/* One Music place. The keyboard screen is "Music" in both hubs; its Beat maker button opens the beat maker in the Music Hut,
+   and closing the beat maker comes back to the keyboard (and from there to wherever the child came from). */
+function fabMusicBeat(){
+  window.fabWorldOpen = 'beat'; showScreen('screen-world');
+  setTimeout(() => { try{ const wf = document.querySelector('iframe[data-game="world"]'); wf && wf.contentWindow && wf.contentWindow.postMessage('fabworld-open', '*'); }catch(e){} }, 450);
+}
+function fabBeatBack(){
+  const b = window.fabBeatReturn; if(!b || !window.FabMusic) return false; window.fabBeatReturn = null;
+  try{ fabWorldFull(false); }catch(e){}
+  try{ const wf = document.querySelector('iframe[data-game="world"]'); wf && wf.contentWindow && wf.contentWindow.postMessage('fabworld-sleep', '*'); }catch(e){}
+  FabMusic.open(null, { back:b }); return true;
 }
 function closeFabOverlay(reward){
   const o = document.getElementById('fabOverlay'); if(!o) return;
@@ -7329,11 +7341,13 @@ function pwIsPrime(x){ if(x < 2) return false; for(let i = 2; i * i <= x; i++) i
 let pwWordLast = '';
 const PW_GEN = {
   /* Word and spelling questions: the pack supplies the items (ask, answer, wrong answers with slip tags, hint). */
-  wordPick(p){
+  wordPick(p, opt){
     const items = pwToArr(p.items).filter(it => it && it.ask && it.ans != null);
     if(!items.length) return { mode:'choice', ask:'Tap the right answer.', ans:'ok', wrong:[{ v:'no', tag:'any' }], vars:{} };
     let it, tries = 0;
-    do { it = pwPick(items); tries++; } while(items.length > 1 && it.ask === pwWordLast && tries < 8);
+    /* Miss Bell's model (I do) is always the first question in the bank, so her recorded voice can read it and her thinking. */
+    if(opt && opt.first) it = items[0];
+    else do { it = pwPick(items); tries++; } while(items.length > 1 && it.ask === pwWordLast && tries < 8);
     pwWordLast = it.ask;
     const wrong = pwToArr(it.wrong).map(w => ({ v:String(w.v), tag:w.tag || 'any' }));
     const out = { mode:'choice', ask:it.ask, ans:it.ans, wrong, vars:{ hint:it.hint || 'Say each choice in your head. Which one looks and sounds right?', root:it.root || '' } };
@@ -7736,10 +7750,10 @@ const PW_GEN = {
 };
 
 /* Make one practice question for a step. Plain data only, so it can sync. */
-function pwQuestion(step){
+function pwQuestion(step, opt){
   const gen = PW_GEN[step && step.kind];
   if(!gen) return null;
-  const q = gen(step.params || {});
+  const q = gen(step.params || {}, opt);
   q.kind = step.kind;
   q.ans = String(q.ans);
   q.wrong = (q.wrong || []).filter(w => w && w.v !== '' && !(typeof w.v === 'number' && (w.v < 0 || !Number.isInteger(w.v))) && pwNorm(w.v) !== pwNorm(q.ans));
@@ -7875,7 +7889,7 @@ function pwStart(s, st, id, stepIdx){
 /* I do, we do, you do: every step with a "teach" block starts with the teacher's model. */
 function pwTeachInit(kid, step){
   kid.phase = 'ido'; kid.idoStage = 0; kid.idoGuess = null; kid.wedoDone = 0; kid.wtries = 0; kid.last = null; kid.msg = null;
-  kid.ex = pwQuestion(step); kid.q = pwQuestion(step);
+  kid.ex = pwQuestion(step, { first:true }); kid.q = pwQuestion(step);
 }
 function pwTaught(kid){ const t = pwToArr(kid.taught); if(!t.includes(kid.step)) t.push(kid.step); kid.taught = t; }
 function pwIdoHTML(s, kid, stp){
@@ -8563,6 +8577,7 @@ function learnFocusRestore(f){
 if(!Live.start()) learnDeepLink();
 </script>
 <script src="kinds.js"></script>
+<script src="bell-voices.js"></script>
 <script src="me.js"></script>
 <script src="coview.js"></script>
 <script src="board.js"></script>
@@ -8578,6 +8593,7 @@ if(!Live.start()) learnDeepLink();
 <script src="burrow.js"></script>
 <script src="timemachine.js"></script>
 <script src="explorer-worlds.js"></script>
+<script src="proud.js"></script>
 <script src="explorer-make.js"></script>
 <script src="explorer-voices.js"></script>
 <link rel="stylesheet" href="typescale.css">

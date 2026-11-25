@@ -300,6 +300,7 @@
         <div class="mu-grp mu-nav">
           <button type="button" class="mu-btn back" id="muBack" aria-label="Back">←<span class="mu-lbl"> Back</span></button>
           <button type="button" class="mu-btn" id="muSongsBtn" aria-label="Music steps">🗺️<span class="mu-lbl"> Steps</span></button>
+          <button type="button" class="mu-btn" id="muBeatBtn" aria-label="Beat maker">🥁<span class="mu-lbl"> Beat maker</span></button>
           <h1 class="mu-title" id="muTitle">Free play</h1>
         </div>
         <i class="mu-break" aria-hidden="true"></i>
@@ -337,6 +338,9 @@
       </div>
       <div class="mu-panel" id="muPanel" hidden></div>`;
     $m('#muBack').addEventListener('click', leave);
+    /* the beat maker lives in the Music Hut: go there, and come back here when it closes */
+    $m('#muBeatBtn').addEventListener('click', () => { if(typeof fabMusicBeat !== 'function') return; const back = M.backTo || 'screen-learn';
+      stopListen(true); stopShow(); stopPlayback(); if(M.rec) stopRec(); [...held.keys()].forEach(noteOff); closePanel(); M.backTo = null; window.fabBeatReturn = back; fabMusicBeat(); });
     $m('#muSongsBtn').addEventListener('click', () => openPanel('path'));
     $m('#muMineBtn').addEventListener('click', () => openPanel('mine'));
     el.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));

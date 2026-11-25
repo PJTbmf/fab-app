@@ -16,7 +16,7 @@
     compliment:{ e:'🎁', n:'Compliment Cart', d:'Kind words to give away', energy:['some','lots'] },
     mood:{ e:'🙂', n:'How Are You Feeling?', d:'All feelings are welcome', energy:['low','some','lots'] },
     move:{ e:'🤸', n:'Fab Says', d:'Copy Fab’s moves, sitting or standing', energy:['some','lots'], world:'move' },
-    beat:{ e:'🥁', n:'Beat Maker', d:'Make a happy beat', energy:['some','lots'], world:'music' }
+    beat:{ e:'🎹', n:'Music', d:'Play the keyboard or make a beat', energy:['some','lots'], music:true } /* the same Music place as the Learning Hub */
   };
   const GROUPS = [
     { who:'nurse', t:'Calm and rest', s:'Nurse Willow', a:['breathe', 'calm'] },
@@ -75,7 +75,7 @@
     const row = document.createElement('div'); row.className = 'wb2-row'; g.a.forEach(k => tiles[k] && row.appendChild(tiles[k])); box.appendChild(row); menu.appendChild(box); });
   const stop = document.createElement('div'); stop.className = 'wb2-stop'; stop.innerHTML = `<button type="button">${ch('lark')} A good place to stop</button>`; menu.after(stop);
   /* the world activities open Fab Fox World at the right place */
-  menu.addEventListener('click', e => { const t = e.target.closest('[data-wb2]'); if(!t) return; const k = t.dataset.wb2; mark(k); window.fabWorldOpen = ACT[k].world; showScreen('screen-world'); });
+  menu.addEventListener('click', e => { const t = e.target.closest('[data-wb2]'); if(!t) return; const k = t.dataset.wb2; mark(k); if(ACT[k].music && window.FabMusic && FabMusic.open){ FabMusic.open(null, { back:'screen-wellbeing' }); return; } window.fabWorldOpen = ACT[k].world || 'music'; showScreen('screen-world'); });
   /* friend headers on each activity panel, and a clearer way back */
   const PANEL = { wbAffirm:['elder', 'Mr Elder: a kind thought for you'], wbBreathe:['nurse', 'Nurse Willow: breathe with the bubble'], wbMood:['pair', 'Bramble and Moss: how are you feeling?'],
     wbGrateful:['elder', 'Mr Elder: three sunny things'], wbCompliment:['pair', 'Bramble and Moss: kind words to give'], wbCalm:['nurse', 'Nurse Willow: take it slow'] };

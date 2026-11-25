@@ -174,15 +174,21 @@
       <div class="choice-row tm-row">${back}</div>`;
   }
   function paperHTML(w, me){
-    const t = repText(w, repState(w, me)), o = w.make.order, ok = checks(w, me).slice(0, 4).every(c => c[1]);
+    const t = repText(w, repState(w, me)), o = w.make.order, ok = checks(w, me).slice(0, 4).every(c => c[1]), code = X.code() !== 'local' ? X.code() : '';
+    /* The finished report is a "proud page" (proud.js, the template for finished work across the Learning Hub): each part on its own card,
+       and the child's design beside the words it belongs to (or on a card of its own), so no picture is bigger than its section. */
+    const cards = t.secs.filter(x => x.t).map(x => ({ h:x.h, text:x.t }));
+    if(me.png){ const noun = String(w.make.art.noun || ''), word = noun.replace(/^My /i, '').toLowerCase(), own = word && cards.find(c => String(c.h).toLowerCase().includes(word));
+      if(own) own.pic = { src:me.png, alt:noun, cap:noun }; else cards.push({ h:noun, pic:{ src:me.png, alt:noun } }); }
+    if(me.mapDone && me.map.length) cards.push({ h:'My mind map', html:mapSVG(w, me.map) });
+    if(me.order) cards.push({ h:o.noun.replace(/^My /, ''), html:`<ol class="mk-strip paper">${o.items.map(it => `<li>${orderItem(it)}</li>`).join('')}</ol>`, wide:true });
+    /* keep the picture in proportion: if its own card would have to stretch across the page, it sits beside the last part's words instead */
+    { const pc = cards.find(c => c.pic && !c.text && !c.html), host = pc && cards.filter(c => !c.wide).length % 2 ? [...cards].reverse().find(c => c.text && !c.pic) : null;
+      if(host){ host.pic = { src:pc.pic.src, alt:pc.pic.alt, cap:pc.h }; cards.splice(cards.indexOf(pc), 1); } }
+    const paper = window.FabProud.page({ theme:w.id, cls:'mk-paper mk-final', kicker:code ? 'A report by Explorer ' + code : 'My report', title:t.title || w.make.report.title, lead:t.intro, cards,
+      fact:t.dyk ? { label:'Did you know?', text:t.dyk } : null, made:'Made in Explorer Worlds' + (code ? ' · Fab code ' + code : ''), seal:'Finished!' });
     return `<div class="tm-notebox" role="status">${note(M.note)}</div>
-      <article class="mk-paper"><h2>${h(t.title || w.make.report.title)}</h2>${t.intro ? `<p class="mk-intro">${h(t.intro)}</p>` : ''}
-        ${t.secs.filter(x => x.t).map(x => `<h3>${h(x.h)}</h3><p>${h(x.t)}</p>`).join('')}
-        ${me.png ? `<figure class="mk-fig"><img src="${me.png}" alt="${h(w.make.art.noun)}"><figcaption>${h(w.make.art.noun)}</figcaption></figure>` : ''}
-        ${me.order ? `<h3>${h(o.noun.replace(/^My /, ''))}</h3><ol class="mk-strip paper">${o.items.map(it => `<li>${orderItem(it)}</li>`).join('')}</ol>` : ''}
-        ${me.mapDone && me.map.length ? `<h3>Mind map</h3>${mapSVG(w, me.map)}` : ''}
-        ${t.dyk ? `<aside class="mk-dyk"><b>Did you know?</b> ${h(t.dyk)}</aside>` : ''}
-        <p class="mk-by">Made in Explorer Worlds${X.code() !== 'local' ? ' · Fab code ' + h(X.code()) : ''}</p></article>
+      ${paper}
       <div class="choice-row tm-row"><button type="button" class="btn small leaf" data-mk="print">🖨️ Print my report</button><button type="button" class="btn small soft" data-mk="open" data-id="report">✏️ Keep writing</button>${back}</div>
       ${ok ? '' : '<p class="hint">Your report is saved. Add the parts with an empty box on your list when you are ready.</p>'}`;
   }
