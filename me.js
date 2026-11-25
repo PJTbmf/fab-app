@@ -294,7 +294,7 @@
     if(/Maisie/i.test(n)) s += 45;
     if(/Natural|Neural|Premium|Enhanced/i.test(n)) s += 30;
     if(/Libby|Sonia|Martha|Kate|Serena|Stephanie|Google UK English Female|Hazel|Susan|Fiona|Moira|Tessa|Karen|Mia|Bella|Holly|Abbi|Hollie|Olivia/i.test(n)) s += 18;
-    if(/Daniel|Arthur|Oliver|Ryan|Thomas|George|Male|Fred|Albert|Bahh|Bells|Boing|Bubbles|Cellos|Wobble|Whisper|Zarvox|Trinoids|Organ|Junior|Ralph|Jester|Superstar|Grandma|Grandpa|Rocko|Eddy|Flo|Reed|Sandy|Shelley|Bad News|Good News/i.test(n)) s -= 40;
+    if(/Daniel|Arthur|Oliver|Ryan|Thomas|George|\bMale\b|Fred|Albert|Bahh|Bells|Boing|Bubbles|Cellos|Wobble|Whisper|Zarvox|Trinoids|Organ|Junior|Ralph|Jester|Superstar|Grandma|Grandpa|Rocko|Eddy|Flo|Reed|Sandy|Shelley|Bad News|Good News/i.test(n)) s -= 40;
     if(/Google UK English Female/i.test(n)) s += 12; /* smoother than the old Windows voices (Hazel, Susan) */
     if(v.localService === false) s += 4;
     return s;
