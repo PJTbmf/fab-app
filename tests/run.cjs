@@ -1130,7 +1130,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     /* her model question and her thinking: recorded when the lines exist, the device voice otherwise */
     await page.locator('.pw-ask .say-btn').first().click();
     const q = await page.evaluate(() => ({ said:window.__fabSaid, bell:!!FabVoice.bellNow() }));
-    assert(info.askClip ? (q.said === info.ask && q.bell) : (q.said.indexOf(info.ask) === 0 && !q.bell), 'the question: ' + JSON.stringify(q));
+    assert(q.said.indexOf(info.ask) === 0 && /Is it: /.test(q.said) && q.bell === info.askClip, 'the question (her recording, then the choices): ' + JSON.stringify(q));
     await page.evaluate(() => FabVoice.bellStop());
     await page.locator('[data-pwact="idonext"]').click();
     await page.waitForSelector('.pw-teach .fab-say.bell .bubble .say-btn');
@@ -1153,6 +1153,45 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       return { name, onMusic, back, btn, inBeat, onWorld, home, back2, end:document.getElementById('screen-wellbeing').classList.contains('active'), learn:document.querySelector('#learnMusicBtn b').textContent };
     });
     assert(r.name === 'Music' && r.learn === 'Music' && r.onMusic && r.back === 'screen-wellbeing' && r.btn && r.inBeat && r.onWorld && r.home && r.back2 === 'screen-wellbeing' && r.end, 'one Music place: ' + JSON.stringify(r));
+  });
+  await test('Mind map: an idea takes a fact or a thought, they flow into the report, and the poster carries Fab and the rainbow', async () => {
+    await page.setViewportSize({ width:1400, height:1000 });
+    await page.evaluate(() => window.fabOpenExplore('screen-learn', 'egypt'));
+    await page.locator('.tm-tabs [data-tm="tab"][data-id="make"]').click();
+    await page.locator('[data-mk="open"][data-id="map"]').click();
+    await page.locator('[data-mk="mapadd"][data-id="pyramids"]').click();
+    assert(await page.locator('.mk-noteadd').count() === 1 && await page.locator('.mk-node[aria-pressed="true"]').count() === 1, 'choosing an idea opens the place to add to it');
+    const fact = await page.locator('[data-mk="notefact"][data-id="0"]').innerText();
+    await page.locator('[data-mk="notefact"][data-id="0"]').click();
+    await page.locator('#mkNote').fill('I wonder how they lifted the stones'); await page.locator('#mkNote').press('Enter');
+    assert(await page.locator('.mk-notes li').count() === 2 && await page.locator('[data-mk="noteown"]').count() === 0, 'two things can hang off one idea, then it is full');
+    await page.locator('[data-mk="mapadd"][data-id="boat"]').click(); await page.locator('[data-mk="mapadd"][data-id="cat"]').click();
+    await page.locator('.mk-node[data-id="pyramids"]').click();
+    const map = await page.evaluate(() => { const svg = document.querySelector('.mk-map'), d = FabMake.load().egypt; return { text:svg.textContent, big:svg.classList.contains('big'), notes:d.notes.pyramids, nodes:svg.querySelectorAll('.mk-node').length }; });
+    assert(map.nodes === 3 && map.big && map.notes.length === 2 && map.notes[1].own === true && /I wonder how they lifted/.test(map.text), 'the facts and thoughts show on the map: ' + JSON.stringify(map.notes));
+    await page.locator('[data-mk="mapdone"]').click();
+    const sec = await page.evaluate(() => FabMake.load().egypt.rep.s[0]);
+    assert(sec.id === 'pyramids' && sec.pick.join() === '0' && sec.own[0] === 'I wonder how they lifted the stones' && /I wonder how/.test(sec.text), 'the first idea, with its fact and thought, starts part 1 of the report: ' + JSON.stringify(sec));
+    await page.evaluate(() => { const d = FabMake.load(), r = d.egypt.rep; r.lvl = '1'; r.read = 1; r.ipick = 0; localStorage.setItem(Object.keys(localStorage).find(k => /^fab-make-/.test(k)), JSON.stringify(d)); FabMake.state.view = 'paper'; FabExplore.render(); });
+    const paper = await page.evaluate(() => { const p = document.querySelector('.mk-paper.proud'); return p ? { text:p.innerText, fab:!!p.querySelector('.fab-char.fab.proud-fab'), say:(p.querySelector('.proud-say') || {}).textContent, rainbow:!!(p.querySelector('.proud-brand img') || {}).src, brand:(p.querySelector('.proud-brand b') || {}).textContent, mapWide:!!p.querySelector('.proud-sec.wide .mk-map') } : null; });
+    assert(paper && paper.text.indexOf(fact) > -1 && /I wonder how they lifted the stones\./.test(paper.text) && paper.fab && /proud/i.test(paper.say) && paper.rainbow && paper.brand === '#bemorefab' && paper.mapWide, 'the report uses the mind map and the poster carries the brand: ' + JSON.stringify(paper && { fab:paper.fab, say:paper.say, rainbow:paper.rainbow, brand:paper.brand, mapWide:paper.mapWide, t:paper.text.slice(0, 200) }));
+    await page.evaluate(() => showScreen('screen-hub'));
+  });
+  await test('Use the screen: Fab Fox World fills the window, and the beat maker grows with it and shows every row', async () => {
+    await page.setViewportSize({ width:2560, height:1300 });
+    await page.evaluate(() => { showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await page.$('.game-frame[data-game="world"]')).contentFrame();
+    await fr.waitForFunction(() => !!window.WORLD);
+    await page.waitForTimeout(400);
+    const r = await fr.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)); try{ WORLD.closeScene(true); }catch(e){} window.dispatchEvent(new Event('resize')); await wait(200);
+      const st = document.querySelector('.stage').getBoundingClientRect(); window.parent.fabWorldOpen = 'beat'; window.postMessage('fabworld-open', '*'); await wait(700);
+      const sc = WORLD.scene(), el = sc && sc.el, z = el ? parseFloat(el.style.zoom || '1') : 0, g = el && el.querySelector('#bGrid').getBoundingClientRect(), rows = el ? el.querySelectorAll('.blab').length : 0, er = el && el.getBoundingClientRect();
+      const out = { stage:[Math.round(st.width), Math.round(st.height)], win:[innerWidth, innerHeight], cls:sc && sc.cls, z, rows, gridShare:g ? g.width / er.width : 0, fits:g ? g.bottom <= er.bottom + 2 && g.top >= er.top : false };
+      window.parent.fabBeatReturn = null; try{ WORLD.closeScene(true); }catch(e){} return out; });
+    assert(r.stage[0] >= r.win[0] - 20 && r.stage[1] >= r.win[1] - 20 && r.cls === 'sc-beat' && r.z > 1.3 && r.rows >= 7 && r.gridShare > .7 && r.fits, 'the world and the beat maker use the screen: ' + JSON.stringify(r));
+    const frameW = await page.evaluate(() => document.querySelector('.game-frame[data-game="world"]').getBoundingClientRect().width / innerWidth);
+    assert(frameW > .97, 'the world frame spans the window: ' + frameW);
+    await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
   });
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
 
