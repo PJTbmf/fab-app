@@ -1,4 +1,4 @@
-/* Fab Code (working title): the coding area, junior level. A first playable draft.
+/* Fox Blocks: the coding area, junior level. A first playable draft. (The file names and the saving key keep the working title, "Fab Code".)
    Built on Blockly (lib/blockly, Apache 2.0): the blocks, the snapping, the palette and the saving are Blockly's; the blocks themselves,
    the stage, the puzzles and the look are ours.
    - Picture blocks snap under "Go". Press Go and Fab does exactly what the blocks say, one block at a time, top to bottom.
@@ -7,6 +7,7 @@
      "Show me the way" shows a model to aim for; "Add the next block for me" is the low-energy route; every puzzle is a place to stop.
    - Nothing about a child is kept: progress is saved on this device under their Fab code (or "local"). Each puzzle earns one star the first time,
      which turns into a berry in Fab Fox World, the same way lesson stars do.
+   In Fab Fox World it opens in a frame (?embed=1) from Dad's Workshop and the STEM Den; the world collects the stars when the frame closes.
    Tests drive it through window.FabCode. */
 (function(){
   'use strict';
@@ -15,6 +16,8 @@
   const clamp = (a, v, b) => Math.max(a, Math.min(b, v));
   const INK = '#2B1A12', CREAM = '#FFF6E6', GOLD = '#F0B913', ORANGE = '#FE4D02', GRASS = '#BFD88E', GLASS = '#CFE7F2', SAND = '#F6D08F', WOOD = '#C98A5C', STONE = '#E3C9A0';
   const root = $('fc');
+  const EMBED = (() => { try{ return new URLSearchParams(location.search).get('embed') === '1'; }catch(e){ return false; } })();
+  root.classList.toggle('embed', EMBED);
 
   /* ---------- hand-drawn icons (ink outline, flat fill) ---------- */
   const P = (d, fill) => `<path d="${d}" fill="${fill || 'none'}" stroke="${INK}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -346,7 +349,7 @@
     if(li == null){ li = p.levels.findIndex(l => !SAVE.done[l.id]); if(li < 0) li = 0; }
     PJ = p; LI = clamp(0, li | 0, p.levels.length - 1); LV = p.levels[LI];
     root.dataset.view = 'work'; $('fcHome').hidden = true; $('fcWork').hidden = false; $('fcBack').hidden = false; $('fcBack').innerHTML = svg('back') + '<span>All projects</span>'; $('fcBack').dataset.a = 'home';
-    $('fcWhere').textContent = `${p.name} · ${LI + 1}. ${LV.name}`; document.title = `${LV.name} · Fab Code`;
+    $('fcWhere').textContent = `${p.name} · ${LI + 1}. ${LV.name}`; document.title = `${LV.name} · Fox Blocks`;
     cv.setAttribute('aria-label', LV.goal ? 'Fab on the grass, with a bramble bush to reach' : 'Fab on the grass, ready to dance');
     VIEW = { way:null, wayT:0, pops:[] }; clearArmed = 0; brief(); dots(); controls(); resetFab();
     if(!ws) inject(LV); else ws.updateToolbox(toolbox(LV));
@@ -354,10 +357,10 @@
   }
   function home(){
     if(RUN.on) RUN.stop = true; saveCode(); PJ = null; LV = null;
-    root.dataset.view = 'home'; $('fcHome').hidden = false; $('fcWork').hidden = true; $('fcBack').hidden = true; $('fcWhere').textContent = ''; $('fcDots').innerHTML = ''; document.title = 'Fab Code · BeMoreFab Virtual School';
+    root.dataset.view = 'home'; $('fcHome').hidden = false; $('fcWork').hidden = true; $('fcBack').hidden = true; $('fcWhere').textContent = ''; $('fcDots').innerHTML = ''; document.title = 'Fox Blocks · BeMoreFab Virtual School';
     $('fcHome').innerHTML = `<div class="fc-hello"><span class="fc-who dad" role="img" aria-label="Dad"></span><div class="fc-bubble"><b>Welcome to my coding corner</b>Code is a list of instructions. Snap the blocks together, press Go, and Fab does exactly what they say. There is no timer, and you can stop whenever you like.</div></div>
       <div class="fc-cards">${PROJECTS.map(p => { const d = p.levels.filter(l => SAVE.done[l.id]).length; return `<button type="button" class="fc-card" data-a="project" data-p="${p.id}"><canvas data-art="${p.id}" width="640" height="320" aria-hidden="true"></canvas><h2>${esc(p.name)}</h2><p>${esc(p.about)}</p><p class="fc-prog">${d ? svg(d === p.levels.length ? 'star' : 'tick') : ''}${d ? `${d} of ${p.levels.length} done` : `${p.levels.length} puzzles`}</p></button>`; }).join('')}</div>
-      <p class="fc-foot">A first draft of the coding area, built with Blockly. <a href="index.html">Back to the Fab App</a></p>`;
+      <p class="fc-foot">A first draft of Fox Blocks, built with Blockly.${EMBED ? ' Close with the cross to go back to Fab Fox World.' : ' <a href="index.html">Back to the Fab App</a>'}</p>`;
     homeArt(); lay();
   }
   function homeArt(){
@@ -410,7 +413,7 @@
   try{ document.fonts.ready.then(() => { need = true; lay(); }); }catch(e){}
   try{ const q = new URLSearchParams(location.search), p = q.get('project'); if(p) open(p, q.get('puzzle') ? +q.get('puzzle') - 1 : null); }catch(e){}
 
-  window.FabCode = FC;
+  window.FabCode = window.FoxBlocks = FC;
   Object.assign(FC, { open, home, projects:PROJECTS, setProgram, program:() => plain(program()), run:() => play(program()), stop:() => { RUN.stop = true; }, addNext, showWay, route,
     state:() => ({ view:root.dataset.view, project:PJ && PJ.id, level:LV && LV.id, x:FAB && FAB.x, y:FAB && FAB.y, running:RUN.on, done:Object.assign({}, SAVE.done), got:FAB ? Object.keys(FAB.got).length : 0, prints:FAB ? FAB.prints.length : 0, tile:TILE, way:!!VIEW.way, panel:tipNow }),
     ws:() => ws, key:KEY });

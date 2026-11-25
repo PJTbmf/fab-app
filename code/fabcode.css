@@ -1,4 +1,4 @@
-/* Fab Code (working title): the look. Fab Fox World rules: flat warm colour, thick ink outline, a little wonky, italic serif on plaques, no shadows.
+/* Fox Blocks: the look. Fab Fox World rules: flat warm colour, thick ink outline, a little wonky, italic serif on plaques, no shadows.
    Every size is in em from .fc, whose font size the script sets from the window, so the page fills a phone and a very big screen alike. */
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#FFD483;color:#2B1A12;font-family:Aleo,Georgia,serif;overscroll-behavior:none}
@@ -120,4 +120,6 @@ button{font:inherit;color:inherit}
 .fc.narrow .fc-win{grid-template-columns:1fr 1fr}.fc.narrow .fc-win .fc-say,.fc.narrow .fc-win h3,.fc.narrow .fc-win p{grid-column:1 / -1}
 .fc.narrow .fc-ctrl .fc-b span{display:none}.fc.narrow .fc-ctrl .fc-b{padding:.35em .6em}
 .fc.small .fc-draft{display:none}
+/* inside Fab Fox World the scene’s own close button sits in the top right corner */
+.fc.embed .fc-top{padding-right:72px}
 .fc.small .fc-dots button{width:2.1em;height:2.1em}
