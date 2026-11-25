@@ -326,7 +326,7 @@
       ${(w.packs || []).length ? `<li><b>Practise it.</b> ${w.packs.map(k => `<button type="button" class="btn small soft" data-tm="pack" data-id="${k.id}" data-step="${k.step}">${h(k.label)}</button>`).join(' ')}</li>` : ''}
       <li><b>Sounds and photos.</b> The sounds are made by the app to give the idea; they are not recordings. Each photo is free to reuse and has its credit underneath; the full list with links is in <a href="explore/CREDITS.html" target="_blank" rel="noopener">photo credits</a>.</li>
       ${(w.real || []).length ? `<li><b>Real-world views.</b> “See it for real” shows Google’s own Street View photographs at viewpoints we have checked. Children can turn to look around but cannot walk away from the viewpoint or open Google Maps. The photographs show real places, so passers-by may appear (Google blurs faces). Google receives the device’s internet address when a view opens; nothing loads until a place is tapped. <button type="button" class="btn small soft" data-tm="realtoggle">${realOn() ? 'Switch real-world views off on this device' : 'Switch real-world views on for this device'}</button> <button type="button" class="btn small soft" data-tm="roamtoggle" aria-pressed="${roamOn()}">${roamOn() ? 'Free look is on: switch back to arrows only' : 'Teacher screen-share: switch on free look'}</button></li>` : ''}
-      ${w.make ? '<li><b>Make and do.</b> A timeline or ordering task, a design task, and a report at three levels: built with taps (the low-energy way), with sentence starters, or on my own. The child’s timeline and design slot into the report, which can be printed. Their work is saved on this device only. Please check the dates.</li>' : ''}<li><b>No AI chat.</b> ${h(w.who.n)}’s answers are fixed scripts. Children tap a question, or type one of their own: the app matches it to one of the fixed answers, or ${h(w.who.n)} suggests asking you. Typed questions are not saved and are not sent anywhere.</li><li><b>Voices.</b> The app uses the best matching voice on this device (a woman’s, man’s or girl’s voice where the device has one). ⏸️ Pause stops at the end of a sentence, for talking points.</li></ul></details>`;
+      ${w.make ? '<li><b>Make and do.</b> A timeline or ordering task, a design task, and a report at three levels: built with taps (the low-energy way), with sentence starters, or on my own. The child’s timeline and design slot into the report, which can be printed. Their work is saved on this device only. Please check the dates.</li>' : ''}<li><b>No AI chat.</b> ${h(w.who.n)}’s answers are fixed scripts. Children tap a question, or type one of their own: the app matches it to one of the fixed answers, or ${h(w.who.n)} suggests asking you. Typed questions are not saved and are not sent anywhere.</li><li><b>Voices.</b> The stops, ${h(w.who.n)}’s answers and the model report are recorded lines in British voices, made once with an open-source voice model and stored in the app, so they sound the same on every device. ⏸️ Pause stops them for talking points. If a line’s words are changed, the device’s own voice reads it until the line is made again. Please listen for any word that is said oddly.</li></ul></details>`;
   }
   function panelHTML(w){
     const p = pass();
@@ -378,7 +378,11 @@
   }
   /* ---------- voices: the device's best matching voice, spoken a sentence at a time so it can pause ---------- */
   const Say = (() => {
-    const S = window.speechSynthesis; let q = [], i = 0, st = 'idle', opt = {}, tok = 0, key = '';
+    const S = window.speechSynthesis; let q = [], i = 0, st = 'idle', opt = {}, tok = 0, key = '', au = null;
+    /* a recorded line is used when one exists for exactly these words; otherwise the device voice reads them */
+    const hash = t => { let n = 5381; for(let j = 0; j < t.length; j++) n = ((n << 5) + n + t.charCodeAt(j)) >>> 0; return n.toString(36); };
+    function fileFor(k, text){ const F = window.FAB_VOICE, id = (V.era || '') + '-' + String(k || '').replace(':', '-'); return F && k && F[id] === hash(text) ? 'explore/voice/' + id + '.mp3' : ''; }
+    const idle = () => { au = null; st = 'idle'; key = ''; paint(); };
     const FEM = /female|sonia|libby|maisie|hazel|susan|kate|serena|martha|stephanie|samantha|karen|moira|tessa|fiona|zira|jenny|aria|emma|amy|olivia|abbi|bella|hollie|catherine|victoria/i;
     const MALE = /\bmale\b|ryan|thomas|george|daniel|arthur|oliver|david|mark\b|\bguy\b|brian|alfie|elliot|ethan|noah|rishi|james|gordon|aaron|\bfred\b/i;
     const isF = v => FEM.test(v.name), isM = v => MALE.test(v.name) && !/female/i.test(v.name);
@@ -399,13 +403,18 @@
       u.onend = () => { if(my !== tok) return; i++; setTimeout(next, 160); }; u.onerror = () => { if(my !== tok) return; i++; next(); };
       try{ S.speak(u); }catch(e){ st = 'idle'; key = ''; paint(); }
     }
-    function speak(text, o){ if(!S) return; tok++; try{ S.cancel(); }catch(e){} opt = o || {}; key = opt.key || ''; q = split(text); i = 0; st = 'speaking'; paint(); next(); }
-    function pause(){ if(st !== 'speaking') return; tok++; try{ S.cancel(); }catch(e){} st = 'paused'; paint(); }
-    function resume(){ if(st !== 'paused') return; tok++; st = 'speaking'; paint(); next(); }
-    function stop(){ tok++; try{ S && S.cancel(); }catch(e){} q = []; i = 0; st = 'idle'; key = ''; paint(); }
+    function speak(text, o){
+      tok++; try{ S && S.cancel(); }catch(e){} if(au){ try{ au.pause(); }catch(e){} au = null; }
+      opt = o || {}; key = opt.key || ''; q = split(text); i = 0; const f = fileFor(key, text), my = tok;
+      if(f){ const a = new Audio(f), tts = () => { if(my !== tok) return; au = null; if(S){ st = 'speaking'; next(); } else idle(); };
+        au = a; st = 'speaking'; paint(); a.onended = () => { if(my === tok) idle(); }; a.onerror = tts; try{ const pr = a.play(); if(pr && pr.catch) pr.catch(tts); }catch(e){ tts(); } return; }
+      if(!S){ st = 'idle'; key = ''; return; } st = 'speaking'; paint(); next(); }
+    function pause(){ if(st !== 'speaking') return; if(au){ try{ au.pause(); }catch(e){} st = 'paused'; paint(); return; } tok++; try{ S.cancel(); }catch(e){} st = 'paused'; paint(); }
+    function resume(){ if(st !== 'paused') return; if(au){ st = 'speaking'; paint(); try{ const pr = au.play(); if(pr && pr.catch) pr.catch(() => {}); }catch(e){} return; } tok++; st = 'speaking'; paint(); next(); }
+    function stop(){ tok++; try{ S && S.cancel(); }catch(e){} if(au){ try{ au.pause(); }catch(e){} au = null; } q = []; i = 0; st = 'idle'; key = ''; paint(); }
     function toggle(k, text, g){ if(key === k && st === 'speaking') return pause(); if(key === k && st === 'paused') return resume(); speak(text, { g, key:k }); }
     try{ if(S){ S.getVoices(); S.addEventListener && S.addEventListener('voiceschanged', () => S.getVoices()); } }catch(e){}
-    return { speak, pause, resume, stop, toggle, label, pick, split, pitch, state:() => ({ st, key, i, n:q.length }), ok:!!S };
+    return { speak, pause, resume, stop, toggle, label, pick, split, pitch, hash, fileFor, state:() => ({ st, key, i, n:q.length, file:au ? au.getAttribute('src') || au.src : '' }), get ok(){ return !!S || !!window.FAB_VOICE; } };
   })();
   /* ---------- a child's own question: matched to one of the guide's fixed answers, never stored, never sent ---------- */
   const Own = (() => {
