@@ -889,7 +889,14 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await page.evaluate(() => document.querySelector('.tm-spot[data-tm="spot"][data-id="cupola"]').click());
     const say = page.locator('[data-tm="say"]');
     assert(/Read it to me/.test(await say.innerText()), 'Read it to me');
+    /* recorded British voices: one stored line for every stop and answer, matched to the exact words */
+    const rec = await page.evaluate(() => { const F = window.FAB_VOICE || {}, H = FabExplore.say.hash, miss = []; FabExplore.order.forEach(id => { const w = FabExplore.worlds[id]; w.spots.forEach(s => { if(F[id + '-spot-' + s.id] !== H(s.n + '. ' + s.t + ' ' + s.k)) miss.push(id + '-spot-' + s.id); }); w.who.qs.forEach(m => { if(F[id + '-ans-' + m.id] !== H(m.a)) miss.push(id + '-ans-' + m.id); }); if(!F[id + '-ans-miss'] || !F[id + '-mk-model']) miss.push(id + '-extra'); }); return { n:Object.keys(F).length, miss }; });
+    assert(rec.n === 74 && !rec.miss.length, 'a recorded line for every stop, answer and model report: ' + rec.n + ' ' + rec.miss.join());
+    const got = await page.evaluate(async () => { const out = []; for(const f of ['rome-spot-bakery', 'egypt-ans-eat', 'victorian-ans-miss', 'space-mk-model']){ const r = await fetch('explore/voice/' + f + '.mp3'); out.push(r.status + ':' + ((await r.blob()).size > 8000)); } return out.join(); });
+    assert(got === '200:true,200:true,200:true,200:true', 'the sound files are in the app: ' + got);
+    assert(await page.evaluate(() => /space-spot-cupola\.mp3$/.test(FabExplore.say.fileFor('spot:cupola', (s => s.n + '. ' + s.t + ' ' + s.k)(FabExplore.worlds.space.spots.find(x => x.id === 'cupola')))) && FabExplore.say.fileFor('spot:cupola', 'Different words now.') === ''), 'changed words fall back to the device voice');
     await say.click(); assert(/Pause/.test(await say.innerText()), 'while reading, the button is Pause');
+    assert(/explore\/voice\/space-spot-cupola\.mp3$/.test(await page.evaluate(() => FabExplore.say.state().file)), 'the recorded line is playing');
     await say.click(); assert(/Carry on/.test(await say.innerText()) && await page.evaluate(() => FabExplore.say.state().st) === 'paused', 'Pause, then Carry on');
     await say.click(); assert(/Pause/.test(await say.innerText()), 'Carry on reads again');
     assert(await page.evaluate(() => FabExplore.say.split('One. Two! Three?').length) === 3, 'it reads a sentence at a time');
