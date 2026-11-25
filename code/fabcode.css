@@ -98,6 +98,13 @@ button{font:inherit;color:inherit}
 .blocklyDropDownDiv .blocklyMenuItemHighlight{background:#F0B913}
 .blocklyDropDownArrow{display:none}
 
+/* ---- a long, low stage (the football pitch) on a wide screen: the stage goes across the top with its buttons beside it, and the blocks get the full width underneath ---- */
+.fc.long .fc-work{grid-template-columns:minmax(14em,20%) minmax(0,1fr);grid-template-rows:minmax(0,33%) minmax(0,1fr)}
+.fc.long .fc-brief{grid-column:1;grid-row:1 / -1}
+.fc.long .fc-stage{grid-column:2;grid-row:1;flex-direction:row;align-items:stretch}
+.fc.long .fc-blocks{grid-column:2;grid-row:2}
+.fc.long .fc-ctrl{flex-direction:column;flex-wrap:nowrap;align-self:center;align-items:stretch}
+
 /* ---- upright screens. A tablet: the stage beside the task, the blocks underneath. A phone: stage, task, blocks in one column. ---- */
 .fc.tall .fc-work{grid-template-columns:minmax(0,1fr) minmax(0,40%);grid-template-rows:minmax(0,45%) minmax(0,1fr);gap:.7em;padding:.7em}
 .fc.tall .fc-stage{grid-column:1;grid-row:1}
