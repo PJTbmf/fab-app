@@ -31,6 +31,7 @@ const server = http.createServer((req, res) => {
 let passed = 0, failed = 0;
 const results = [];
 async function test(name, fn){
+  if(process.env.ONLY && !process.env.ONLY.split('|').some(k => name.includes(k))) return;   // ONLY='The studio|Mind map' runs just those tests
   try { await fn(); passed++; results.push(`  ✓ ${name}`); }
   catch (e) { failed++; results.push(`  ✗ ${name}\n      ${String(e && e.message || e).split('\n').join('\n      ')}`); }
 }
@@ -1173,8 +1174,8 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     const sec = await page.evaluate(() => FabMake.load().egypt.rep.s[0]);
     assert(sec.id === 'pyramids' && sec.pick.join() === '0' && sec.own[0] === 'I wonder how they lifted the stones' && /I wonder how/.test(sec.text), 'the first idea, with its fact and thought, starts part 1 of the report: ' + JSON.stringify(sec));
     await page.evaluate(() => { const d = FabMake.load(), r = d.egypt.rep; r.lvl = '1'; r.read = 1; r.ipick = 0; localStorage.setItem(Object.keys(localStorage).find(k => /^fab-make-/.test(k)), JSON.stringify(d)); FabMake.state.view = 'paper'; FabExplore.render(); });
-    const paper = await page.evaluate(() => { const p = document.querySelector('.mk-paper.proud'); return p ? { text:p.innerText, fab:!!p.querySelector('.fab-char.fab.proud-fab'), say:(p.querySelector('.proud-say') || {}).textContent, rainbow:!!(p.querySelector('.proud-brand img') || {}).src, brand:(p.querySelector('.proud-brand b') || {}).textContent, mapWide:!!p.querySelector('.proud-sec.wide .mk-map') } : null; });
-    assert(paper && paper.text.indexOf(fact) > -1 && /I wonder how they lifted the stones\./.test(paper.text) && paper.fab && /proud/i.test(paper.say) && paper.rainbow && paper.brand === '#bemorefab' && paper.mapWide, 'the report uses the mind map and the poster carries the brand: ' + JSON.stringify(paper && { fab:paper.fab, say:paper.say, rainbow:paper.rainbow, brand:paper.brand, mapWide:paper.mapWide, t:paper.text.slice(0, 200) }));
+    const paper = await page.evaluate(() => { const p = document.querySelector('.mk-paper.proud'); return p ? { text:p.innerText, fab:!!p.querySelector('.fab-char.fab.proud-fab'), say:(p.querySelector('.proud-say') || {}).textContent, rainbow:!!(p.querySelector('.proud-brand img') || {}).src, brand:(p.querySelector('.proud-brand b') || {}).textContent, when:(p.querySelector('.proud-when') || {}).textContent, month:window.FabProud.month(), foot:(p.querySelector('.proud-foot') || {}).innerText, mapWide:!!p.querySelector('.proud-sec.wide .mk-map') } : null; });
+    assert(paper && paper.text.indexOf(fact) > -1 && /I wonder how they lifted the stones\./.test(paper.text) && paper.fab && /proud/i.test(paper.say) && paper.rainbow && paper.brand === 'BeMoreFab Virtual School' && /^(January|February|March|April|May|June|July|August|September|October|November|December) 20\d\d$/.test(paper.when) && paper.when === paper.month && /#bemorefab/.test(paper.foot) && !/Made in Explorer/.test(paper.text) && paper.mapWide, 'the report uses the mind map and the poster carries the brand: ' + JSON.stringify(paper && { fab:paper.fab, say:paper.say, rainbow:paper.rainbow, brand:paper.brand, when:paper.when, month:paper.month, mapWide:paper.mapWide, t:paper.text.slice(0, 200) }));
     await page.evaluate(() => showScreen('screen-hub'));
   });
   await test('Use the screen: Fab Fox World fills the window, and the beat maker grows with it and shows every row', async () => {
@@ -1191,6 +1192,42 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(r.stage[0] >= r.win[0] - 20 && r.stage[1] >= r.win[1] - 20 && r.cls === 'sc-beat' && r.z > 1.3 && r.rows >= 7 && r.gridShare > .7 && r.fits, 'the world and the beat maker use the screen: ' + JSON.stringify(r));
     const frameW = await page.evaluate(() => document.querySelector('.game-frame[data-game="world"]').getBoundingClientRect().width / innerWidth);
     assert(frameW > .97, 'the world frame spans the window: ' + frameW);
+    await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
+  });
+  await test('The studio: hand-drawn icons, no button overlaps another, and the paper sits between two tool columns on a wide screen', async () => {
+    for(const [w, h] of [[1366, 700], [2560, 1300], [820, 1100]]){
+      await page.setViewportSize({ width:w, height:h });
+      await page.evaluate(() => { showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+      const fr = await (await page.$('.game-frame[data-game="world"]')).contentFrame();
+      await fr.waitForFunction(() => !!window.WORLD);
+      await page.waitForTimeout(400);
+      const r = await fr.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)); try{ WORLD.closeScene(true); }catch(e){} window.dispatchEvent(new Event('resize')); await wait(150); mStudio('create'); await wait(900);
+        const el = WORLD.scene().el, box = e => e.getBoundingClientRect(), hit = (a, b) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1, emo = /\p{Extended_Pictographic}/u;
+        const btns = [...el.querySelectorAll('.arttop button, .sx, .tgrp .tb, .tgrp .sw')].filter(b => b.offsetParent), rects = btns.map(box); let overlaps = 0;
+        for(let i = 0; i < rects.length; i++) for(let j = i + 1; j < rects.length; j++) if(hit(rects[i], rects[j])) overlaps++;
+        const spill = [...el.querySelectorAll('.tb span')].filter(sp => sp.offsetParent).filter(sp => { const a = box(sp), b = box(sp.parentNode); return a.left < b.left - 1 || a.right > b.right + 1 || a.top < b.top - 1 || a.bottom > b.bottom + 1; }).map(sp => sp.textContent);
+        const icons = [...el.querySelectorAll('.tb i')].filter(i => i.offsetParent), L = el.querySelector('#artTools'), R = el.querySelector('#artTools2'), pad = box(el.querySelector('.padbox')), er = box(el);
+        const out = { two:el.querySelector('.mmf').classList.contains('two'), tall:el.querySelector('.mmf').classList.contains('tall'), overlaps, spill, buttons:btns.length, icons:icons.length, drawn:icons.filter(i => i.querySelector('svg')).length, emoji:icons.filter(i => emo.test(i.textContent)).length,
+          left:[...L.children].map(d => d.dataset.g).join(), right:[...R.children].map(d => d.dataset.g).join(), noScroll:L.scrollHeight <= L.clientHeight + 2 && R.scrollHeight <= R.clientHeight + 2,
+          padShare:pad.width * pad.height / (er.width * er.height), between:box(L).right <= pad.left && pad.right <= box(R).left, padIn:pad.top >= er.top && pad.bottom <= er.bottom + 1, base:parseFloat(getComputedStyle(el.querySelector('.mmf')).fontSize),
+          border:getComputedStyle(el.querySelector('.tb')).borderTopColor, shadow:getComputedStyle(el.querySelector('.tb')).boxShadow };
+        el.querySelector('[data-tool=stamp]').click(); await wait(80);
+        out.stamps = !el.querySelector('.tgrp[data-g=stamps]').classList.contains('hide'); out.coloursAway = el.querySelector('.tgrp[data-g=colours]').classList.contains('hide'); out.stampScroll = R.scrollHeight <= R.clientHeight + 2;
+        el.querySelector('[data-tool=felt]').click(); await wait(80); out.coloursBack = !el.querySelector('.tgrp[data-g=colours]').classList.contains('hide');
+        el.querySelector('[data-mirror="6"]').click(); out.mirror = ART.pad.mirror; out.mirrorSay = el.querySelector('[data-mirror="6"]').getAttribute('aria-label');
+        MMFS.tab = 'make'; studioRender(); await wait(250);
+        out.tabs = [...el.querySelectorAll('.mmft button')].filter(b => b.querySelector('svg') && !emo.test(b.textContent)).length; out.cards = [...el.querySelectorAll('.mcard')].filter(b => b.querySelector('i svg') && !emo.test(b.textContent)).length; out.allCards = el.querySelectorAll('.mcard').length;
+        out.turn = getComputedStyle(document.querySelector('.turn .tb')).width;
+        try{ WORLD.closeScene(true); }catch(e){} return out; });
+      const tag = w + '×' + h + ': ' + JSON.stringify(r);
+      assert(r.overlaps === 0 && !r.spill.length && r.buttons >= 25, 'no studio button overlaps another and every label stays inside its button, ' + tag);
+      assert(r.icons >= 15 && r.drawn === r.icons && r.emoji === 0 && r.tabs === 5 && r.cards === r.allCards && r.allCards >= 9, 'every studio icon is hand-drawn, ' + tag);
+      assert(r.border === 'rgb(43, 26, 18)' && r.shadow === 'none' && r.turn === '48px', 'studio buttons are flat with an ink outline, and the look-round buttons keep their own style, ' + tag);
+      assert(r.stamps && r.coloursBack && r.mirror === 6 && /6/.test(r.mirrorSay), 'stamps, colours and mirror magic still work, ' + tag);
+      if(h < w) assert(r.two && r.left === 'tools,size' && r.right === 'colours,stamps,mirror,paper' && r.noScroll && r.between && r.padIn && r.padShare > .4 && r.coloursAway && r.stampScroll, 'wide screen: tools left, colours right, nothing scrolls, the paper fills the middle, ' + tag);
+      else assert(r.tall && !r.two && r.padIn && r.padShare > .25, 'upright tablet: the paper sits on top, ' + tag);
+      if(w === 2560) assert(r.base >= 24, 'the studio controls grow on a big screen, ' + tag);
+    }
     await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
   });
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
