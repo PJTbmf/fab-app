@@ -12,8 +12,12 @@
                    { h:'My mosaic', pic:{ src, alt, cap } },              // a picture on its own card
                    { h:'In order', html:'<ol>…</ol>', wide:true } ],      // anything else (a timeline, a mind map); wide = full width
            fact:{ label:'Did you know?', text:'…' },
-           made:'Made in Explorer Worlds', seal:'Finished!', cheer:'I’m proud of you!',   // what Fab says; fab:false leaves him off
+           when:'2026-11',                                // the month the work was finished (year-month, a Date or a time); left out = this month
+           seal:'Finished!', cheer:'I’m proud of you!',   // what Fab says; fab:false leaves him off
+           made:'an extra small line, if wanted',
            cls:'extra classes for the article' })
+   The foot always reads "BeMoreFab Virtual School" with the month and year, so a child can look back on the piece later and know when they made it.
+   FabProud.month(when) gives "November 2026"; FabProud.stamp() gives this month as '2026-11' to save beside the work.
    Text is escaped here; html and pic.html are trusted markup from the app itself.   window.FabProud */
 (function(){
   'use strict';
@@ -55,7 +59,7 @@
 .proud-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-top:20px}
 .proud-brand{display:flex;align-items:center;gap:12px;min-width:0;padding-bottom:6px;text-align:left}.proud-brand img{width:clamp(54px,7vw,84px);height:auto;flex:none}
 .proud-brand b{display:block;font-family:var(--disp,'BMF Display',Aleo,Georgia,serif);font-size:clamp(1.15rem,2vw,1.5rem);color:#FE4D02;line-height:1.1}
-.proud .proud-made{font-size:.95rem;margin:2px 0 0;opacity:.85;text-align:left}
+.proud .proud-made{font-size:clamp(1rem,1.4vw,1.15rem);margin:3px 0 0;text-align:left;line-height:1.25;opacity:1;color:var(--ink)}.proud-made .proud-when{font:italic 700 1.08em Aleo,Georgia,serif}.proud-made .proud-tag{opacity:.8}.proud-made .proud-extra{display:block;opacity:.8;font-size:.92em}
 .proud-cheer{display:flex;align-items:flex-end;gap:10px;flex:none}
 .proud-seal{display:flex;flex-direction:column;align-items:center;gap:2px;font:italic 700 clamp(.95rem,1.4vw,1.15rem) Aleo,Georgia,serif;transform:rotate(-4deg);padding-bottom:8px}.proud-seal svg{width:64px;height:64px}
 .proud-say{position:relative;align-self:center;background:#fff;border:3px solid var(--ink);border-radius:18px 22px 18px 20px;padding:6px 16px 7px;font:italic 700 clamp(1rem,1.6vw,1.25rem) Aleo,Georgia,serif;transform:rotate(-1.5deg);margin-bottom:34px}
@@ -77,6 +81,15 @@
     if(c.pic && !c.text) return `<section class="proud-sec piconly${c.wide ? ' wide' : ''}">${head}${picHTML(c.pic)}</section>`;
     return `<section class="proud-sec${c.pic ? ' haspic' : ''}${c.wide ? ' wide' : ''}">${head}<p>${esc(c.text || '')}</p>${c.pic ? picHTML(c.pic) : ''}</section>`;
   }
+  /* the month a piece was finished: saved as '2026-11' (nothing more exact is kept), shown as "November 2026" */
+  const SCHOOL = 'BeMoreFab Virtual School', MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function stamp(d){ d = d instanceof Date ? d : new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+  function month(when){
+    let y, m; const ym = typeof when === 'string' && /^(\d{4})-(\d{1,2})/.exec(when);
+    if(ym){ y = +ym[1]; m = +ym[2] - 1; }
+    else { const d = when instanceof Date ? when : typeof when === 'number' ? new Date(when) : new Date(); const ok = !isNaN(d); y = (ok ? d : new Date()).getFullYear(); m = (ok ? d : new Date()).getMonth(); }
+    return (MONTHS[m] || MONTHS[new Date().getMonth()]) + ' ' + y;
+  }
   function page(o){
     o = o || {}; const T = THEMES[o.theme] || THEMES.fab, cards = (o.cards || []).filter(Boolean).map(c => Object.assign({}, c));
     /* an odd number of half-width cards would leave a hole: the last one takes the full width instead */
@@ -86,9 +99,9 @@
       <header class="proud-head">${o.kicker ? `<span class="proud-kicker">${esc(o.kicker)}</span>` : ''}<h2 class="proud-title"><span>${esc(o.title || '')}</span></h2>${o.lead ? `<p class="proud-lead mk-intro">${esc(o.lead)}</p>` : ''}</header>
       ${cards.length ? `<div class="proud-grid">${cards.map(card).join('')}</div>` : ''}
       ${o.fact && o.fact.text ? `<aside class="proud-fact mk-dyk">${STAR}<div><b>${esc(o.fact.label || 'Did you know?')}</b>${esc(o.fact.text)}</div></aside>` : ''}
-      <footer class="proud-foot"><div class="proud-brand">${rainbow()}<div><b>#bemorefab</b><p class="proud-made mk-by">${esc(o.made || '')}</p></div></div>
+      <footer class="proud-foot"><div class="proud-brand">${rainbow()}<div><b class="proud-school">${esc(o.school || SCHOOL)}</b><p class="proud-made mk-by"><span class="proud-when">${esc(month(o.when))}</span> <span class="proud-tag">· #bemorefab</span>${o.made ? `<span class="proud-extra">${esc(o.made)}</span>` : ''}</p></div></div>
         <div class="proud-cheer"><div class="proud-seal">${SEAL}<span>${esc(o.seal || 'Finished!')}</span></div>${o.fab === false ? '' : `<span class="proud-say">${esc(o.cheer || 'I’m proud of you!')}</span><span class="fab-char fab proud-fab" role="img" aria-label="Fab Fox"></span>`}</div></footer>
       <div class="proud-band foot" aria-hidden="true"></div></article>`;
   }
-  window.FabProud = { page, themes:THEMES };
+  window.FabProud = { page, themes:THEMES, month, stamp, school:SCHOOL };
 })();

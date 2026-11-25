@@ -209,7 +209,7 @@
     { const pc = cards.find(c => c.pic && !c.text && !c.html), host = pc && cards.filter(c => !c.wide).length % 2 ? [...cards].reverse().find(c => c.text && !c.pic) : null;
       if(host){ host.pic = { src:pc.pic.src, alt:pc.pic.alt, cap:pc.h }; cards.splice(cards.indexOf(pc), 1); } }
     const paper = window.FabProud.page({ theme:w.id, cls:'mk-paper mk-final', kicker:code ? 'A report by Explorer ' + code : 'My report', title:t.title || w.make.report.title, lead:t.intro, cards,
-      fact:t.dyk ? { label:'Did you know?', text:t.dyk } : null, made:'Made in Explorer Worlds' + (code ? ' · Fab code ' + code : ''), seal:'Finished!' });
+      fact:t.dyk ? { label:'Did you know?', text:t.dyk } : null, when:me.rep.when, seal:'Finished!' });
     return `<div class="tm-notebox" role="status">${note(M.note)}</div>
       ${paper}
       <div class="choice-row tm-row"><button type="button" class="btn small leaf" data-mk="print">🖨️ Print my report</button><button type="button" class="btn small soft" data-mk="open" data-id="report">✏️ Keep writing</button>${back}</div>
@@ -235,7 +235,8 @@
     if(a === 'open'){ M.note = null; try{ X.say.stop(); }catch(err){}
       if(id === 'order') startOrder(w); if(id === 'art') startArt(w, me); if(id === 'pairs') startPairs(w); if(id === 'quiz') M.quiz = { i:0, ans:null };
       if(id === 'report' && M.view !== 'paper') M.rstep = r.read ? Math.max(1, M.rstep) : 0;
-      if(id === 'paper' && !r.done && checks(w, me).slice(0, 4).every(c => c[1])){ r.done = 1; save(d); star(); M.note = { k:'win', h:'Your report is finished!', t:'What a lot you know. That earned a star for Fab Fox World.' }; }
+      if(id === 'paper' && !r.done && checks(w, me).slice(0, 4).every(c => c[1])){ r.done = 1; r.when = window.FabProud.stamp(); save(d); star(); M.note = { k:'win', h:'Your report is finished!', t:'What a lot you know. That earned a star for Fab Fox World.' }; }
+      if(id === 'paper' && r.done && !r.when){ r.when = window.FabProud.stamp(); save(d); }
       M.view = id; X.snd('tick'); return X.render(); }
     if(a === 'put'){ const o = w.make.order, S = M.seq, want = o.items[S.placed.length];
       if(want && want.id === id){ S.placed.push(id); S.left = S.left.filter(x => x !== id); M.note = null; X.snd('ding');
