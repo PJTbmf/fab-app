@@ -838,6 +838,32 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     }
     await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); }catch(e){} showScreen('screen-hub'); });
   });
+  await test('Fab Fox World: choosing a place takes Fab there and opens it; games fill a big screen', async () => {
+    await page.evaluate(() => { showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await page.$('.game-frame[data-game="world"]')).contentFrame();
+    await fr.waitForFunction(() => !!window.WORLD);
+    for(const how of ['pop', 'walk', 'pop']){
+      await fr.evaluate(how => { try{ WORLD.closeScene(true); }catch(e){} WORLD.S().go = how; WORLD.goTo(WORLD.PLACES.find(x => x.id === 'shed')); }, how);
+      await fr.waitForFunction(() => !!WORLD.scene(), null, { timeout:12000 });
+      assert(await fr.evaluate(() => !!WORLD.scene()), 'the Fix-it Shed opens on arrival by ' + how);
+    }
+    await fr.evaluate(() => { try{ WORLD.closeScene(true); }catch(e){} });
+    /* games: no magnifying on a laptop, a bigger play area on a big screen */
+    await page.setViewportSize({ width:1280, height:720 });
+    await page.evaluate(() => { showScreen('screen-pinball'); try{ fabGameMount('screen-pinball'); }catch(e){} });
+    const z0 = await page.evaluate(() => document.querySelector('.game-frame[data-game="pinball"]').dataset.zoom);
+    await page.setViewportSize({ width:1920, height:1200 }); await page.waitForTimeout(400);
+    const big = await page.evaluate(() => { const f = document.querySelector('.game-frame[data-game="pinball"]'), r = f.getBoundingClientRect(); return { z:+f.dataset.zoom, bottom:Math.round(r.bottom), win:innerHeight, inner:f.contentWindow.innerHeight, world:document.querySelector('.game-frame[data-game="world"]').dataset.zoom }; });
+    assert(z0 === '1' && big.z >= 1.2 && big.bottom <= big.win && big.inner >= 740, 'pinball is magnified on a big screen and stays on the page: ' + z0 + ' ' + JSON.stringify(big));
+    const pf = await (await page.$('.game-frame[data-game="pinball"]')).contentFrame();
+    await pf.waitForFunction(() => [...document.querySelectorAll('button')].some(b => /play/i.test(b.textContent)));
+    await pf.evaluate(() => [...document.querySelectorAll('button')].find(b => b.offsetWidth && /let.s play/i.test(b.textContent)).click());
+    await page.waitForTimeout(500);
+    const hit = await page.evaluate(() => { const f = document.querySelector('.game-frame[data-game="pinball"]'), d = f.contentDocument, z = +f.dataset.zoom, fr = f.getBoundingClientRect(), c = d.querySelector('canvas').getBoundingClientRect(); const btns = [...d.querySelectorAll('button')].filter(b => b.offsetWidth && /Launch|Left|Right/.test(b.textContent)).map(b => fr.top + b.getBoundingClientRect().bottom * z); return { table:Math.round(c.height * z), lowest:Math.round(Math.max.apply(null, btns)), win:innerHeight }; });
+    assert(hit.table >= 700 && hit.lowest <= hit.win, 'the table is bigger and its buttons are still on the page: ' + JSON.stringify(hit));
+    await page.setViewportSize({ width:1280, height:720 });
+    await page.evaluate(() => showScreen('screen-hub'));
+  });
   await test('Learning Hub: Canvas, Cinema, Music and Explorer Worlds sit in one row', async () => {
     await page.setViewportSize({ width:1366, height:900 });
     await page.evaluate(() => showScreen('screen-learn'));
