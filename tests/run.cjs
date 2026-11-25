@@ -1549,7 +1549,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(r.style === 'true|true|true|true|true|true', 'the mini-map, the joystick, the look buttons and the joy bar have ink outlines and no shadows: ' + j);
     assert(r.toast === 'true|true|true|true', 'the pop-up card is paper cream with an ink outline: ' + j);
     assert(/^true\|true\|true\|/.test(r.sharp), 'on a big screen the 3D picture has as many dots as it is shown at: ' + r.sharp);
-    assert(/Put it on show:true:true$/.test(r.row) && /^true\|Build something first/.test(r.none), 'the 3D view has a drawn “Put it on show” button, and an empty build gets a gentle nudge: ' + j);
+    assert(/Put it on show:true:true\|Code it:true:true$/.test(r.row) && /^true\|Build something first/.test(r.none), 'the 3D view has a drawn “Put it on show” button, and an empty build gets a gentle nudge: ' + j);
     assert(r.next === 'Keep it in My makes:true|Make it your own:true|Build it for real:true|Put it on show:true|Code with Fox Blocks:true|Next challenge:true' && r.fits, '“What next?” offers the show table and Fox Blocks, with drawn icons, and still fits: ' + j);
     assert(/^blocks\|6\|It is on show!\s*Find it on the table outside Dad’s Workshop\.$/.test(r.show) && r.where && r.pic === '520x420|true|true|true', 'the build is kept for the table outside Dad’s Workshop and drawn with a clear background: ' + j);
     assert(r.code === 'sc-code|true', '“Code with Fox Blocks” opens Fox Blocks from the workshop: ' + j);
@@ -1559,13 +1559,143 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
   });
 
-  await test('The landing page is unchanged: only Fab Fox World opens Fox Blocks (the navigation review is still to come)', async () => {
-    const files = ['index.html', 'home.js', 'me.js'].map(f => fs.readFileSync(path.join(ROOT, f), 'utf8'));
-    assert(!files.some(t => /code\.html/.test(t)), 'the landing page and the hubs must not link to the coding page until the navigation review is done');
+  await test('Fox Blocks opens from Fab Fox World, the Games section and Computing in the Learning Hub, with Back to where it came from; the landing page itself is unchanged', async () => {
+    const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8'), hub = html.slice(html.indexOf('id="screen-hub"'), html.indexOf('</section>', html.indexOf('id="screen-hub"')));
+    assert(!/code\.html|data-code-open/.test(hub) && !['home.js', 'me.js'].some(f => /code\.html/.test(fs.readFileSync(path.join(ROOT, f), 'utf8'))), 'the landing page does not link to Fox Blocks until the navigation review');
     assert(/code\.html\?embed=1/.test(fs.readFileSync(path.join(ROOT, 'games.js'), 'utf8')), 'Fab Fox World opens Fox Blocks in a frame');
     assert(fs.existsSync(path.join(ROOT, 'lib/blockly/LICENSE.txt')) && /Apache License/.test(fs.readFileSync(path.join(ROOT, 'lib/blockly/LICENSE.txt'), 'utf8')), 'Blockly’s licence travels with it');
     assert(!/tombstone|dead plants/.test(fs.readFileSync(path.join(ROOT, 'packs.js'), 'utf8')), 'the rocks step uses the gentler wording');
+    await page.setViewportSize({ width:1366, height:768 });
+    const wait = ms => page.waitForTimeout(ms);
+    const inside = async () => { const f = await (await page.$('#codeFrame')).contentFrame(); await f.waitForFunction(() => window.FabCode && document.getElementById('fcBack'), null, { timeout:15000 }); return f; };
+    await page.evaluate(() => { try{ localStorage.setItem('fab-me', 'fox-games-1'); }catch(e){} showScreen('screen-games'); });
+    const tile = await page.evaluate(() => { const t = document.getElementById('gamesCodeBtn'); return t ? [t.querySelector('h2').textContent, !!t.querySelector('svg'), [...document.querySelectorAll('#screen-games .tile .emoji')].filter(e => e.querySelector('svg')).length, [...document.querySelectorAll('#screen-games .tile .emoji')].length].join('|') : ''; });
+    assert(/^Fox Blocks\|true\|(\d+)\|\1$/.test(tile), 'the Games section has a Fox Blocks tile, and every tile carries a drawing: ' + tile);
+    await page.click('#gamesCodeBtn'); let f = await inside(); await wait(300);
+    let r = await page.evaluate(() => { const fr = document.getElementById('codeFrame'), b = fr.getBoundingClientRect(); return [document.querySelector('.screen.active').id, /embed=1/.test(fr.src) && /back=games/.test(fr.src) && /learner=fox-games-1/.test(fr.src), Math.round(b.width) >= innerWidth - 1 && Math.round(b.height) >= innerHeight - 1 && b.top <= 0].join('|'); });
+    const back1 = await f.evaluate(() => { const b = document.getElementById('fcBack'); return [b.hidden, b.textContent.trim(), !!document.querySelector('.fc-foot a')].join('|'); });
+    assert(r === 'screen-code|true|true' && back1 === 'false|Back to Games|false', 'Fox Blocks fills the window from Games, with its own “Back to Games”: ' + r + ' / ' + back1);
+    await f.evaluate(() => { FabCode.open('bush', 0); }); await wait(200);
+    const mid = await f.evaluate(() => document.getElementById('fcBack').textContent.trim());
+    await f.evaluate(() => document.getElementById('fcBack').click()); await wait(200); await f.evaluate(() => document.getElementById('fcBack').click()); await wait(300);
+    r = await page.evaluate(() => document.querySelector('.screen.active').id + '|' + !document.getElementById('codeFrame').getAttribute('src'));
+    assert(mid === 'All projects' && r === 'screen-games|true', 'in a puzzle the button says “All projects”; from the projects, Back goes to Games and the frame is let go: ' + mid + ' / ' + r);
+    /* the Learning Hub: Computing */
+    await page.evaluate(() => { showScreen('screen-learn'); learnRenderList(); document.querySelector('#learnFilters [data-subject="Computing"]').click(); }); await wait(200);
+    r = await page.evaluate(() => { const cards = [...document.querySelectorAll('#learnList .lesson-card')], note = document.querySelector('#learnList .learn-code-note');
+      return { cards:cards.map(c => c.dataset.code + ':' + c.querySelector('.lc-subject').textContent + ':' + !!c.querySelector('svg')).join(','), oak:note ? [...note.querySelectorAll('a')].filter(a => /thenational\.academy\/teachers\/curriculum\/computing-primary\/units\//.test(a.href)).length : 0, ogl:note ? /Open Government Licence v3\.0/.test(note.textContent) : false, nc:note ? /Use sequence, selection and repetition in programs/.test(note.textContent) : false }; });
+    assert(r.cards === 'bush:Computing · Years 1–4:true,dance:Computing · Years 1–3:true,goal:Computing · Years 4–6:true' && r.oak >= 6 && r.ogl && r.nc, 'Computing lists the three Fox Blocks projects with year groups, and a teachers’ note links them to the curriculum and to Oak’s units: ' + JSON.stringify(r));
+    const y5 = await page.evaluate(() => { document.querySelector('#learnYears [data-year="5"]').click(); return [...document.querySelectorAll('#learnList .lesson-card')].map(c => c.dataset.code).join(); });
+    assert(y5 === 'goal', 'the year filter applies: Year 5 sees Score a goal: ' + y5);
+    await page.evaluate(() => document.querySelector('#learnList .lesson-card[data-code="goal"]').click()); f = await inside(); await wait(400);
+    r = await page.evaluate(() => /back=learn/.test(document.getElementById('codeFrame').src) && /project=goal/.test(document.getElementById('codeFrame').src));
+    const st = await f.evaluate(() => FabCode.state().project + '|' + document.getElementById('fcBack').textContent.trim());
+    await f.evaluate(() => { FabCode.home(); document.getElementById('fcBack').click(); }); await wait(300);
+    const out = await page.evaluate(() => document.querySelector('.screen.active').id);
+    assert(r && st === 'goal|All projects' && out === 'screen-learn', 'a Computing card opens its project, and Back comes back to the Learning Hub: ' + [r, st, out].join(' / '));
+    await page.evaluate(() => { document.querySelector('#learnYears [data-year="all"]').click(); document.querySelector('#learnFilters [data-subject="all"]').click(); try{ localStorage.removeItem('fab-me'); }catch(e){} showScreen('screen-hub'); });
+    await page.setViewportSize({ width:1280, height:800 });
   });
+
+  await test('World, round 24: the world is the whole window with Leave, Sounds and Light/Dark inside it; Back in an activity returns to the world; Go in near a place; the beat maker in the Fab Fox look', async () => {
+    await page.setViewportSize({ width:1366, height:768 });
+    await page.evaluate(() => { showScreen('screen-games'); showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await page.$('.game-frame[data-game="world"]')).contentFrame();
+    await fr.waitForFunction(() => !!window.WORLD && document.getElementById('leaveBtn'), null, { timeout:15000 }); await page.waitForTimeout(400);
+    const frame = await page.evaluate(() => { const f = document.querySelector('.game-frame[data-game="world"]').getBoundingClientRect(), top = document.querySelector('#screen-world .screen-top'); return [Math.round(f.left), Math.round(f.top), Math.round(f.width) >= innerWidth - 1, Math.round(f.height) >= innerHeight - 1, getComputedStyle(top).display].join('|'); });
+    assert(frame === '0|0|true|true|none', 'the world fills the window: no strip and no Back above it: ' + frame);
+    const r = await fr.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), S = WORLD.S(), out = {}, emo = /\p{Extended_Pictographic}/u; try{ WORLD.closeScene(true); }catch(e){}
+      S.missions = 30; try{ localStorage.setItem('fab-theme', 'light'); }catch(e){} setThm('light'); await wait(50);
+      const chip = id => { const b = document.getElementById(id); return b && !b.classList.contains('hide') ? b.textContent.trim() : '-'; };
+      out.hud = [chip('leaveBtn'), chip('sndBtn'), chip('thmBtn')].join('|') + '|' + document.querySelector('.hud').firstElementChild.id;
+      const was = window.parent.Sound.enabled; document.getElementById('sndBtn').click(); out.snd = [was !== window.parent.Sound.enabled, chip('sndBtn')].join('|'); document.getElementById('sndBtn').click();
+      document.getElementById('thmBtn').click(); out.dark = [document.body.classList.contains('dark'), localStorage.getItem('fab-theme'), chip('thmBtn')].join('|');
+      mStem(); await wait(150); let el = WORLD.scene().el; out.darkScene = getComputedStyle(el).backgroundColor + '|' + el.querySelector('.sthm').textContent.trim();
+      el.querySelector('.sthm').click(); out.lightScene = getComputedStyle(el).backgroundColor + '|' + localStorage.getItem('fab-theme');
+      const bx = el.querySelector(':scope > .sx'), br = bx.getBoundingClientRect(); out.back = [bx.textContent.trim(), Math.round(br.left) <= 16, Math.round(br.top) <= 16, getComputedStyle(bx).boxShadow === 'none'].join('|');
+      bx.click(); await wait(100); out.closed = !WORLD.scene(); document.getElementById('leaveBtn').click(); out.guard = window.parent.document.querySelector('.screen.active').id;
+      /* Go in near a place, and a tap on a building */
+      const mu = WORLD.PLACES.find(p => p.id === 'music'); teleportTo(mu.x + 120, mu.y + 40); WORLD.coll().length = 0; await wait(500);
+      const gi = document.getElementById('goIn'); out.goin = [!gi.classList.contains('hide'), gi.textContent.trim(), getComputedStyle(gi).backgroundColor].join('|');
+      gi.click(); await wait(200); out.went = WORLD.scene() ? WORLD.scene().cls : '-'; WORLD.closeScene(true);
+      const gd = WORLD.PLACES.find(p => p.id === 'garden'); out.tap = !!placeAt({ x:gd.x, y:gd.y - 80 }) && placeAt({ x:gd.x, y:gd.y - 80 }).id === 'garden' && !placeAt({ x:gd.x + 400, y:gd.y + 300 });
+      /* the beat maker */
+      mBeat(); await wait(300); el = WORLD.scene().el;
+      const btns = [...el.querySelectorAll('.bbar button, .bready button')], labs = [...el.querySelectorAll('.blab i')];
+      out.beat = [btns.length >= 8, btns.every(b => b.querySelector('svg') && !emo.test(b.textContent)), labs.length >= 7, labs.every(i => i.querySelector('svg') && !emo.test(i.textContent)), !emo.test(el.querySelector('h2').textContent), getComputedStyle(el.querySelector('.bgrid')).borderTopColor, getComputedStyle(el).backgroundColor].join('|');
+      const on = [...el.querySelectorAll('.bcell.on')].map(c => getComputedStyle(c).backgroundColor), pal = ['rgb(240, 185, 19)', 'rgb(173, 203, 124)', 'rgb(207, 231, 242)', 'rgb(227, 201, 160)', 'rgb(239, 130, 71)', 'rgb(201, 138, 92)', 'rgb(254, 77, 2)', 'rgb(255, 148, 22)'];
+      out.cells = on.length > 3 && on.every(c => pal.includes(c)) && [...el.querySelectorAll('.bcell')].every(c => getComputedStyle(c).boxShadow === 'none');
+      const g = el.querySelector('#bGrid').getBoundingClientRect(), h = el.querySelector('h2').getBoundingClientRect(), er = el.getBoundingClientRect(); out.fits = h.top >= er.top && g.bottom <= er.bottom;
+      WORLD.closeScene(true);
+      /* Fox Blocks inside the world has its own Back, and the world's Back and Light/Dark are hidden there */
+      mCode('bush'); await wait(200); el = WORLD.scene().el; const f = el.querySelector('iframe.codeframe');
+      for(let i = 0; i < 60 && !(f.contentWindow && f.contentWindow.FabCode && f.contentDocument.getElementById('fcBack')); i++) await wait(150);
+      out.code = [getComputedStyle(el.querySelector(':scope > .sx')).display, getComputedStyle(el.querySelector(':scope > .sthm')).display, f.contentDocument.getElementById('fcBack').textContent.trim()].join('|');
+      f.contentWindow.FabCode.home(); await wait(100); out.codeBack = f.contentDocument.getElementById('fcBack').textContent.trim(); f.contentDocument.getElementById('fcBack').click(); await wait(200); out.codeClosed = !WORLD.scene();
+      S.missions = 0; return out; });
+    const j = JSON.stringify(r);
+    assert(r.hud === 'Leave|Sounds on|Dark|leaveBtn' || r.hud === 'Leave|Sounds off|Dark|leaveBtn', 'the top bar starts with Leave, and has Sounds and Light/Dark: ' + j);
+    assert(/^true\|Sounds (on|off)$/.test(r.snd) && r.dark === 'true|dark|Light', 'Sounds switches the app’s sound; Dark is kept on the device: ' + j);
+    assert(r.darkScene === 'rgb(46, 33, 24)|Light' && r.lightScene === 'rgb(255, 212, 131)|light', 'an activity is dark brown in dark mode and brand cream in light mode, and the choice is there inside it: ' + j);
+    assert(r.back === 'Back|true|true|true' && r.closed && r.guard === 'screen-world', 'Back sits top left in an activity and goes back to the world, and a quick second tap does not leave the world: ' + j);
+    assert(/^true\|Go in: The Music Hut\|rgb\(240, 185, 19\)$/.test(r.goin) && r.went === 'sc-music' && r.tap, 'near a place a big gold “Go in” opens it, and a tap on a building finds that place: ' + j);
+    assert(/^true\|true\|true\|true\|true\|rgb\(43, 26, 18\)\|rgb\(255, 212, 131\)$/.test(r.beat) && r.cells && r.fits, 'the beat maker has drawn icons, palette colours with ink outlines, no shadows, and fits the window: ' + j);
+    assert(r.code === 'none|none|Back to Fab Fox World' || r.code === 'none|none|All projects', 'inside the world, Fox Blocks shows its own Back: ' + j);
+    assert(r.codeBack === 'Back to Fab Fox World' && r.codeClosed, 'from Fox Blocks’ projects, Back closes it and returns to the world: ' + j);
+    /* Leave: back to where the world was opened from */
+    await fr.evaluate(() => { closeScene.t = 0; document.getElementById('leaveBtn').click(); }); await page.waitForTimeout(300);
+    const left = await page.evaluate(() => document.querySelector('.screen.active').id);
+    assert(left === 'screen-games', 'Leave goes back to where Fab Fox World was opened from: ' + left);
+    await fr.evaluate(() => { try{ localStorage.setItem('fab-theme', 'light'); }catch(e){} });
+    await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
+  });
+
+  await test('Round 24 queue: Fab wears his shop clothes in Fox Blocks, a 3D build becomes a Fox Blocks maze, the world’s small activities follow the style rules, and Explorer Worlds and the page games grow on big screens', async () => {
+    await page.setViewportSize({ width:1366, height:768 });
+    /* a build and Fab's clothes, kept on this device by Fab Fox World */
+    const cp = await codePage('?learner=code-fox-4');
+    const r = await cp.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms));
+      localStorage.setItem('fabworld-v2-code-fox-4', JSON.stringify({ kit:{ own:{ 'wizard-hat':true, 'star-t-shirt':true }, wear:{ head:'wizard-hat', body:'star-t-shirt' } } }));
+      localStorage.setItem('fabcode-build-code-fox-4', JSON.stringify({ cells:{ '0,2':{ h:1, c:'#FE4D02' }, '1,2':{ h:2, c:'#F0B913' }, '2,2':{ h:3, c:'#FE4D02' }, '3,2':{ h:1, c:'#FE4D02' }, '4,2':{ h:1, c:'#FE4D02' }, '5,2':{ h:2, c:'#FE4D02' } } }));
+      return 1; });
+    await cp.reload(); await cp.waitForFunction(() => window.FabCode && FabCode.state, null, { timeout:15000 }); await cp.waitForTimeout(900);
+    const q = await cp.evaluate(async () => { const F = FabCode, wait = ms => new Promise(res => setTimeout(res, ms)); F.speed = 40; const out = {};
+      out.projects = F.projects.map(p => p.id).join();
+      F.open('build', 0); await wait(300); const L = F.projects.find(p => p.id === 'build').levels[0];
+      out.maze = [L.cols, L.rows, L.walls.length, L.walls.every(w => w[2] === 'brick'), JSON.stringify(L.start), JSON.stringify(L.goal)].join('|');
+      out.wearing = F.state().wearing;
+      F.setProgram([['right', 1], ['up', 6]]); let x = await F.run(); out.bump = x.tip || '';
+      F.setProgram(L.sol); x = await F.run(); out.solved = x.ok + '|' + L.sol.length;
+      try{ localStorage.removeItem('fabworld-v2-code-fox-4'); localStorage.removeItem('fabcode-build-code-fox-4'); localStorage.removeItem(F.key); localStorage.removeItem('fabworld-pending-code-fox-4'); }catch(e){}
+      return out; });
+    await cp.close();
+    assert(q.projects === 'bush,dance,goal,build' && q.maze === '8|8|6|true|[0,7]|[6,0]', 'a build carried from the workshop becomes a fourth project, “My build”, an 8 by 8 maze of the child’s own blocks: ' + JSON.stringify(q));
+    assert(q.wearing === 'star-t-shirt,wizard-hat', 'Fab wears what he wears in Fab Fox World on the Fox Blocks stage: ' + q.wearing);
+    assert(/^Fab bumped into your build/.test(q.bump) && /^true\|\d+$/.test(q.solved), 'bumping into the build gets a gentle tip, and the model answer (the fewest blocks) gets through: ' + JSON.stringify(q));
+    /* the world: the small activities, Fox's Den, missions and the Music Hut, and "Code it" in the 3D workshop */
+    await page.evaluate(() => { showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await page.$('.game-frame[data-game="world"]')).contentFrame(); await fr.waitForFunction(() => !!window.WORLD);
+    const w = await fr.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), emo = /\p{Extended_Pictographic}/u, out = {}, ink = 'rgb(43, 26, 18)'; try{ WORLD.closeScene(true); }catch(e){} WORLD.S().missions = 30;
+      mGames(); await wait(150); let el = WORLD.scene().el; out.den = [...el.querySelectorAll('.gtile')].map(t => !!t.querySelector('svg') && !emo.test(t.textContent) && getComputedStyle(t).boxShadow === 'none' && getComputedStyle(t).borderTopColor === ink).join();
+      mMusicHut(); await wait(150); el = WORLD.scene().el; out.hut = [...el.querySelectorAll('.cadbig')].map(t => !!t.querySelector('svg') && !emo.test(t.textContent)).join() + '|' + !emo.test(el.querySelector('h2').textContent);
+      mMissions(); await wait(150); el = WORLD.scene().el; const go = [...el.querySelectorAll('.mgo')]; out.mis = go.length > 0 && go.every(b => getComputedStyle(b).borderTopColor === ink && getComputedStyle(b).boxShadow === 'none' && !/rgb\(50, 84, 86\)/.test(getComputedStyle(b).backgroundColor));
+      startMini('feel'); await wait(150); el = WORLD.scene().el; out.faces = [...el.querySelectorAll('.face')].every(b => getComputedStyle(b).borderTopColor === ink && getComputedStyle(b).boxShadow === 'none');
+      startMini('kind'); await wait(400); el = WORLD.scene().el; out.bub = [...el.querySelectorAll('.bub')].every(b => getComputedStyle(b).borderTopColor === ink && getComputedStyle(b).boxShadow === 'none');
+      startMini('move'); await wait(150); el = WORLD.scene().el; out.move = [...el.querySelectorAll('.mv-btn')].map(b => !!b.querySelector('svg') && !emo.test(b.textContent)).join();
+      mCad('blocks'); await wait(300); el = WORLD.scene().el; out.codeit = !!el.querySelector('#cadViewBtns [data-a="code"]') && !el.querySelector('#cadViewBtns [data-a="code"]').textContent.match(emo);
+      el.querySelector('#cadViewBtns [data-a="code"]').click(); await wait(100); out.nudge = el.querySelector('.sub').textContent;
+      WORLD.closeScene(true); WORLD.S().missions = 0; return out; });
+    assert(!/false/.test(w.den) && w.hut === 'true,true|true' && w.mis && w.faces && w.bub && w.move === 'true,true', 'Fox’s Den, the Music Hut, missions, feelings, bubbles and Fab says have ink outlines, no shadows and drawn icons: ' + JSON.stringify(w));
+    assert(w.codeit && /^Build something first/.test(w.nudge), 'the 3D workshop has “Code it”, with a gentle nudge when nothing is built yet: ' + JSON.stringify(w));
+    /* Explorer Worlds and the page games grow on a big screen */
+    await page.setViewportSize({ width:1920, height:1080 }); await page.evaluate(() => { fabOpenTime('screen-learn'); }); await page.waitForTimeout(500);
+    const z = await page.evaluate(() => ['screen-time', 'screen-c4', 'screen-uno'].map(id => { const el = document.getElementById(id); return el && el.classList.contains('zoomok') && parseFloat(getComputedStyle(el).zoom) > 1.3; }).join());
+    assert(z === 'true,true,true', 'Explorer Worlds, Connect 4 and Uno grow as one piece on a big screen: ' + z);
+    const sound = await page.evaluate(() => !!document.querySelector('#soundToggle svg') && !/\p{Extended_Pictographic}/u.test(document.getElementById('soundToggle').textContent));
+    assert(sound, 'the sound button is a drawing');
+    await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
+  });
+
   await test('The STEM Den is on the map beside Dad’s Workshop, and both open Fox Blocks inside the world', async () => {
     await page.setViewportSize({ width:1366, height:700 });
     await page.evaluate(() => { showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
@@ -1585,8 +1715,8 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       try{ WORLD.coll().length = 0; }catch(e){} const before = S.spk; el.querySelector('.cadbig[data-m="code"]').click(); await wait(200); el = WORLD.scene().el; const f = el.querySelector('iframe.codeframe');
       
       for(let i = 0; i < 60 && !(f.contentWindow && f.contentWindow.FabCode && f.contentWindow.Blockly); i++) await wait(150);
-      out.frame = [el.classList.contains('sc-code'), /code\.html\?embed=1/.test(f.src), Math.round(f.getBoundingClientRect().width) >= innerWidth * .9 && Math.round(f.getBoundingClientRect().height) >= innerHeight * .8, !!el.querySelector('.sx')].join('|');
-      const C = f.contentWindow.FabCode, d = f.contentDocument; out.inside = [d.querySelector('.fc-word').textContent, d.getElementById('fc').classList.contains('embed'), !d.querySelector('.fc-foot a'), parseFloat(getComputedStyle(d.querySelector('.fc-top')).paddingRight) >= 60].join('|');
+      out.frame = [el.classList.contains('sc-code'), /code\.html\?embed=1/.test(f.src), Math.round(f.getBoundingClientRect().width) >= innerWidth * .9 && Math.round(f.getBoundingClientRect().height) >= innerHeight * .8, getComputedStyle(el.querySelector(':scope > .sx')).display === 'none'].join('|');
+      const C = f.contentWindow.FabCode, d = f.contentDocument; out.inside = [d.querySelector('.fc-word').textContent, d.getElementById('fc').classList.contains('embed'), !d.querySelector('.fc-foot a'), d.getElementById('fcBack').textContent.trim() === 'Back to Fab Fox World'].join('|');
       C.speed = 40; C.open('bush', 0); C.setProgram([['right', 4]]); const res = await C.run(); out.solved = res.ok + '|' + res.first;
       try{ WORLD.coll().length = 0; }catch(e){} WORLD.closeScene(); await wait(300); out.berries = (S.spk - before) + '|' + document.getElementById('cheer').textContent.replace(/\s+/g, ' ').trim().slice(0, 90) + '|' + !WORLD.scene();
       try{ localStorage.removeItem(C.key); }catch(e){} S.missions = 0;
@@ -1596,7 +1726,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(r.map === 'The STEM Den|true|true|true|true|true' && r.there, 'it is on the map under Dad’s Workshop with its building drawn in, and tapping it takes Fab there: ' + j);
     assert(r.title === 'The STEM Den' && r.stem === 'Fox Blocks: to the bramble bush:true:true|Fox Blocks: Fab’s dance:true:true|Fox Blocks: score a goal:true:true|Build it in 3D:true:true', 'the STEM Den offers the three Fox Blocks projects and the way to Dad’s Workshop, with drawn icons: ' + j);
     assert(r.shop === 'Dad’s Workshop|Design and build,Draw it in 3D,Fox Blocks,Tower drop' && r.cards === 'true|true|true|true', 'Dad’s Workshop has four benches as flat cards that fill the screen: ' + j);
-    assert(r.frame === 'true|true|true|true' && r.inside === 'Fox Blocks|true|true|true', 'Fox Blocks opens inside the world, full size, with the world’s own close button: ' + j);
+    assert(r.frame === 'true|true|true|true' && r.inside === 'Fox Blocks|true|true|true', 'Fox Blocks opens inside the world, full size, with its own Back to the world: ' + j);
     assert(r.solved === 'true|true' && /^1\|\+1 berry\s*Your Fox Blocks stars turned into berries/.test(r.berries) && /\|true$/.test(r.berries), 'a puzzle solved there arrives as a berry when Fox Blocks is closed: ' + j);
     await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
   });
