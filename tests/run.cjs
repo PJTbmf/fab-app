@@ -786,7 +786,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(stars1 - stars0 === 6, 'three missions earn 6 stars, got ' + (stars1 - stars0));
     assert(await page.evaluate(() => JSON.parse(localStorage.getItem('fabworld-treasure-local') || '[]').includes('💎')), 'a gem for Fab Fox World');
     await page.locator('.tm-tabs [data-tm="tab"][data-id="who"]').click();
-    assert(await page.locator('.tm-q').count() === 7 && await page.locator('#tmPanel input, #tmPanel textarea').count() === 0, 'tap questions only, no typing');
+    assert(await page.locator('.tm-q[data-tm="ask"]').count() === 7 && await page.locator('#tmPanel input, #tmPanel textarea').count() === 0, 'seven questions to tap, and no typing box until it is asked for');
     for(const id of ['job', 'eat', 'count']) await page.locator(`[data-tm="ask"][data-id="${id}"]`).click();
     assert(/VIII/.test(await page.locator('#tmAnswer').innerText()), 'Marcus answers from his script');
     assert(await page.evaluate(() => parseInt(localStorage.getItem('fabworld-pending-local') || '0', 10)) - stars1 === 1, 'three questions earn a star');
@@ -830,13 +830,128 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       await page.locator('[data-tm="act"][data-id=""]').click();
       assert(await page.locator('.tm-mis.done').count() === 3, w.id + ': three missions done');
       await page.locator('.tm-tabs [data-tm="tab"][data-id="who"]').click();
-      assert(await page.locator('#tmPanel input, #tmPanel textarea').count() === 0 && await page.locator('.tm-q').count() === w.qs.length, w.id + ': tap questions only');
+      assert(await page.locator('#tmPanel input, #tmPanel textarea').count() === 0 && await page.locator('.tm-q[data-tm="ask"]').count() === w.qs.length, w.id + ': questions to tap');
       for(const q of w.qs.slice(0, 3)) await page.locator(`[data-tm="ask"][data-id="${q}"]`).click();
       assert((await page.locator('#tmAnswer').innerText()).length > 20, w.id + ': the guide answers from a script');
       await page.locator('#tmBack').click();
       assert(await page.evaluate(id => !!FabExplore.pass()[id].stamp, w.id) && await page.locator('.tm-passport .tm-stamp.got').count() === all.findIndex(x => x.id === w.id), w.id + ': the passport shows the stamp');
     }
     await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); }catch(e){} showScreen('screen-hub'); });
+  });
+  await test('Learning Hub: Canvas, Cinema, Music and Explorer Worlds sit in one row', async () => {
+    await page.setViewportSize({ width:1366, height:900 });
+    await page.evaluate(() => showScreen('screen-learn'));
+    const cards = await page.evaluate(() => [...document.querySelectorAll('#learnTools .lt-card')].filter(c => c.offsetWidth).map(c => ({ t:c.querySelector('b').textContent, y:Math.round(c.getBoundingClientRect().top), w:Math.round(c.getBoundingClientRect().width), over:c.scrollWidth > c.clientWidth + 1 })));
+    assert(cards.map(c => c.t).join() === 'Canvas,Cinema,Music,Explorer Worlds', 'the four tools, in order: ' + cards.map(c => c.t).join());
+    assert(new Set(cards.map(c => c.y)).size === 1, 'all four on one row: ' + JSON.stringify(cards));
+    assert(cards.every(c => c.w >= 200 && !c.over), 'each card has room for its words: ' + JSON.stringify(cards));
+    await page.setViewportSize({ width:820, height:1100 });
+    const rows = await page.evaluate(() => new Set([...document.querySelectorAll('#learnTools .lt-card')].filter(c => c.offsetWidth).map(c => Math.round(c.getBoundingClientRect().top))).size);
+    assert(rows === 2, 'two by two on a small iPad, got ' + rows + ' rows');
+    await page.setViewportSize({ width:1366, height:900 });
+    await page.evaluate(() => showScreen('screen-hub'));
+  });
+  await test('Explorer Worlds voices and questions: a fitting voice, pause for talking points, and a child’s own question', async () => {
+    await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); }catch(e){} window.speechSynthesis.speak = function(){}; window.fabOpenExplore('screen-learn', 'space'); });
+    /* voices: each guide asks for a fitting voice, and the picker finds one when the device has it */
+    const v = await page.evaluate(() => { const list = [{ name:'Microsoft George - English (United Kingdom)', lang:'en-GB' }, { name:'Microsoft Hazel - English (United Kingdom)', lang:'en-GB' }, { name:'Google UK English Female', lang:'en-GB' }, { name:'Google UK English Male', lang:'en-GB' }, { name:'Google US English', lang:'en-US' }, { name:'Google français', lang:'fr-FR' }];
+      const P = FabExplore.say.pick; return { voices:FabExplore.order.map(id => FabExplore.worlds[id].who.voice), f:P('f', list).name, m:P('m', list).name, g:P('g', list).name, onlyMale:P('f', [list[0]]).name, pf:FabExplore.say.pitch({ name:'Microsoft George' }, 'f'), none:P('f', []) }; });
+    assert(v.voices.join() === 'm,m,g,f', 'Marcus and Nakht are men, Ada is a girl, Zara is a woman: ' + v.voices.join());
+    assert(/Female|Hazel/.test(v.f) && /Male|George/.test(v.m) && !/Female|Hazel/.test(v.m) && /Female|Hazel/.test(v.g), 'the picker matches voices: ' + JSON.stringify(v));
+    assert(v.onlyMale && v.pf > 1.1 && v.none === null, 'with only a man’s voice on the device, Zara’s is pitched higher');
+    /* pause and carry on */
+    await page.evaluate(() => document.querySelector('.tm-spot[data-tm="spot"][data-id="cupola"]').click());
+    const say = page.locator('[data-tm="say"]');
+    assert(/Read it to me/.test(await say.innerText()), 'Read it to me');
+    await say.click(); assert(/Pause/.test(await say.innerText()), 'while reading, the button is Pause');
+    await say.click(); assert(/Carry on/.test(await say.innerText()) && await page.evaluate(() => FabExplore.say.state().st) === 'paused', 'Pause, then Carry on');
+    await say.click(); assert(/Pause/.test(await say.innerText()), 'Carry on reads again');
+    assert(await page.evaluate(() => FabExplore.say.split('One. Two! Three?').length) === 3, 'it reads a sentence at a time');
+    /* a child's own question */
+    await page.locator('.tm-tabs [data-tm="tab"][data-id="who"]').click();
+    assert(await page.evaluate(() => FabExplore.say.state().st) === 'idle', 'changing tab stops the voice');
+    await page.locator('[data-tm="own"]').click();
+    await page.locator('#tmOwn').fill('What food do you have up there?'); await page.locator('#tmOwn').press('Enter');
+    let b = await page.locator('.tm-marcus .bubble').innerText();
+    assert(/You asked: “What food do you have up there\?”/.test(b) && /Zara hears: What do you eat\?/.test(b), 'a typed question is matched to a fixed answer: ' + b);
+    assert(/Pause/.test(await page.locator('[data-tm="sayans"]').innerText()), 'Zara answers aloud, and can be paused');
+    await page.locator('[data-tm="own"]').click();
+    await page.locator('#tmOwn').fill('Are there aliens?'); await page.locator('.tm-own button[type="submit"]').click();
+    b = await page.locator('.tm-marcus .bubble').innerText();
+    assert(/“Are there aliens\?”/.test(b) && /Ask your teacher/.test(b), 'a question with no fixed answer goes to the teacher: ' + b);
+    const m = await page.evaluate(() => { const O = FabExplore.own, q = id => FabExplore.worlds[id].who.qs; const t = (id, x) => { const r = O.match(x, q(id)); return r ? r.id : null; };
+      return [t('space', 'How do you go to bed?'), t('space', 'do you miss your mum'), t('space', 'how quick is the station'), t('rome', 'what is your favourite game'), t('victorian', 'who is queen victoria'), t('egypt', 'why is the nile important'), t('space', 'hello'), t('rome', 'did people get hurt at the colosseum'), t('space', '<b>!!</b>')]; });
+    assert(m.join() === 'sleep,family,fast,fun,queen,river,,,', 'the matcher: ' + m.join());
+    assert(await page.evaluate(() => !Object.keys(localStorage).some(k => /aliens|food do you have/i.test(localStorage.getItem(k) || ''))), 'typed questions are not saved');
+    await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); }catch(e){} showScreen('screen-hub'); });
+  });
+  await test('Explorer Worlds Make and do: put it in order, tile art, and a report at three levels that the makes slot into', async () => {
+    await page.evaluate(() => { try{ Object.keys(localStorage).filter(k => /^fab-make-|^fab-passport-/.test(k)).forEach(k => localStorage.removeItem(k)); }catch(e){} window.speechSynthesis.speak = function(){}; });
+    const data = await page.evaluate(() => FabExplore.order.map(id => { const m = FabExplore.worlds[id].make; return { id, order:m.order.items.map(x => x.id), n:m.order.items.length, art:[m.art.W, m.art.H, m.art.sym, m.art.pal.length], intro:m.report.intro.length, text:JSON.stringify(m) }; }));
+    assert(data.length === 4 && data.every(d => d.n >= 6 && d.art[3] >= 7 && d.intro === 3), 'every world has an order task, an art task and a report: ' + JSON.stringify(data.map(d => [d.id, d.n, d.art])));
+    for(const d of data) assert(!/\b(died|dead|deaths?|kill\w*|graves?|tombs?|mummy|mummies|wars?|blood\w*|battle\w*|rebel\w*)\b/i.test(d.text) && !/\b(color|center|favorite|jewelry)\b/.test(d.text), d.id + ': gentle wording and British spelling');
+    const stars0 = await page.evaluate(() => parseInt(localStorage.getItem('fabworld-pending-local') || '0', 10));
+    await page.evaluate(() => window.fabOpenExplore('screen-learn', 'space'));
+    await page.locator('.tm-tabs [data-tm="tab"][data-id="make"]').click();
+    assert(await page.locator('.mk-card').count() === 3 && await page.locator('#tmPanel .fab-char.fab').count() === 1, 'three things to make, led by Fab');
+    /* put it in order: a slip gets a kind hint, then every planet in order */
+    await page.locator('[data-mk="open"][data-id="order"]').click();
+    const planets = data.find(d => d.id === 'space').order;
+    await page.locator(`[data-mk="put"][data-id="${planets[3]}"]`).click();
+    const fix = await page.locator('.tm-notebox').innerText();
+    assert(await page.locator('.tm-notebox .fab-char.doc').count() === 1 && /My Very Easy Method/.test(fix) && !/wrong|incorrect/i.test(fix), 'Doctor McPhee gives a kind hint: ' + fix);
+    for(const id of planets) await page.locator(`[data-mk="put"][data-id="${id}"]`).click();
+    assert(await page.locator('.mk-strip li:not(.mk-slot)').count() === 8 && await page.locator('.tm-notebox .fab-char.elder').count() === 1, 'eight planets in order, and Mr Elder celebrates');
+    /* tile art: paint, mirror, finish */
+    await page.evaluate(() => window.fabOpenExplore('screen-learn', 'victorian'));
+    await page.locator('.tm-tabs [data-tm="tab"][data-id="make"]').click();
+    await page.locator('[data-mk="open"][data-id="art"]').click();
+    await page.locator('[data-mk="artdone"]').click();
+    assert(/Add some colour first/.test(await page.locator('.tm-notebox').innerText()), 'an empty design is not finished yet');
+    await page.locator('#mkArt').scrollIntoViewIfNeeded();
+    const box = await page.locator('#mkArt').boundingBox(), cell = box.width / 12;
+    await page.mouse.move(box.x + cell * 1.5, box.y + cell * 1.5); await page.mouse.down(); await page.mouse.move(box.x + cell * 3.5, box.y + cell * 1.5, { steps:4 }); await page.mouse.up();
+    const g = await page.evaluate(() => FabMake.state.grid);
+    assert(g[13] === '1' && g[12 + 10] === '1' && g[10 * 12 + 1] === '1' && g[10 * 12 + 10] === '1' && g[0] === '0', 'the Victorian tile copies the pattern into all four corners');
+    await page.locator('[data-mk="col"][data-id="4"]').click();
+    await page.mouse.click(box.x + cell * 5.5, box.y + cell * 5.5);
+    assert((await page.evaluate(() => FabMake.state.grid))[5 * 12 + 5] === '4', 'a second colour');
+    await page.locator('[data-mk="artdone"]').click();
+    assert(await page.evaluate(() => { const d = FabMake.load().victorian; return d.artDone === 1 && /^data:image\/png/.test(d.png) && d.art.length === 144; }), 'the design is saved as a picture');
+    assert(await page.evaluate(() => FabMake.mask.collar(10, 0, 21) === false && FabMake.mask.collar(10, 8, 21) === true && FabMake.mask.circle(0, 0, 16, 16) === false && FabMake.mask.circle(8, 8, 16, 16) === true), 'the collar and the patch have their shapes');
+    /* the report: built with taps (the low-energy way) */
+    await page.locator('[data-mk="open"][data-id="report"]').click();
+    assert(await page.locator('[data-mk="lvl"]').count() === 3, 'three levels of challenge');
+    await page.locator('[data-mk="lvl"][data-id="1"]').click();
+    assert(await page.locator('.mk textarea').count() === 0, 'level one needs no typing');
+    await page.locator('[data-mk="ipick"][data-id="0"]').click();
+    await page.locator('[data-mk="stop"][data-n="0"][data-id="train"]').click(); await page.locator('[data-mk="pick"][data-n="0"][data-id="0"]').click();
+    await page.locator('[data-mk="stop"][data-n="1"][data-id="bike"]').click(); await page.locator('[data-mk="pick"][data-n="1"][data-id="0"]').click();
+    await page.locator('[data-mk="dpick"][data-id="train"]').click();
+    assert(await page.locator('#mkChecks li.ok').count() === 5, 'the checklist ticks itself, got ' + await page.locator('#mkChecks li.ok').count());
+    await page.locator('[data-mk="open"][data-id="paper"]').click();
+    const paper = await page.locator('.mk-paper').innerText();
+    assert(/All about the Victorians/.test(paper) && /The steam train/.test(paper) && /The penny-farthing/.test(paper) && /Did you know\?/.test(paper), 'the report reads as a report: ' + paper.slice(0, 160));
+    assert(await page.locator('.mk-paper .mk-fig img').count() === 1, 'the child’s tile is in the report');
+    assert(await page.locator('.tm-notebox .fab-char.elder').count() === 1 && await page.locator('[data-mk="print"]').count() === 1, 'Mr Elder celebrates, and it can be printed');
+    /* sentence starters: typing is saved without losing the place */
+    await page.locator('[data-mk="open"][data-id="report"]').click();
+    await page.locator('[data-mk="lvl"][data-id=""]').click(); await page.locator('[data-mk="lvl"][data-id="2"]').click();
+    await page.locator('#mkIntro').click(); await page.locator('[data-mk="ins"][data-for="mkIntro"]').first().click(); await page.keyboard.type('the Victorians.');
+    assert(await page.evaluate(() => document.activeElement.id) === 'mkIntro' && /This report is about the Victorians\./.test(await page.evaluate(() => FabMake.load().victorian.rep.intro)), 'a starter drops in and the typing is saved');
+    await page.locator('#mkS0').click(); await page.locator('.mk-sec [data-mk="ins"][data-for=""]').first().click();
+    assert(/Victorian/.test(await page.locator('#mkS0').inputValue()), 'a word-bank word goes into the box being written in');
+    /* the space timeline slots into the space report */
+    await page.evaluate(() => window.fabOpenExplore('screen-learn', 'space'));
+    await page.locator('.tm-tabs [data-tm="tab"][data-id="make"]').click();
+    assert(await page.locator('.mk-card.done').count() === 1, 'the planets card shows as made');
+    await page.locator('[data-mk="open"][data-id="report"]').click(); await page.locator('[data-mk="lvl"][data-id="3"]').click();
+    assert(await page.locator('.mk textarea').count() === 2 && await page.locator('.mk-word[data-mk="ins"]').count() === 0 && await page.locator('[data-mk="stop"]').count() === 20, 'on my own: headings and boxes, no starters');
+    await page.locator('[data-mk="open"][data-id="paper"]').click();
+    assert(await page.locator('.mk-paper .mk-strip li').count() === 8, 'the planets in order are in the space report');
+    const stars1 = await page.evaluate(() => parseInt(localStorage.getItem('fabworld-pending-local') || '0', 10));
+    assert(stars1 - stars0 === 3, 'a star each for the order, the art and the report, got ' + (stars1 - stars0));
+    await page.evaluate(() => { try{ Object.keys(localStorage).filter(k => /^fab-make-|^fab-passport-/.test(k)).forEach(k => localStorage.removeItem(k)); }catch(e){} showScreen('screen-hub'); });
   });
   await test('Explorer Worlds media: sounds made in the app, credited photos, and real views that stay off until tapped', async () => {
     await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); localStorage.removeItem('fab-explore-real'); localStorage.removeItem('fab-explore-roam'); }catch(e){} window.fabOpenExplore('screen-learn', 'egypt'); });
