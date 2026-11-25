@@ -7,7 +7,9 @@
    A laptop, a tablet and a phone are left exactly as they were.   window.FabBig = { zoom(), pages } */
 (function(){
   'use strict';
-  const PAGES = ['screen-hub', 'screen-games', 'screen-wellbeing', 'screen-eyfs', 'screen-hello', 'screen-goodbye', 'screen-learn', 'screen-me'];
+  /* the menus, Explorer Worlds' chooser and stops, and the games that are drawn as ordinary page parts (no canvas): they grow as one piece */
+  const PAGES = ['screen-hub', 'screen-games', 'screen-wellbeing', 'screen-eyfs', 'screen-hello', 'screen-goodbye', 'screen-learn', 'screen-me',
+    'screen-time', 'screen-c4', 'screen-ttt', 'screen-bingo', 'screen-charades', 'screen-wordle', 'screen-rainbow', 'screen-checkers', 'screen-uno', 'screen-countdown', 'screen-chat', 'screen-fabfaves'];
   const root = document.documentElement;
   let now = 1;
   function set(){
@@ -30,7 +32,10 @@ html.az-on body.lp-path .lp-stage,html.az-on body.lp-path .lp-nav,html.az-on bod
 html.az-on:has(#screen-lesson.active) .bd-tools .bd-tool{font-size:13px!important;line-height:1.15}
 html.az-on:has(#screen-lesson.active) .bd-tools .bd-tool i{font-size:26px!important}`;
   document.head.appendChild(css);
-  PAGES.forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('zoomok'); });
-  set(); window.addEventListener('resize', set);
+  const tag = () => PAGES.forEach(id => { const el = document.getElementById(id); if(el && !el.classList.contains('zoomok')) el.classList.add('zoomok'); });
+  tag(); set(); window.addEventListener('resize', set);
+  /* some pages (Explorer Worlds) are written by their own script a little later */
+  document.addEventListener('DOMContentLoaded', tag); window.addEventListener('load', tag); setTimeout(tag, 1500);
+  document.addEventListener('click', () => setTimeout(tag, 0), true);
   window.FabBig = { zoom:() => now, pages:PAGES };
 })();

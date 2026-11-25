@@ -10,6 +10,7 @@
   const p = (d, f, w) => `<path d="${d}" fill="${f || 'none'}"${w ? ` stroke-width="${w}"` : ''}/>`;
   const c = (x, y, r, f, w) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${f || 'none'}"${w ? ` stroke-width="${w}"` : ''}/>`;
   const r = (x, y, w, h, rx, f, t) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${f || 'none'}"${t ? ` transform="${t}"` : ''}/>`;
+  const e = (x, y, rx, ry, f, t) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f || 'none'}"${t ? ` transform="${t}"` : ''}/>`;
   const dot = (x, y, s) => `<circle cx="${x}" cy="${y}" r="${s || 2.2}" fill="${INK}" stroke="none"/>`;
   const I = {
     sunflower:[0, 45, 90, 135, 180, 225, 270, 315].map(a => `<ellipse cx="24" cy="9.5" rx="5" ry="7" fill="${GOLD}" transform="rotate(${a} 24 24)"/>`).join('') + c(24, 24, 8.5, WOOD),
@@ -42,15 +43,35 @@
     slides:r(6, 8, 36, 24, 3, CREAM) + p('M20 14.5l9 5.5-9 5.5z', ORANGE) + p('M24 32v6M16 42l8-4 8 4', '', 2.8),
     toolbox:r(6, 18, 36, 22, 4, ORANGE) + p('M17 18v-4a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v4', '', 3) + p('M6 27h36', '', 2.6) + r(21, 24, 6, 6, 1.5, GOLD),
     sound:p('M7 19h7l10-8v26l-10-8H7z', CREAM) + p('M30 18c3 3 3 9 0 12M35 13c6 6 6 16 0 22', '', 2.8),
-    fox:p('M8 7l8.5 8.5h15L40 7v15.5L24 42 8 22.5z', MID) + p('M17 25.5l7 9.5 7-9.5', CREAM, 2.4) + dot(18, 20.5) + dot(30, 20.5)
+    mute:p('M7 19h7l10-8v26l-10-8H7z', CREAM) + p('M30 19l10 10M40 19L30 29', '', 2.8),
+    scroll:p('M12 8h22a5 5 0 0 1 5 5v24H17a5 5 0 0 1-5-5z', SAND) + p('M12 8a5 5 0 0 0-5 5v2h5') + p('M39 37a5 5 0 0 1-5 5H17a5 5 0 0 0 5-5', CREAM) + p('M18 17h14M18 23h14M18 29h9', null, 2.2),
+    fox:p('M8 7l8.5 8.5h15L40 7v15.5L24 42 8 22.5z', MID) + p('M17 25.5l7 9.5 7-9.5', CREAM, 2.4) + dot(18, 20.5) + dot(30, 20.5),
+    /* the Games section and Fox Blocks (25 Nov) */
+    code:p('M7 7h22a3 3 0 0 1 3 3v5a3 3 0 0 1-3 3H7z', GOLD) + p('M13 9.5l6 3-6 3z', CREAM, 2) + p('M7 19h32a3 3 0 0 1 3 3v5a3 3 0 0 1-3 3H7z', '#F4A46E') + p('M7 31h18a3 3 0 0 1 3 3v5a3 3 0 0 1-3 3H7z', GLASS),
+    connect4:r(6, 8, 36, 30, 5, GLASS) + c(16, 17, 4.6, ORANGE, 2.4) + c(32, 17, 4.6, GOLD, 2.4) + c(16, 29, 4.6, GOLD, 2.4) + c(32, 29, 4.6, ORANGE, 2.4) + p('M11 38v5M37 38v5'),
+    ttt:p('M19 7v34M31 7v34M7 19h34M7 31h34', null, 2.4) + c(13, 13, 3.4, null, 2.6) + c(25, 25, 3.4, null, 2.6) + p('M33 33l6 6M39 33l-6 6', ORANGE, 2.8),
+    bingo:c(24, 24, 17, ORANGE) + c(24, 24, 9, CREAM, 2.4) + p('M20.5 20h7l-4.5 9', null, 2.6),
+    mask:p('M9 9h30v12c0 11-7 19-15 19S9 32 9 21z', GOLD) + p('M15 18c2.5-2.5 5-2.5 7 0M26 18c2.5-2.5 5-2.5 7 0', null, 2.4) + p('M17 27c4 4.5 10 4.5 14 0', null, 2.6),
+    word:r(3, 15, 13, 15, 2, GRASS) + r(17.5, 15, 13, 15, 2, GOLD) + r(32, 15, 13, 15, 2, CREAM) + p('M7 38h34', null, 2.4),
+    ship:p('M5 27h38l-7 11H12z', WOOD) + p('M14 27V17h15v10', CREAM) + p('M21 17V7l9 5-9 3', ORANGE, 2.4) + p('M5 43c4 2 8 2 12 0s8-2 12 0 8 2 14 0', null, 2.4),
+    globe:c(24, 24, 18, GRASS) + p('M9 32c6-5 10 1 15-4s9-8 14-6', null, 7.5) + `<path d="M9 32c6-5 10 1 15-4s9-8 14-6" fill="none" stroke="${SAND}" stroke-width="3.6"/>` + p('M29 11l4.5 7.5h-9z', ORANGE, 2.2),
+    cards:r(8, 9, 19, 28, 3, CREAM, 'rotate(-10 17 23)') + r(21, 11, 19, 28, 3, GOLD, 'rotate(8 30 25)') + c(30, 25, 4, ORANGE, 2.2),
+    rocket:p('M24 4c8 6 10 16 8 26H16c-2-10 0-20 8-26z', CREAM) + c(24, 17, 4.2, GLASS, 2.4) + p('M16 26l-6 9 7-2M32 26l6 9-7-2', ORANGE, 2.4) + p('M20 34l4 9 4-9', GOLD, 2.4),
+    puck:e(24, 31, 16, 7, WOOD) + p('M8 31v-5M40 31v-5') + e(24, 26, 16, 7, ORANGE) + p('M9 12l7 7M39 12l-7 7', null, 2.4),
+    checkers:e(18, 32, 13, 5.5, INK) + p('M5 32v-4M31 32v-4') + e(18, 28, 13, 5.5, '#6B5141') + e(30, 21, 13, 5.5, CREAM) + p('M17 21v-4M43 21v-4') + e(30, 17, 13, 5.5, CREAM),
+    uno:r(12, 5, 24, 38, 4, ORANGE) + e(24, 24, 8, 13, CREAM, 'rotate(25 24 24)'),
+    letters:r(4, 13, 18, 22, 3, CREAM) + r(26, 13, 18, 22, 3, CREAM) + p('M8.5 30l4.5-12 4.5 12M10.2 26h5.6', null, 2.4) + p('M31 18v12h4.5a3 3 0 0 0 0-6H31h4a3 3 0 0 0 0-6z', null, 2.4),
+    chat:p('M6 9h36v23H20l-9 8v-8H6z', CREAM) + dot(15, 20.5, 2.6) + dot(24, 20.5, 2.6) + dot(33, 20.5, 2.6),
+    wheel:c(24, 21, 16, GOLD) + p('M24 5v32M8 21h32M12.7 9.7l22.6 22.6M35.3 9.7L12.7 32.3', null, 2) + c(24, 21, 4, CREAM, 2.4) + p('M18 45h12l-6-7z', WOOD, 2.4),
+    door:r(13, 5, 22, 38, 3, WOOD) + c(29, 25, 2.2, INK, 0) + p('M8 43h32')
   };
   /* which emoji each drawing stands in for (the selector sign that sometimes follows an emoji is ignored) */
   const MAP = { '🌻':'sunflower', '🎲':'dice', '🌈':'rainbow', '📚':'books', '📋':'canvas', '🎬':'cinema', '🎹':'piano', '🧭':'compass', '🗺':'map', '🙋':'help', '✋':'help', '👋':'wave', '😴':'rest',
     '⬇':'down', '⌨':'keys', '✏':'pencil', '📄':'page', '📃':'page', '⏭':'skip', '🎯':'target', '⭐':'star', '➡':'arrow', '🦊':'fox',
-    '🖍':'highlighter', '🧽':'rubber', '🔤':'text', '🖼':'picture', '🗑':'bin', '📽':'slides', '🧰':'toolbox', '🔊':'sound' };
+    '🖍':'highlighter', '🧽':'rubber', '🔤':'text', '🖼':'picture', '🗑':'bin', '📽':'slides', '🧰':'toolbox', '🔊':'sound', '🔇':'mute', '📜':'scroll' };
   const svg = (k, cls) => I[k] ? `<svg class="fi${cls ? ' ' + cls : ''}" viewBox="0 0 48 48" aria-hidden="true"><g fill="none" stroke="${INK}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">${I[k]}</g></svg>` : '';
   const EMO = '(\\p{Extended_Pictographic})\\uFE0F?', HEAD = new RegExp('^(\\s*)' + EMO + '(\\s*)', 'u'), TAIL = new RegExp('(\\s*)' + EMO + '(\\s*)$', 'u');
-  const WHERE = 'button, button i, .emoji, .screen-title, .lt-card i, .bd-tool i, summary, .pw-mission, .pw-streak span, .pw-sparkles, .pw-phase-tag';
+  const WHERE = 'button, button i, .emoji, .screen-title, .lt-card i, .bd-tool i, summary, .pw-mission, .pw-streak span, .pw-sparkles, .pw-phase-tag, .fw-stats span';
   /* the drawing goes in on its own (no wrapper), so it takes its size from the words it sits with */
   function node(k){ const t = document.createElement('template'); t.innerHTML = svg(k); return t.content.firstChild; }
   function swapText(t){
@@ -61,6 +82,7 @@
   }
   function swap(root){
     root = root || document; let list;
+    try{ root.querySelectorAll('[data-fi]').forEach(el => { if(!el.querySelector('svg')) el.innerHTML = svg(el.dataset.fi); }); }catch(e){}
     try{ list = root.querySelectorAll(WHERE); }catch(e){ return; }
     list.forEach(el => { if(el.closest('.game-frame, [data-noicon]')) return; [...el.childNodes].forEach(n => { if(n.nodeType === 3 && /\p{Extended_Pictographic}/u.test(n.nodeValue)) swapText(n); }); });
   }
@@ -69,13 +91,14 @@
 .emoji > .fi,.lt-card i > .fi,.bd-tool i > .fi{width:1.2em;height:1.2em;vertical-align:middle}
 .pw-mission > .fi{margin-right:.3em}
 .pw-streak span .fi{width:1.5em;height:1.5em}.pw-streak span:not(.on) .fi{opacity:.28}
-.screen-title .fi{width:1.15em;height:1.15em;vertical-align:-.22em}`;
+.screen-title .fi{width:1.15em;height:1.15em;vertical-align:-.22em}
+.sound-btn{display:grid;place-items:center;padding:0}.sound-btn > .fi{width:30px;height:30px}`;
   document.head.appendChild(css);
   /* the pages that are written once */
   const once = () => ['screen-hub', 'screen-games', 'screen-wellbeing', 'screen-eyfs', 'screen-learn'].forEach(id => { const el = document.getElementById(id); if(el) swap(el); });
   /* the pages that redraw themselves: swap again after each redraw */
   function watch(id){ const el = document.getElementById(id); if(!el || !window.MutationObserver) return; let due = 0; new MutationObserver(() => { if(due) return; due = requestAnimationFrame(() => { due = 0; swap(el); }); }).observe(el, { childList:true, subtree:true }); }
-  const start = () => { once(); ['screen-lesson', 'screen-learn', 'screen-board'].forEach(id => { const el = document.getElementById(id); if(el) swap(el); watch(id); }); };
+  const start = () => { once(); ['screen-lesson', 'screen-learn', 'screen-board', 'screen-hub'].forEach(id => { const el = document.getElementById(id); if(el) swap(el); watch(id); }); try{ if(typeof window.soundBtnPaint === 'function') window.soundBtnPaint(); }catch(e){} };
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   window.FabIcon = { svg, swap, names:Object.keys(I) };
 })();

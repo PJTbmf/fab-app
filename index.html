@@ -991,6 +991,20 @@ body.in-world #screen-world .game-frame{ height:calc(100vh - 66px); min-height:5
 .game-frame.fab-full-frame, body.in-world #screen-world .game-frame.fab-full-frame{ position:fixed; inset:0; width:100vw; height:100vh !important; min-height:0 !important; z-index:9000; border-radius:0; background:#FCE6B4; }
 body.fab-world-full{ overflow:hidden; }
 .game-frame.fab-full-frame, body.in-world #screen-world .game-frame.fab-full-frame{ height:100dvh !important; }
+/* Fab Fox World and Fox Blocks are the whole window: no strip above them. Their own Back and Leave buttons are inside them. */
+body.in-world #screen-world .screen-top{ display:none !important; }
+body.in-world #screen-world .game-frame.game-frame, #screen-code.active .code-frame{ position:fixed; inset:0; width:100vw; height:100vh; height:100dvh; min-height:0; border:0; border-radius:0; z-index:8000; display:block; }
+body.in-world #screen-world .game-frame.game-frame{ background:#BFD88E; }
+#screen-code .code-frame{ background:#FFD483; }
+body.in-world, body.in-code{ overflow:hidden; }
+body.in-code .bunting{ display:none; }
+.lc-subject.computing{ background:#2B6E8C; }
+.learn-code-note{ grid-column:1 / -1; background:var(--cream,#FFF6E6); border:3px solid #2B1A12; border-radius:18px 22px 19px 23px / 22px 18px 23px 19px; padding:12px 18px; font-size:1rem; line-height:1.45; }
+.learn-code-note summary{ cursor:pointer; font-weight:700; font-size:1.05rem; }
+.learn-code-note table{ border-collapse:collapse; width:100%; margin:10px 0 6px; }
+.learn-code-note th, .learn-code-note td{ text-align:left; vertical-align:top; padding:6px 8px; border-top:2px solid #E3C9A0; }
+.learn-code-note ul{ margin:0; padding-left:1.1em; }
+.learn-code-note .src{ font-size:.85rem; opacity:.85; margin:6px 0 0; }
 /* Phones held sideways and other short screens: the games fill the window, so every button can be reached. */
 @media (max-height:520px){
   .bunting{ height:34px; }
@@ -1168,23 +1182,24 @@ body.bd-dock .lp-stage, body.bd-dock .lp-nav, body.bd-dock .lp-tips{ max-width:n
     <h1 class="screen-title">🎲 Games</h1>
   </div>
   <div class="hub-grid">
-    <button class="tile" data-go="screen-c4"><span class="emoji">🔴</span><h2>Connect 4</h2><p>Drop your counters and make four in a row</p></button>
-    <button class="tile" data-go="screen-ttt"><span class="emoji">⭕</span><h2>Noughts &amp; Crosses</h2><p>The classic three in a row</p></button>
-    <button class="tile" data-go="screen-bingo"><span class="emoji">🎱</span><h2>Bingo</h2><p>Numbers, animals, emoji and more — up to 4 cards</p></button>
-    <button class="tile" data-go="screen-charades"><span class="emoji">🎭</span><h2>Charades</h2><p>Act it out, no talking allowed!</p></button>
-    <button class="tile" data-go="screen-wordle"><span class="emoji">🟩</span><h2>Word Detective</h2><p>Guess the mystery word</p></button>
-    <button class="tile" data-go="screen-rainbow"><span class="emoji">🌈</span><h2>Rainbow Words</h2><p>Guess the word before the clouds cover the sun</p></button>
-    <button class="tile" data-go="screen-battleships2"><span class="emoji">🚢</span><h2>Battleships</h2><p>Hide your fleet, then hunt for theirs — Gentle to Tricky</p></button>
-    <button class="tile" data-go="screen-world"><span class="emoji">🌍</span><h2>Fab Fox World</h2><p>Build, collect and grow a cosy world with all the foxes</p></button>
-    <button class="tile" data-go="screen-pairs"><span class="emoji">🃏</span><h2>Fab Fox Pairs</h2><p>Turn cards, remember, and match — times tables, words and more</p></button>
-    <button class="tile" data-go="screen-invaders"><span class="emoji">🚀</span><h2>Fab Fox Space Mission</h2><p>A gentle space game: sparkle grumpy clouds into rainbows. Times tables and number bonds too</p></button>
-    <button class="tile" data-go="screen-pinball"><span class="emoji">🦊</span><h2>Fab Fox Pinball</h2><p>Bounce the ball off Fab Fox and the rainbows</p></button>
-    <button class="tile" data-go="screen-shuffleboard"><span class="emoji">🥏</span><h2>Fab Fox Shuffleboard</h2><p>Tap to aim, tap for power, and slide into the 3</p></button>
-    <button class="tile" data-go="screen-checkers"><span class="emoji">⚫⚪</span><h2>Checkers</h2><p>Jump, capture and crown a king</p></button>
-    <button class="tile" data-go="screen-uno"><span class="emoji">🎴</span><h2>Uno</h2><p>Match colours and numbers — first to empty their hand wins</p></button>
-    <button class="tile" data-go="screen-countdown"><span class="emoji">🔤</span><h2>Countdown</h2><p>Letters and numbers rounds against the clock</p></button>
-    <button class="tile" data-go="screen-chat"><span class="emoji">💬</span><h2>Chatter Corner</h2><p>Five decks of talking games — new cards every day</p></button>
-    <button class="tile" data-go="screen-fabfaves"><span class="emoji">🎡</span><h2>Fab Faves Wheel</h2><p>Spin to find out what you all love</p></button>
+    <button class="tile" data-go="screen-c4"><span class="emoji" data-fi="connect4"></span><h2>Connect 4</h2><p>Drop your counters and make four in a row</p></button>
+    <button class="tile" data-go="screen-ttt"><span class="emoji" data-fi="ttt"></span><h2>Noughts &amp; Crosses</h2><p>The classic three in a row</p></button>
+    <button class="tile" data-go="screen-bingo"><span class="emoji" data-fi="bingo"></span><h2>Bingo</h2><p>Numbers, animals, emoji and more — up to 4 cards</p></button>
+    <button class="tile" data-go="screen-charades"><span class="emoji" data-fi="mask"></span><h2>Charades</h2><p>Act it out, no talking allowed!</p></button>
+    <button class="tile" data-go="screen-wordle"><span class="emoji" data-fi="word"></span><h2>Word Detective</h2><p>Guess the mystery word</p></button>
+    <button class="tile" data-go="screen-rainbow"><span class="emoji" data-fi="rainbow"></span><h2>Rainbow Words</h2><p>Guess the word before the clouds cover the sun</p></button>
+    <button class="tile" data-go="screen-battleships2"><span class="emoji" data-fi="ship"></span><h2>Battleships</h2><p>Hide your fleet, then hunt for theirs — Gentle to Tricky</p></button>
+    <button class="tile" data-go="screen-world"><span class="emoji" data-fi="globe"></span><h2>Fab Fox World</h2><p>Build, collect and grow a cosy world with all the foxes</p></button>
+    <button class="tile" data-code-open="" id="gamesCodeBtn"><span class="emoji" data-fi="code"></span><h2>Fox Blocks</h2><p>Snap code blocks together, press Go, and Fab does what they say</p></button>
+    <button class="tile" data-go="screen-pairs"><span class="emoji" data-fi="cards"></span><h2>Fab Fox Pairs</h2><p>Turn cards, remember, and match — times tables, words and more</p></button>
+    <button class="tile" data-go="screen-invaders"><span class="emoji" data-fi="rocket"></span><h2>Fab Fox Space Mission</h2><p>A gentle space game: sparkle grumpy clouds into rainbows. Times tables and number bonds too</p></button>
+    <button class="tile" data-go="screen-pinball"><span class="emoji" data-fi="fox"></span><h2>Fab Fox Pinball</h2><p>Bounce the ball off Fab Fox and the rainbows</p></button>
+    <button class="tile" data-go="screen-shuffleboard"><span class="emoji" data-fi="puck"></span><h2>Fab Fox Shuffleboard</h2><p>Tap to aim, tap for power, and slide into the 3</p></button>
+    <button class="tile" data-go="screen-checkers"><span class="emoji" data-fi="checkers"></span><h2>Checkers</h2><p>Jump, capture and crown a king</p></button>
+    <button class="tile" data-go="screen-uno"><span class="emoji" data-fi="uno"></span><h2>Uno</h2><p>Match colours and numbers — first to empty their hand wins</p></button>
+    <button class="tile" data-go="screen-countdown"><span class="emoji" data-fi="letters"></span><h2>Countdown</h2><p>Letters and numbers rounds against the clock</p></button>
+    <button class="tile" data-go="screen-chat"><span class="emoji" data-fi="chat"></span><h2>Chatter Corner</h2><p>Five decks of talking games — new cards every day</p></button>
+    <button class="tile" data-go="screen-fabfaves"><span class="emoji" data-fi="wheel"></span><h2>Fab Faves Wheel</h2><p>Spin to find out what you all love</p></button>
   </div>
 </section>
 
@@ -1206,6 +1221,10 @@ body.bd-dock .lp-stage, body.bd-dock .lp-nav, body.bd-dock .lp-tips{ max-width:n
 <section id="screen-world" class="screen" aria-label="Fab Fox World">
   <div class="screen-top"><button class="btn-back" data-go="screen-games">← Back</button><h1 class="screen-title">Fab Fox World</h1></div>
   <iframe class="game-frame" data-game="world" title="Fab Fox World" allow="fullscreen"></iframe>
+</section>
+
+<section id="screen-code" class="screen" aria-label="Fox Blocks">
+  <iframe class="code-frame" id="codeFrame" title="Fox Blocks"></iframe>
 </section>
 
 <section id="screen-pairs" class="screen" aria-label="Fab Fox Pairs">
@@ -1968,6 +1987,7 @@ body.bd-dock .lp-stage, body.bd-dock .lp-nav, body.bd-dock .lp-tips{ max-width:n
     <button class="pill-choice" data-subject="Science">Science</button>
     <button class="pill-choice" data-subject="Phonics">Phonics</button>
     <button class="pill-choice" data-subject="Topic">Topic</button>
+    <button class="pill-choice" data-subject="Computing">Computing</button>
   </div>
   <div class="learn-filters learn-years" id="learnYears" aria-label="Choose a year group">
     <button class="pill-choice selected" data-year="all">All years</button>
@@ -2129,7 +2149,7 @@ window.Sound = Sound;
 document.addEventListener('pointerdown', () => Sound.ensure(), { once: true });
 const soundBtn = document.getElementById('soundToggle');
 function soundBtnPaint(){
-  soundBtn.textContent = Sound.enabled ? '🔊' : '🔇';
+  if(window.FabIcon) soundBtn.innerHTML = FabIcon.svg(Sound.enabled ? 'sound' : 'mute'); else soundBtn.textContent = Sound.enabled ? '🔊' : '🔇';
   soundBtn.title = Sound.enabled ? 'Sounds are on — tap to mute' : 'Sounds are off — tap to unmute';
   soundBtn.setAttribute('aria-label', Sound.enabled ? 'Sound is on, tap to mute' : 'Sound is off, tap to turn on');
   soundBtn.classList.remove('pulse'); void soundBtn.offsetWidth; soundBtn.classList.add('pulse');
@@ -2202,6 +2222,24 @@ function fabOverlayGame(key){
   o.querySelector('#fabOverlayBack').onclick = () => closeFabOverlay(true);
   o.querySelector('#fabOverlayBack').focus();
 }
+/* Fab Fox World fills the window. It has its own Leave button (back to the place it was opened from) and its own sound switch. */
+const FAB_HUBS = ['screen-hub', 'screen-games', 'screen-learn', 'screen-wellbeing', 'screen-eyfs'];
+window.fabWorldFill = true;
+function fabLeaveWorld(){ try{ fabWorldFull(false); }catch(e){} showScreen(window.fabWorldFrom || 'screen-hub'); }
+function fabSoundToggle(){ try{ soundBtn.click(); }catch(e){} return !!(window.Sound && Sound.enabled); }
+/* Fox Blocks from the Games section or the Learning Hub: the whole window, with its own Back button (back to where it was opened from).
+   Stars earned here wait under the Fab code and arrive as berries the next time Fab Fox World opens. */
+function fabOpenCode(project){
+  const was = (document.querySelector('.screen.active') || {}).id || 'screen-games';
+  window.fabCodeFrom = FAB_HUBS.includes(was) ? was : 'screen-games';
+  const who = typeof fabLearnerCode === 'function' ? fabLearnerCode() : '';
+  const back = window.fabCodeFrom === 'screen-learn' ? 'learn' : window.fabCodeFrom === 'screen-games' ? 'games' : 'app';
+  showScreen('screen-code');
+  document.getElementById('codeFrame').src = 'code.html?embed=1&back=' + back + (who ? '&learner=' + encodeURIComponent(who) : '') + (project ? '&project=' + encodeURIComponent(project) : '');
+  return true;
+}
+window.fabCodeBack = function(){ showScreen(window.fabCodeFrom || 'screen-games'); return true; };
+document.addEventListener('click', e => { const b = e.target.closest('[data-code-open]'); if(b) fabOpenCode(b.dataset.codeOpen || null); });
 /* Fab Fox World asks for the whole window; the frame simply fills it (no browser permission needed). */
 function fabWorldFull(on){
   const fr = document.querySelector('.game-frame[data-game="world"]'); if(!fr) return false;
@@ -2301,7 +2339,11 @@ function fabGameDoc(html){
   return html.replace('</head>', css + '</head>');
 }
 function showScreen(id){
+  const was = (document.querySelector('.screen.active') || {}).id;
+  if(id === 'screen-world' && ['screen-hub', 'screen-games', 'screen-learn', 'screen-wellbeing', 'screen-eyfs'].includes(was)) window.fabWorldFrom = was;
   $$('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+  document.body.classList.toggle('in-code', id === 'screen-code');
+  if(id !== 'screen-code'){ const cf = document.getElementById('codeFrame'); if(cf && cf.getAttribute('src')) cf.removeAttribute('src'); }
   // Battleships shows two full boards at once — give it more breathing room than the
   // article-width column other screens use, so the boards can sit side by side instead
   // of wrapping to stacked. Scoped to this one screen; nothing else is affected.
@@ -6940,8 +6982,9 @@ function learnRenderList(){
   const yr = Learn.year == null || Learn.year === 'all' ? null : Number(Learn.year);
   const packs = Learn.all().filter(p => (Learn.filter === 'all' || p.subject === Learn.filter) && (yr === null || packYears(p).has(yr)))
     .sort((a,b) => (a.unit||'').localeCompare(b.unit||'') || (a.lesson||0) - (b.lesson||0));
-  if(!packs.length){ list.innerHTML = '<p class="learn-empty">No lessons here yet.</p>'; return; }
-  list.innerHTML = packs.map(p => `
+  const code = (Learn.filter === 'all' || Learn.filter === 'Computing') ? FOX_BLOCKS_CARDS.filter(c => yr === null || c.yrs.includes(yr)) : [];
+  if(!packs.length && !code.length){ list.innerHTML = '<p class="learn-empty">No lessons here yet.</p>'; return; }
+  list.innerHTML = (Learn.filter === 'Computing' ? foxBlocksCards(code) + foxBlocksNote() : '') + packs.map(p => `
     <button class="lesson-card" data-pack="${esc(p.id)}">
       <span class="lc-top"><span class="lc-emoji">${esc(p.emoji || '📘')}</span>
         <span class="lc-subject ${esc(String(p.subject).toLowerCase())}">${esc(p.subject)} · ${esc(p.years)}</span>
@@ -6949,12 +6992,43 @@ function learnRenderList(){
       <h2>${esc(p.title)}</h2>
       <p>${p.unit ? esc(p.unit) + (p.lesson ? ' · Lesson ' + esc(p.lesson) : '') : ''}${p.minutes ? ' · about ' + esc(p.minutes) + ' min' : ''}</p>
       <p>${esc(p.childAim)}</p>
+    </button>`).join('') + (Learn.filter === 'all' ? foxBlocksCards(code) : '');
+}
+/* Computing: Fox Blocks, the coding area. Each project is linked to the National Curriculum and to the closest Oak National Academy units
+   (looked up with the Oak curriculum tools, 25 Nov 2026). Fox Blocks practises these ideas; it does not replace the units. A teacher should check the links. */
+const FOX_BLOCKS_CARDS = [
+  { id:'bush', title:'Fox Blocks: To the bramble bush', years:'Years 1–4', yrs:[1, 2, 3, 4], what:'6 puzzles · sequence, debugging, loops', aim:'Give Fab code to walk to the ripe berries.',
+    nc:['Understand what algorithms are, and that programs follow precise and unambiguous instructions (KS1)', 'Create and debug simple programs (KS1)', 'Use logical reasoning to predict the behaviour of simple programs (KS1)', 'Use sequence and repetition in programs (KS2)'],
+    oak:[['Year 1', 'Creating animations in programs', 'creating-animations-in-programs'], ['Year 2', 'Building sequences in programs', 'building-sequences-in-programs'], ['Year 4', 'Repetition in programs', 'repetition-in-programs']] },
+  { id:'dance', title:'Fox Blocks: Fab’s dance', years:'Years 1–3', yrs:[1, 2, 3], what:'3 puzzles · order matters, loops, my own dance', aim:'Make Fab hop, spin and wiggle, then make up a dance of your own.',
+    nc:['Understand that programs execute by following precise and unambiguous instructions (KS1)', 'Create and debug simple programs (KS1)'],
+    oak:[['Year 1', 'Creating animations in programs', 'creating-animations-in-programs'], ['Year 2', 'Building sequences in programs', 'building-sequences-in-programs']] },
+  { id:'goal', title:'Fox Blocks: Score a goal', years:'Years 4–6', yrs:[4, 5, 6], what:'4 puzzles · repeat until, if and else', aim:'Teach Fab to look before he moves, then kick the ball into the net.',
+    nc:['Use sequence, selection and repetition in programs (KS2)', 'Use logical reasoning to explain how some simple algorithms work (KS2)', 'Design, write and debug programs that accomplish specific goals (KS2)'],
+    oak:[['Year 4', 'Using repetition in programming to create a game', 'using-repetition-in-programming-to-create-a-game'], ['Year 5', 'Exploring selection in physical computing', 'exploring-selection-in-physical-computing'], ['Year 5', 'Using selection in programming to develop a quiz', 'using-selection-in-programming-to-develop-a-quiz']] }];
+function foxBlocksCards(list){
+  return list.map(c => `
+    <button class="lesson-card" data-code="${esc(c.id)}">
+      <span class="lc-top"><span class="lc-emoji" data-fi="code"></span>
+        <span class="lc-subject computing">Computing · ${esc(c.years)}</span></span>
+      <h2>${esc(c.title)}</h2>
+      <p>${esc(c.what)}</p>
+      <p>${esc(c.aim)}</p>
     </button>`).join('');
+}
+function foxBlocksNote(){
+  const row = c => `<tr><td><b>${esc(c.title.replace('Fox Blocks: ', ''))}</b><br>${esc(c.years)}</td><td><ul>${c.nc.map(x => '<li>' + esc(x) + '</li>').join('')}</ul></td>
+    <td><ul>${c.oak.map(o => `<li>${esc(o[0])}: <a href="https://www.thenational.academy/teachers/curriculum/computing-primary/units/${esc(o[2])}" target="_blank" rel="noopener">${esc(o[1])}</a></li>`).join('')}</ul></td></tr>`;
+  return `<details class="learn-code-note"><summary>For teachers: how Fox Blocks links to the computing curriculum</summary>
+    <table><thead><tr><th>Project</th><th>National Curriculum (computing)</th><th>Closest Oak National Academy units</th></tr></thead><tbody>${FOX_BLOCKS_CARDS.map(row).join('')}</tbody></table>
+    <p>Fox Blocks practises these ideas in short, gentle puzzles. It does not replace a unit of teaching. Please check the links before you rely on them: Oak has no published Year 6 programming unit yet, and “repeat until” is linked to the closest units on conditions.</p>
+    <p class="src">Unit titles and curriculum statements from Oak National Academy’s curriculum. Contains public sector information licensed under the Open Government Licence v3.0.</p></details>`;
 }
 pillGroup('learnFilters', d => { Learn.filter = d.subject; learnRenderList(); });
 pillGroup('learnYears', d => { Learn.year = d.year; learnRenderList(); });
 $('#learnList').addEventListener('click', e => {
   const c = e.target.closest('.lesson-card'); if(!c) return;
+  if(c.dataset.code){ fabOpenCode(c.dataset.code); return; }
   const p = Learn.all().find(x => x.id === c.dataset.pack); if(p) learnOpen(p);
 });
 document.addEventListener('click', e => { if(e.target.closest('[data-go="screen-learn"]')) learnRenderList(); });
