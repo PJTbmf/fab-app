@@ -247,7 +247,7 @@
 
   function tabsHTML(w, p){
     const tab = (k, label) => `<button type="button" class="pill-choice ${V.tab === k ? 'selected' : ''}" data-tm="tab" data-id="${k}" aria-pressed="${V.tab === k}">${label}</button>`;
-    return `<div class="tm-tabs">${tab('explore', '🔎 Explore')}${tab('missions', `🎯 Missions <small>${p[w.id].m.length}/3</small>`)}${tab('who', '🗣️ Meet ' + h(w.who.n))}${(w.real || []).length && realOn() ? tab('real', '🌍 See it for real') : ''}<span class="tm-found" role="status">Found ${p[w.id].seen.length} of ${w.spots.length}</span><button type="button" class="pill-choice tm-stopbtn" data-tm="stop">🌙 Stop here</button></div>`;
+    return `<div class="tm-tabs">${tab('explore', '🔎 Explore')}${tab('missions', `🎯 Missions <small>${p[w.id].m.length}/3</small>`)}${tab('who', '🗣️ Meet ' + h(w.who.n))}${(w.real || []).length && realOn() ? tab('real', '🌍 See it for real') : ''}${w.make && window.FabMake ? tab('make', '🎨 Make and do') : ''}<span class="tm-found" role="status">Found ${p[w.id].seen.length} of ${w.spots.length}</span><button type="button" class="pill-choice tm-stopbtn" data-tm="stop">🌙 Stop here</button></div>`;
   }
   function exploreHTML(w){
     const s = w.spots.find(x => x.id === V.hot);
@@ -326,13 +326,13 @@
       ${(w.packs || []).length ? `<li><b>Practise it.</b> ${w.packs.map(k => `<button type="button" class="btn small soft" data-tm="pack" data-id="${k.id}" data-step="${k.step}">${h(k.label)}</button>`).join(' ')}</li>` : ''}
       <li><b>Sounds and photos.</b> The sounds are made by the app to give the idea; they are not recordings. Each photo is free to reuse and has its credit underneath; the full list with links is in <a href="explore/CREDITS.html" target="_blank" rel="noopener">photo credits</a>.</li>
       ${(w.real || []).length ? `<li><b>Real-world views.</b> “See it for real” shows Google’s own Street View photographs at viewpoints we have checked. Children can turn to look around but cannot walk away from the viewpoint or open Google Maps. The photographs show real places, so passers-by may appear (Google blurs faces). Google receives the device’s internet address when a view opens; nothing loads until a place is tapped. <button type="button" class="btn small soft" data-tm="realtoggle">${realOn() ? 'Switch real-world views off on this device' : 'Switch real-world views on for this device'}</button> <button type="button" class="btn small soft" data-tm="roamtoggle" aria-pressed="${roamOn()}">${roamOn() ? 'Free look is on: switch back to arrows only' : 'Teacher screen-share: switch on free look'}</button></li>` : ''}
-      <li><b>No AI chat.</b> ${h(w.who.n)}’s answers are fixed scripts. Children tap a question, or type one of their own: the app matches it to one of the fixed answers, or ${h(w.who.n)} suggests asking you. Typed questions are not saved and are not sent anywhere.</li><li><b>Voices.</b> The app uses the best matching voice on this device (a woman’s, man’s or girl’s voice where the device has one). ⏸️ Pause stops at the end of a sentence, for talking points.</li></ul></details>`;
+      ${w.make ? '<li><b>Make and do.</b> A timeline or ordering task, a design task, and a report at three levels: built with taps (the low-energy way), with sentence starters, or on my own. The child’s timeline and design slot into the report, which can be printed. Their work is saved on this device only. Please check the dates.</li>' : ''}<li><b>No AI chat.</b> ${h(w.who.n)}’s answers are fixed scripts. Children tap a question, or type one of their own: the app matches it to one of the fixed answers, or ${h(w.who.n)} suggests asking you. Typed questions are not saved and are not sent anywhere.</li><li><b>Voices.</b> The app uses the best matching voice on this device (a woman’s, man’s or girl’s voice where the device has one). ⏸️ Pause stops at the end of a sentence, for talking points.</li></ul></details>`;
   }
   function panelHTML(w){
     const p = pass();
     if(V.stop) return stopHTML(w);
     if(V.tab === 'real' && !((w.real || []).length && realOn())) V.tab = 'explore';
-    return tabsHTML(w, p) + `<div class="me-card tm-panel">${V.tab === 'missions' ? missionsHTML(w, p) : V.tab === 'who' ? whoHTML(w, p) : V.tab === 'real' ? realHTML(w) : exploreHTML(w)}</div>` + teachHTML(w);
+    return tabsHTML(w, p) + `<div class="me-card tm-panel">${V.tab === 'missions' ? missionsHTML(w, p) : V.tab === 'who' ? whoHTML(w, p) : V.tab === 'real' ? realHTML(w) : V.tab === 'make' && w.make && window.FabMake ? FabMake.html(w) : exploreHTML(w)}</div>` + teachHTML(w);
   }
 
   function render(){
@@ -349,6 +349,7 @@
     const p = pass();
     box.querySelectorAll('.tm-spot[data-tm="spot"]').forEach(b => { b.classList.toggle('seen', p[w.id].seen.includes(b.dataset.id)); b.classList.toggle('on', V.hot === b.dataset.id && V.tab === 'explore'); });
     q1('#tmPanel').innerHTML = panelHTML(w);
+    if(V.tab === 'make' && w.make && window.FabMake) FabMake.mount(w);
   }
 
   function scrollToSpot(id){
@@ -438,7 +439,7 @@
     const me = p[w.id];
     if(a === 'scroll'){ const st = q1('#tmStreet'); if(st){ const d = Number(id) * st.clientWidth * .6; try{ st.scrollBy({ left:d, behavior:'smooth' }); }catch(err){ st.scrollLeft += d; } } return; }
     if(a === 'spot'){ see(w, id); render(); const pn = q1('#tmPanel'); if(pn) try{ pn.scrollIntoView({ block:'nearest', behavior:'smooth' }); }catch(err){} return; }
-    if(a === 'tab'){ quiet(); V.tab = id; V.act = null; V.note = null; V.real = null; V.own = false; V.miss = ''; V.ownq = ''; if(id === 'who') scrollToSpot(w.who.spot); snd('tick'); render(); return; }
+    if(a === 'tab'){ quiet(); if(id === 'make' && window.FabMake) FabMake.home(); V.tab = id; V.act = null; V.note = null; V.real = null; V.own = false; V.miss = ''; V.ownq = ''; if(id === 'who') scrollToSpot(w.who.spot); snd('tick'); render(); return; }
     if(a === 'say'){ const s = w.spots.find(x => x.id === V.hot); Snd.stop(); if(s) Say.toggle('spot:' + s.id, s.n + '. ' + s.t + ' ' + s.k, 'f'); return; }
     if(a === 'hear'){ const s = w.spots.find(x => x.id === V.hot); Say.stop(); if(s) Snd.play(s.snd); return; }
     if(a === 'photo'){ V.photo = !V.photo; snd('tick'); render(); return; }
@@ -607,6 +608,6 @@ body:has(#screen-time.active) main{max-width:1240px}
     if(tools && !q1('#learnTimeBtn')){ tools.insertAdjacentHTML('beforeend', `<button type="button" class="lt-card" id="learnTimeBtn"><i aria-hidden="true">🧭</i><b>${NAME}</b><span>Rome, Egypt, the Victorians, space</span></button>`); q1('#learnTimeBtn').addEventListener('click', () => { snd('tick'); open('screen-learn'); }); }
   }
   window.fabOpenTime = window.fabOpenExplore = open;
-  window.FabExplore = window.FabTime = { open, add, state:V, pass, worlds:WORLDS, order:ORDER, world:W, sounds:Snd, say:Say, own:Own, svUrl, kit:{ INK, h, wrap, face, person, loaf, column, amphora, roof, cypress } };
+  window.FabExplore = window.FabTime = { open, add, state:V, pass, worlds:WORLDS, order:ORDER, world:W, sounds:Snd, say:Say, own:Own, render, code, snd, svUrl, kit:{ INK, h, wrap, face, person, loaf, column, amphora, roof, cypress } };
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
