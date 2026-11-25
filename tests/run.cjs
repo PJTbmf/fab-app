@@ -510,7 +510,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       out.move = /reach|wiggle|roll|touch|clap|march|flap|row|stretch|shake|breath|nod|move like|waddle|flutter|swing|scratch|sway/.test(document.querySelector('.mv-t').textContent);
       W.closeScene(true);
       W.startMini('workshop'); await new Promise(r => setTimeout(r, 300)); document.querySelector('[data-m="blocks"]').click(); await new Promise(r => setTimeout(r, 200));
-      document.querySelector('[data-tpl="house"]').click(); await new Promise(r => setTimeout(r, 300));
+      document.querySelector('.cadch[data-ch="house"]').click(); await new Promise(r => setTimeout(r, 300));
       const cv = document.getElementById('cad3d'), d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; let orange = 0; for(let i = 0; i < d.length; i += 16) if(d[i] > 180 && d[i + 1] < 120 && d[i + 2] < 80) orange++;
       out.blocks3d = orange > 200;
       return out;
@@ -1239,7 +1239,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       const el = WORLD.scene().el, q = x => el.querySelector(x), chip = t => [...el.querySelectorAll('#stChips button')].find(b => b.textContent === t), boxOf = id => q('.kbox[data-id="' + id + '"]'), fox = q('#kitFox'), layers = () => [...fox.querySelectorAll('img')].map(i => i.dataset.p).join(' > ');
       chip('Hats and hair').click(); await wait(80);
       const out = { items:m.items.length, canvas:m.canvas.width + 'x' + m.canvas.height, cats:[...el.querySelectorAll('#stChips button')].map(b => b.textContent).join('|'), boxes:el.querySelectorAll('.kbox').length, pvHidden:getComputedStyle(q('.pv')).display };
-      out.iconSizes = [...new Set([...el.querySelectorAll('.kbox .kpic')].map(p => { const b = p.getBoundingClientRect(); return Math.round(b.width) + 'x' + Math.round(b.height); }))]; out.iconSrc = [...el.querySelectorAll('.kbox img')].every(i => /^shop\/icons\//.test(i.getAttribute('src'))); out.fit = getComputedStyle(q('.kbox img')).objectFit;
+      out.iconSizes = [...new Set([...el.querySelectorAll('.kbox .kpic')].map(p => { const b = p.getBoundingClientRect(); return Math.round(b.width) + 'x' + Math.round(b.height); }))]; out.iconSrc = [...el.querySelectorAll('.kbox .kpic img')].every(i => /^shop\/icons\//.test(i.getAttribute('src'))); out.fit = getComputedStyle(q('.kbox .kpic img')).objectFit;
       const cs = getComputedStyle(q('.kbox')), ns = getComputedStyle(q('.kname')); out.box = [cs.backgroundColor, cs.borderTopColor, cs.borderTopWidth, cs.borderTopLeftRadius, getComputedStyle(q('.kpic')).backgroundColor].join(' / '); out.name = ns.fontStyle + ' ' + ns.fontFamily.split(',')[0].replace(/["']/g, '');
       boxOf('wizard-hat').click(); await wait(80); out.tryOn = layers(); out.trySaved = Object.keys(S.kit.wear).length; out.buy = q('#stGo').textContent;
       q('#stGo').click(); await wait(80); out.bought = [S.spk, !!S.kit.own['wizard-hat'], S.kit.wear.head, !!boxOf('wizard-hat').querySelector('.ktick.on')].join();
@@ -1261,6 +1261,45 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(r.stack === B + ' > layers/28-star-t-shirt.png > layers/37-tutu.png > layers/07-crown.png' && /Fab took off the tutu to wear the smart suit/.test(r.clash) && r.afterClash === B + ' > layers/34-smart-suit.png > layers/07-crown.png', 'layers go from the lowest z up, and the tutu comes off for the suit: ' + j);
     assert(/Fab took off the satchel to carry the briefcase/.test(r.bag) && /all/.test(r.off) && r.bare === B && r.wearLeft === 0 && r.sprite === '503x735', 'the satchel gives way to the briefcase, everything comes off, and the world gets one stacked picture: ' + j);
     assert(/^Fab’s shop\|Pip’s fur\|/.test(r.tabs), 'Fab’s fur is no longer recoloured: ' + j);
+    await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
+  });
+  await test('Berries are the money, Fab leaves paw prints that fade, and the 3D workshop has challenges that fill the screen', async () => {
+    await page.setViewportSize({ width:1366, height:700 });
+    await page.evaluate(() => { showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await page.$('.game-frame[data-game="world"]')).contentFrame();
+    await fr.waitForFunction(() => !!window.WORLD && WORLD.KIT && WORLD.KIT.ready, null, { timeout:15000 });
+    const r = await fr.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), S = WORLD.S(), emo = /\p{Extended_Pictographic}/u, out = {}; try{ WORLD.closeScene(true); }catch(e){}
+      S.kit = { own:{}, wear:{}, moved:1 }; S.spk = 3; S.cadDone = {}; setTop();
+      const chip = document.getElementById('spk'); out.chip = [!!chip.querySelector('img.berry'), chip.getAttribute('aria-label'), chip.textContent.trim(), (chip.querySelector('img.berry') || {}).naturalWidth > 0].join('|'); out.bry = bry(1) + ',' + bry(2);
+      /* paw prints: walk, see prints, stop, see them go */
+      const key = (t, k) => window.dispatchEvent(new KeyboardEvent(t, { key:k, code:k, bubbles:true })); document.querySelector('canvas').focus(); key('keydown', 'ArrowDown'); await wait(900); out.paws = PAWS.length; out.pawArt = PAWIMG.complete && PAWIMG.naturalWidth > 0; key('keyup', 'ArrowDown'); await wait(2300); out.pawsLater = PAWS.length;
+      /* the shop counts in berries */
+      S.spk = 3; WORLD.mStuff('fab'); await wait(500); let el = WORLD.scene().el; [...el.querySelectorAll('#stChips button')].find(b => b.textContent === 'Clothes').click(); await wait(80);
+      const box = el.querySelector('.kbox[data-id="hoodie"]'); out.price = [!!box.querySelector('.ktag img.berry'), box.getAttribute('aria-label')].join('|'); box.click(); await wait(80); out.need = el.querySelector('#stMsg').textContent + ' / ' + el.querySelector('#stGo').textContent; out.stc = !!el.querySelector('.stc img.berry'); WORLD.closeScene(true);
+      /* the workshop */
+      mCad('blocks'); await wait(400); el = WORLD.scene().el; const box2 = e => e.getBoundingClientRect(), ed = el.querySelector('#cadEd'), v3 = el.querySelector('#cad3d'), side = el.querySelector('.cadside');
+      out.size = [Math.round(box2(ed).width), Math.round(box2(v3).width), Math.round(box2(el).width), Math.round(box2(el).height)]; out.row = box2(side).right <= box2(ed).left + 1 && box2(ed).right <= box2(v3).left + 1 && box2(v3).right <= box2(el).right; out.fits = box2(v3).bottom < box2(el).bottom && box2(el.querySelector('#cadViewBtns')).bottom <= box2(el).bottom;
+      out.chs = [...el.querySelectorAll('.cadch')].map(b => b.dataset.ch).join(); out.icons = [...el.querySelectorAll('.cadb')].filter(b => b.offsetParent).every(b => b.querySelector('svg') && !emo.test(b.textContent));
+      el.querySelector('.cadch[data-ch="steps"]').click(); await wait(200); const goal = el.querySelector('#cadGoal'); out.brief = goal.textContent.slice(0, 400); out.listHidden = el.querySelector('#cadChBox').classList.contains('hide'); out.state0 = JSON.stringify(cadState());
+      const tap = (i, j) => { const r = ed.getBoundingClientRect(), cell = 60; ed.dispatchEvent(new PointerEvent('pointerdown', { clientX:r.left + (30 + i * cell + 30) * r.width / 420, clientY:r.top + (30 + j * cell + 30) * r.height / 420, bubbles:true })); };
+      tap(1, 2); tap(1, 2); await wait(60); out.tooTall = goal.querySelector('.cadstep').textContent; el.querySelector('[data-a="rem"]').click(); tap(1, 2); el.querySelector('[data-a="add"]').click(); tap(1, 3); await wait(60); out.step2 = goal.querySelector('.cadstep').textContent; out.mid = JSON.stringify(cadState());
+      [...goal.querySelectorAll('.cadb')].find(b => /Build this step for me/.test(b.textContent)).click(); await wait(60); const before = S.spk; tap(3, 2); tap(3, 2); tap(3, 2); tap(3, 3); tap(3, 3); tap(3, 3); await wait(120);
+      out.done = JSON.stringify(cadState()); out.gain = S.spk - before; out.won = !!(S.cadDone && S.cadDone.steps); out.next = [...goal.querySelectorAll('.cadnext .cadb')].map(b => b.textContent).join('|'); out.cheer = document.getElementById('cheer').textContent;
+      [...goal.querySelectorAll('.cadnext .cadb')].find(b => /Build it for real/.test(b.textContent)).click(); await wait(80); out.real = (el.querySelector('.cadreal') || {}).textContent || ''; el.querySelector('.cadreal .cadb').click();
+      mCad('draw'); await wait(300); el = WORLD.scene().el; out.draw = [Math.round(box2(el.querySelector('#cadEd')).width), el.querySelectorAll('[data-tpl]').length, [...el.querySelectorAll('.cadb')].filter(b => b.offsetParent).every(b => (b.querySelector('svg') || !b.querySelector('i')) && !emo.test(b.textContent))].join();
+      WORLD.closeScene(true); S.cadDone = {}; return out; });
+    const j = JSON.stringify(r);
+    assert(r.chip === 'true|3 berries in your basket|3|true' && r.bry === '1 berry,2 berries', 'the purse shows Andrew’s berry and counts berries: ' + j);
+    assert(r.paws >= 3 && r.pawArt && r.pawsLater === 0, 'Fab leaves paw prints as he walks and they fade within two seconds: ' + j);
+    assert(r.price === 'true|Hoodie, 6 berries' && /You need 6 berries\. You have 3\./.test(r.need) && /Not enough berries yet/.test(r.need) && r.stc, 'the shop prices and messages are in berries: ' + j);
+    assert(r.size[0] >= 400 && r.size[1] >= 500 && r.row && r.fits && r.icons, 'the 3D workshop uses the screen (side panel, plan, 3D view in a row) with drawn icons: ' + j);
+    assert(r.chs === 'steps,wall,tower,bridge,house,rocket,' && /Dad says/.test(r.brief) && /Step 1 of 3/.test(r.brief) && /Show me the model/.test(r.brief) && /Tired\?/.test(r.brief) && r.listHidden, 'a challenge gives a brief, steps, a model to look at and a low-energy route: ' + j);
+    assert(/too tall/.test(r.tooTall) && /Step 2 of 3/.test(r.step2) && /"done":true/.test(r.done) && r.gain === 2 && r.won && /You built/.test(r.cheer), 'building the model step by step finishes the challenge and earns berries: ' + j);
+    assert(/Keep it in My makes\|Make it your own\|Build it for real\|Next challenge/.test(r.next) && /You will need/.test(r.real), '“What next?” offers four ways on, and the real-life steps open: ' + j);
+    assert(parseInt(r.draw) >= 400 && /,6,true$/.test(r.draw), 'Draw it in 3D fills the screen too: ' + j);
+    await page.setViewportSize({ width:1800, height:900 }); await page.waitForTimeout(300);
+    const big = await fr.evaluate(async () => { mCad('blocks'); await new Promise(res => setTimeout(res, 400)); const el = WORLD.scene().el, w = el.querySelector('#cadEd').getBoundingClientRect().width, w3 = el.querySelector('#cad3d').getBoundingClientRect().width; WORLD.closeScene(true); return [Math.round(w), Math.round(w3)]; });
+    assert(big[0] >= 540 && big[1] >= 660, 'on a big screen the plan and the 3D view grow: ' + big);
     await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
   });
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
