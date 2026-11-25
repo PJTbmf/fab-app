@@ -298,16 +298,27 @@
     if(v.localService === false) s += 4;
     return s;
   }
-  function bestVoices(){ try{ const vs = (window.speechSynthesis && speechSynthesis.getVoices()) || []; return vs.map(v => ({ v, s:voiceScore(v) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s).map(x => x.v); }catch(e){ return []; } }
+  /* Read to me is Miss Bell's voice, so a man's voice is only ever the last resort (when the device has nothing else in English). */
+  const MALE_VOICE = /\b(Daniel|Arthur|Oliver|Ryan|Thomas|George|Male|Fred|Albert|Ralph|Junior|Grandpa|Rocko|Eddy|Reed|Alex|Aaron|Bruce|David|Mark|James|Guy|Brian|Liam|Noah|Elliot|Alfie|Ethan|Tom|Lee|Rishi|Gordon|William|Nathan|Evan|Christopher|Eric|Roger|Steffan|Andrew|Davis|Jason|Tony|Connor|Duncan|Mitchell|Prabhat|Sam|Luke|Wayne|Abeo|Chilemba|Elimu|James)\b/i;
+  function isMaleVoice(v){ return MALE_VOICE.test(String((v && v.name) || '')); }
+  function bestVoices(){ try{ const vs = (window.speechSynthesis && speechSynthesis.getVoices()) || []; const all = vs.map(v => ({ v, s:voiceScore(v) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s).map(x => x.v), women = all.filter(v => !isMaleVoice(v)); return women.length ? women : all; }catch(e){ return []; } }
   function chosenVoice(){ const vs = bestVoices(); let want = null; try{ want = localStorage.getItem(VOICE_KEY); }catch(e){} return vs.find(v => v.name === want) || vs[0] || null; }
   function voiceLabel(v){ const n = String(v.name || 'Voice').replace(/^(Microsoft|Google|Apple)\s+/i, '').replace(/\s*[-(].*$/, '').replace(/\bOnline\b/i, '').trim(); return n || 'Voice'; }
   function readAloud(text, voice){
     try{ const sp = window.speechSynthesis; if(!sp || !window.SpeechSynthesisUtterance) return false; sp.cancel();
-      const u = new SpeechSynthesisUtterance(text), v = voice || chosenVoice();
-      if(v){ u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
-      u.rate = .9; u.pitch = v && /Maisie/i.test(v.name) ? 1 : 1.08;
-      sp.speak(u); return true; }catch(e){ return false; }
+      const go = () => { try{
+        const u = new SpeechSynthesisUtterance(text), v = voice || chosenVoice();
+        if(v){ u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
+        u.rate = .9; u.pitch = v && /Maisie/i.test(v.name) ? 1 : 1.08;
+        sp.speak(u); }catch(e){} };
+      /* Browsers load their voices a moment after the page opens. Speaking before they arrive falls back to the device's default voice, which is often a man's, so wait briefly for the list. */
+      let have = 0; try{ have = sp.getVoices().length; }catch(e){}
+      if(voice || have) go();
+      else { let done = false; const once = () => { if(done) return; done = true; go(); }; try{ sp.addEventListener('voiceschanged', once, { once:true }); }catch(e){} setTimeout(once, 600); }
+      return true; }catch(e){ return false; }
   }
+  /* Ask for the voice list as soon as the app opens, so it is ready before the first tap. */
+  try{ if(window.speechSynthesis){ speechSynthesis.getVoices(); speechSynthesis.addEventListener && speechSynthesis.addEventListener('voiceschanged', () => { try{ speechSynthesis.getVoices(); }catch(e){} }); } }catch(e){}
   /* A small voice chooser: up to five of the best voices on this device, each one says hello when tapped. */
   function voicePickerHTML(){
     const vs = bestVoices().slice(0, 5); if(!vs.length) return '<p class="hint">This device has no reading voice. Read to me will not show.</p>';
@@ -323,7 +334,7 @@
     }));
     try{ if(window.speechSynthesis && !wireVoices.hooked){ wireVoices.hooked = true; speechSynthesis.addEventListener('voiceschanged', () => { try{ rerender && rerender(); }catch(e){} }); } }catch(e){}
   }
-  window.FabVoice = { bestVoices, chosenVoice, voiceScore, voiceLabel };
+  window.FabVoice = { bestVoices, chosenVoice, voiceScore, voiceLabel, isMaleVoice };
   function sayBtn(label, fn){ const b = document.createElement('button'); b.type = 'button'; b.className = 'say-btn'; b.textContent = '🔊'; b.setAttribute('aria-label', label); b.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); fn(); }); return b; }
   function addSay(root){
     if(!window.speechSynthesis) return;
