@@ -1,6 +1,7 @@
 /* Fab "proud page": the template for a child's finished piece of work, anywhere in the Learning Hub.
    A page a child can be proud of and print: a coloured band, a big title, the introduction as a lead, each part on its own card with its
-   heading on a plaque, pictures kept in proportion beside the words they belong to, a "Did you know?" burst and a finished seal.
+   heading on a plaque, pictures kept in proportion beside the words they belong to, a "Did you know?" burst, a finished seal,
+   and the charity's own marks: the #bemorefab rainbow and Fab Fox saying he is proud (Fab is the "you do" friend, so he belongs on a child's own work).
    It follows the Fab Fox World style rules: flat warm colour, thick ink outline, a little wonky, italic serif on plaques, no shadows.
 
    Use:  FabProud.page({
@@ -11,7 +12,8 @@
                    { h:'My mosaic', pic:{ src, alt, cap } },              // a picture on its own card
                    { h:'In order', html:'<ol>…</ol>', wide:true } ],      // anything else (a timeline, a mind map); wide = full width
            fact:{ label:'Did you know?', text:'…' },
-           made:'Made in Explorer Worlds', seal:'Finished!', cls:'extra classes for the article' })
+           made:'Made in Explorer Worlds', seal:'Finished!', cheer:'I’m proud of you!',   // what Fab says; fab:false leaves him off
+           cls:'extra classes for the article' })
    Text is escaped here; html and pic.html are trusted markup from the app itself.   window.FabProud */
 (function(){
   'use strict';
@@ -50,15 +52,24 @@
 .proud .proud-body ol.mk-strip{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin:0}
 .proud .proud-fact{display:flex;gap:16px;align-items:center;background:var(--pb);border:4px solid var(--ink);border-radius:26px 18px 28px 20px / 18px 26px 20px 28px;padding:14px 22px;margin:30px auto 4px;max-width:44em;transform:rotate(-.6deg);font-size:clamp(1.1rem,1.7vw,1.3rem);line-height:1.45}
 .proud-fact svg{flex:none;width:56px;height:56px}.proud-fact b{display:block;font:italic 700 1.1em Aleo,Georgia,serif}
-.proud-foot{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:16px}
-.proud .proud-made{font-size:.95rem;margin:0;opacity:.85;text-align:left}
-.proud-seal{display:flex;align-items:center;gap:8px;font:italic 700 clamp(1rem,1.5vw,1.2rem) Aleo,Georgia,serif;transform:rotate(-3deg)}.proud-seal svg{width:64px;height:64px}
+.proud-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-top:20px}
+.proud-brand{display:flex;align-items:center;gap:12px;min-width:0;padding-bottom:6px;text-align:left}.proud-brand img{width:clamp(54px,7vw,84px);height:auto;flex:none}
+.proud-brand b{display:block;font-family:var(--disp,'BMF Display',Aleo,Georgia,serif);font-size:clamp(1.15rem,2vw,1.5rem);color:#FE4D02;line-height:1.1}
+.proud .proud-made{font-size:.95rem;margin:2px 0 0;opacity:.85;text-align:left}
+.proud-cheer{display:flex;align-items:flex-end;gap:10px;flex:none}
+.proud-seal{display:flex;flex-direction:column;align-items:center;gap:2px;font:italic 700 clamp(.95rem,1.4vw,1.15rem) Aleo,Georgia,serif;transform:rotate(-4deg);padding-bottom:8px}.proud-seal svg{width:64px;height:64px}
+.proud-say{position:relative;align-self:center;background:#fff;border:3px solid var(--ink);border-radius:18px 22px 18px 20px;padding:6px 16px 7px;font:italic 700 clamp(1rem,1.6vw,1.25rem) Aleo,Georgia,serif;transform:rotate(-1.5deg);margin-bottom:34px}
+.proud-say::after{content:'';position:absolute;right:-13px;bottom:10px;width:16px;height:16px;background:#fff;border-right:3px solid var(--ink);border-bottom:3px solid var(--ink);transform:rotate(-45deg)}
+.proud .proud-fab{width:clamp(74px,9vw,112px);margin:0 0 -4px;filter:none}
+@media (max-width:560px){.proud-foot{flex-direction:column;align-items:center}.proud-brand{align-self:flex-start}}
 @media (max-width:700px){.proud-grid{grid-template-columns:1fr}.proud-sec.haspic{grid-template-columns:1fr}.proud-sec.haspic .proud-pic{width:min(100%,260px);margin:0 auto}}
 @media print{.proud.proud{max-width:none;border-width:3px}body.mk-printing .proud.mk-paper{border:3px solid #2B1A12}.proud-sec,.proud-fact,.proud-pic,.proud-foot{break-inside:avoid}.proud-grid{gap:26px 18px}}`;
   document.head.appendChild(css);
 
   const STAR = '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5l7.6 16 17.4 2.2-12.8 12.2 3.3 17.4L32 44.4 16.5 52.8l3.3-17.4L7 23.2 24.4 21z" fill="#FFF6E6" stroke="#2B1A12" stroke-width="3.2" stroke-linejoin="round"/></svg>';
   const SEAL = '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 3l5.2 6.4 7.9-2.5 1.9 8.1 8.1 1.9-2.5 7.9L59 32l-6.4 5.2 2.5 7.9-8.1 1.9-1.9 8.1-7.9-2.5L32 61l-5.2-6.4-7.9 2.5-1.9-8.1-8.1-1.9 2.5-7.9L5 32l6.4-5.2-2.5-7.9 8.1-1.9 1.9-8.1 7.9 2.5z" fill="var(--pa)" stroke="#2B1A12" stroke-width="2.6" stroke-linejoin="round"/><path d="M32 17l4 8.3 9.1 1.2-6.7 6.3 1.7 9-8.1-4.4-8.1 4.4 1.7-9-6.7-6.3 9.1-1.2z" fill="var(--pb)" stroke="#2B1A12" stroke-width="2.2" stroke-linejoin="round"/></svg>';
+  /* the charity's rainbow, borrowed from the app's own heading so the page carries the brand without another copy of the picture */
+  const rainbow = () => { try{ const im = document.querySelector('img.rainbow-accent'); return im && im.src ? `<img src="${im.src}" alt="">` : ''; }catch(e){ return ''; } };
   const picHTML = p => `<figure class="proud-pic mk-fig">${p.html || `<img src="${p.src}" alt="${esc(p.alt || '')}">`}${p.cap ? `<figcaption>${esc(p.cap)}</figcaption>` : ''}</figure>`;
   function card(c){
     const head = c.h ? `<h3>${esc(c.h)}</h3>` : '';
@@ -75,7 +86,8 @@
       <header class="proud-head">${o.kicker ? `<span class="proud-kicker">${esc(o.kicker)}</span>` : ''}<h2 class="proud-title"><span>${esc(o.title || '')}</span></h2>${o.lead ? `<p class="proud-lead mk-intro">${esc(o.lead)}</p>` : ''}</header>
       ${cards.length ? `<div class="proud-grid">${cards.map(card).join('')}</div>` : ''}
       ${o.fact && o.fact.text ? `<aside class="proud-fact mk-dyk">${STAR}<div><b>${esc(o.fact.label || 'Did you know?')}</b>${esc(o.fact.text)}</div></aside>` : ''}
-      <footer class="proud-foot"><p class="proud-made mk-by">${esc(o.made || '')}</p><div class="proud-seal">${SEAL}<span>${esc(o.seal || 'Finished!')}</span></div></footer>
+      <footer class="proud-foot"><div class="proud-brand">${rainbow()}<div><b>#bemorefab</b><p class="proud-made mk-by">${esc(o.made || '')}</p></div></div>
+        <div class="proud-cheer"><div class="proud-seal">${SEAL}<span>${esc(o.seal || 'Finished!')}</span></div>${o.fab === false ? '' : `<span class="proud-say">${esc(o.cheer || 'I’m proud of you!')}</span><span class="fab-char fab proud-fab" role="img" aria-label="Fab Fox"></span>`}</div></footer>
       <div class="proud-band foot" aria-hidden="true"></div></article>`;
   }
   window.FabProud = { page, themes:THEMES };

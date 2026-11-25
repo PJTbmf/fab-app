@@ -13,8 +13,8 @@
   const KEY = () => 'fab-make-' + X.code();
   const load = () => { try{ return JSON.parse(localStorage.getItem(KEY()) || '{}') || {}; }catch(e){ return {}; } };
   const save = d => { try{ localStorage.setItem(KEY(), JSON.stringify(d)); }catch(e){} };
-  const mine = (d, id) => { const m = d[id] = d[id] || {}; m.rep = m.rep || {}; m.map = m.map || []; m.art = m.art || ''; m.png = m.png || ''; return m; };
-  const M = { view:'home', seq:null, note:null, col:1, grid:null, pairs:null, quiz:null, rstep:0, last:'' };
+  const mine = (d, id) => { const m = d[id] = d[id] || {}; m.rep = m.rep || {}; m.map = m.map || []; m.notes = m.notes || {}; m.art = m.art || ''; m.png = m.png || ''; return m; };
+  const M = { view:'home', seq:null, note:null, col:1, grid:null, pairs:null, quiz:null, rstep:0, last:'', sel:'' };
   const star = () => { try{ fabWorldAward(1); }catch(e){} X.snd('jingle'); };
   const sentences = t => (String(t).match(/[^.!?]+[.!?]+/g) || [String(t)]).map(x => x.trim());
   const shuffle = a => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(v => v[1]);
@@ -108,18 +108,40 @@
   function startArt(w, me){ const a = w.make.art, n = a.W * a.H; M.grid = me.art && me.art.length === n ? me.art : '0'.repeat(n); M.col = 1; M.note = null; }
 
   /* ---------- 🕸️ mind map ---------- */
-  function mapSVG(w, ids){
-    const n = ids.length, cx = 450, cy = 260;
-    const nodes = ids.map((id, i) => { const s = w.spots.find(x => x.id === id), a = -Math.PI / 2 + i * 2 * Math.PI / Math.max(n, 1); return { s, x:cx + Math.cos(a) * 310, y:cy + Math.sin(a) * 190 }; });
-    return `<svg class="mk-map" viewBox="-60 0 1020 520" role="img" aria-label="Mind map about ${h(w.n)}: ${nodes.map(o => h(o.s.n)).join(', ') || 'no ideas yet'}">
-      ${nodes.map(o => `<line x1="${cx}" y1="${cy}" x2="${o.x.toFixed(0)}" y2="${o.y.toFixed(0)}" stroke="#2B1A12" stroke-width="4" stroke-linecap="round"/>`).join('')}
-      <ellipse cx="${cx}" cy="${cy}" rx="150" ry="58" fill="#FFD483" stroke="#2B1A12" stroke-width="4"/><text x="${cx}" y="${cy + 9}" text-anchor="middle" font-size="27" font-weight="800" fill="#2B1A12">${h(w.n)}</text>
-      ${nodes.map(o => `<g><rect x="${(o.x - 138).toFixed(0)}" y="${(o.y - 34).toFixed(0)}" width="276" height="68" rx="20" fill="#fff" stroke="#2B1A12" stroke-width="4"/><text x="${o.x.toFixed(0)}" y="${(o.y + 8).toFixed(0)}" text-anchor="middle" font-size="22" font-weight="700" fill="#2B1A12">${o.s.e} ${h(o.s.n)}</text></g>`).join('')}</svg>`;
+  function endDot(t){ t = String(t || '').trim(); return !t || /[.!?…]$/.test(t) ? t : t + '.'; }
+  /* a report part that starts from the mind map: facts ticked on the map are ticked here, and the child's own thoughts come too */
+  function secFor(w, me, sid, keep){ const sp = w.spots.find(x => x.id === sid), ns = (me.notes && me.notes[sid]) || [], sen = sp ? sentences(sp.t) : [];
+    return { id:sid, text:keep != null ? keep : ns.filter(n => n.own).map(n => endDot(n.t)).join(' '), pick:ns.filter(n => !n.own).map(n => sen.indexOf(n.t)).filter(k => k >= 0), own:ns.filter(n => n.own).map(n => n.t) }; }
+  function wrap2(t, max){ const out = ['']; String(t).split(/\s+/).forEach(wd => { const L = out[out.length - 1]; if(!L) out[out.length - 1] = wd; else if((L + ' ' + wd).length <= max) out[out.length - 1] = L + ' ' + wd; else out.push(wd); });
+    if(out.length > 2){ const rest = out.slice(1).join(' '); out.length = 2; out[1] = rest.length > max ? rest.slice(0, max - 1).replace(/\s+\S*$/, '') + '…' : rest; } return out; }
+  /* The mind map: the topic in the middle, ideas to the left and right, and up to two facts or thoughts hanging off each idea.
+     o.edit makes each idea a button (tap to add to it); o.sel is the idea being added to. */
+  function mapSVG(w, ids, notes, o){
+    notes = notes || {}; o = o || {}; const any = !!o.edit || ids.some(id => (notes[id] || []).length), INK = '#2B1A12';
+    const R = [], L = []; ids.forEach((id, i) => (i % 2 ? L : R).push(id));
+    const rows = Math.max(R.length, L.length, 1), W = any ? 1620 : 1040, H = Math.max(any ? 250 : 200, rows * 190 + 40), cx = W / 2, cy = H / 2;
+    const place = (arr, side) => arr.map((id, i) => ({ id, s:w.spots.find(x => x.id === id), side, x:cx + side * 335, y:cy + (i - (arr.length - 1) / 2) * 190, ns:(notes[id] || []).slice(0, 2) }));
+    const nodes = place(R, 1).concat(place(L, -1)).filter(n => n.s), at = (n, j) => ({ x:n.x + n.side * 318, y:n.y + (j - (n.ns.length - 1) / 2) * 80 });
+    const label = nodes.map(n => n.s.n + (n.ns.length ? ' (' + n.ns.map(x => x.t).join(' ') + ')' : '')).join(', ') || 'no ideas yet';
+    return `<svg class="mk-map${any ? ' big' : ''}" viewBox="0 0 ${W} ${H}" role="${o.edit ? 'group' : 'img'}" aria-label="Mind map about ${h(w.n)}: ${h(label)}">
+      ${nodes.map(n => `<line x1="${cx}" y1="${cy}" x2="${n.x}" y2="${n.y}" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>` + n.ns.map((x, j) => { const p = at(n, j); return `<line x1="${n.x + n.side * 140}" y1="${n.y}" x2="${p.x - n.side * 152}" y2="${p.y}" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`; }).join('')).join('')}
+      <ellipse cx="${cx}" cy="${cy}" rx="160" ry="60" fill="#FFD483" stroke="${INK}" stroke-width="4"/><text x="${cx}" y="${cy + 10}" text-anchor="middle" font-size="29" font-weight="800" fill="${INK}">${h(w.n)}</text>
+      ${nodes.map(n => `<g${o.edit ? ` class="mk-node" data-mk="mapsel" data-id="${n.id}" role="button" tabindex="0" aria-pressed="${o.sel === n.id}" aria-label="${h(n.s.n)}: add a fact or a thought"` : ''}><rect x="${n.x - 140}" y="${n.y - 37}" width="280" height="74" rx="22" fill="${o.sel === n.id ? '#FFD483' : '#fff'}" stroke="${INK}" stroke-width="${o.sel === n.id ? 6 : 4}"/><text x="${n.x}" y="${n.y + 9}" text-anchor="middle" font-size="${n.s.n.length > 19 ? 21 : 24}" font-weight="700" fill="${INK}">${n.s.e} ${h(n.s.n)}</text>${o.edit && n.ns.length < 2 ? `<circle cx="${n.x + n.side * 140}" cy="${n.y - 37}" r="18" fill="#F0B913" stroke="${INK}" stroke-width="3"/><text x="${n.x + n.side * 140}" y="${n.y - 28}" text-anchor="middle" font-size="28" font-weight="800" fill="${INK}">+</text>` : ''}</g>`
+        + n.ns.map((x, j) => { const p = at(n, j), ls = wrap2(x.t, 25); return `<g><rect x="${p.x - 152}" y="${p.y - 35}" width="304" height="70" rx="18" fill="${x.own ? '#CFE7F2' : '#FFF6E6'}" stroke="${INK}" stroke-width="3"/>${ls.map((t, k) => `<text x="${p.x}" y="${p.y + (ls.length === 1 ? 7 : k ? 23 : -4)}" text-anchor="middle" font-size="21" font-weight="600" fill="${INK}">${h(t)}</text>`).join('')}</g>`; }).join('')).join('')}</svg>`;
   }
   function mapHTML(w, me){
-    return `<h3 class="mk-h">🕸️ Make a mind map</h3><p class="mk-ask">A mind map gathers your ideas before you write. Tap up to six things you know about. Tap again to take one away.</p>
+    const sel = me.map.includes(M.sel) ? M.sel : '', sp = sel && w.spots.find(x => x.id === sel), ns = sel ? (me.notes[sel] || []) : [], facts = sp ? sentences(sp.t) : [];
+    const panel = sp ? `<section class="mk-sec mk-noteadd" aria-label="Add to ${h(sp.n)}"><h4><span aria-hidden="true">${sp.e}</span> Add to “${h(sp.n)}”</h4>
+        ${ns.length ? `<ul class="mk-notes">${ns.map((n, i) => `<li><span>${h(n.t)}</span> <button type="button" class="mk-link" data-mk="notedel" data-id="${i}" aria-label="Take away: ${h(n.t)}">take away</button></li>`).join('')}</ul>` : ''}
+        ${ns.length >= 2 ? '<p class="hint">Two is plenty for one idea. Tap another idea on your map.</p>' : `<p class="mk-ask">Tap a fact you remember, or write a thought of your own.</p>
+        <div class="mk-picks">${facts.map((t, i) => ns.some(n => n.t === t) ? '' : `<button type="button" class="mk-pick" data-mk="notefact" data-id="${i}">${h(t)}</button>`).join('')}</div>
+        <div class="mk-noterow"><label class="sr-only" for="mkNote">My own fact or thought about ${h(sp.n)}</label><input id="mkNote" class="mk-in" maxlength="90" placeholder="My own fact or thought" autocomplete="off"><button type="button" class="btn small leaf" data-mk="noteown">➕ Add mine</button></div>
+        ${chips(['I know that', 'I wonder why', 'It was used for', 'I like this because'], 'mkNote')}<p class="hint">Write about the topic. Please do not type names.</p>`}</section>`
+      : (me.map.length ? '<p class="mk-ask mk-nudge">👆 Tap an idea on your map to add a fact or a thought to it.</p>' : '');
+    return `<h3 class="mk-h">🕸️ Make a mind map</h3><p class="mk-ask">A mind map gathers your ideas before you write. First tap up to six things you know about. Then tap an idea on your map and add a fact or a thought to it.</p>
       <div class="mk-words" role="group" aria-label="Things to add to the mind map">${w.spots.map(s => `<button type="button" class="mk-word ${me.map.includes(s.id) ? 'sel' : ''}" data-mk="mapadd" data-id="${s.id}" aria-pressed="${me.map.includes(s.id)}"><span aria-hidden="true">${s.e}</span> ${h(s.n)}</button>`).join('')}</div>
-      ${mapSVG(w, me.map)}
+      ${mapSVG(w, me.map, me.notes, { edit:true, sel })}
+      ${panel}
       <div class="tm-notebox" role="status">${note(M.note)}</div>
       <div class="choice-row tm-row"><button type="button" class="btn small leaf" data-mk="mapdone">⭐ I’ve finished</button>${me.mapDone ? toReport : ''}${back}</div>`;
   }
@@ -130,7 +152,7 @@
   function repState(w, me){ const r = me.rep; r.lvl = r.lvl || ''; r.title = r.title == null ? w.make.report.title : r.title; r.intro = r.intro || ''; r.dyk = r.dyk || ''; r.s = r.s || [{ id:'', text:'', pick:[] }, { id:'', text:'', pick:[] }]; r.ipick = r.ipick == null ? -1 : r.ipick; r.dpick = r.dpick || ''; return r; }
   function repText(w, r){
     const spot = id => w.spots.find(x => x.id === id), one = r.lvl === '1';
-    const secs = r.s.map(x => { const sp = spot(x.id); if(!sp) return null; const sen = sentences(sp.t); return { h:sp.n, t:one ? x.pick.slice().sort().map(i => sen[i]).filter(Boolean).join(' ') : (x.text || '').trim() }; }).filter(Boolean);
+    const secs = r.s.map(x => { const sp = spot(x.id); if(!sp) return null; const sen = sentences(sp.t); return { h:sp.n, t:one ? x.pick.slice().sort().map(i => sen[i]).filter(Boolean).concat((x.own || []).map(endDot)).join(' ') : (x.text || '').trim() }; }).filter(Boolean);
     const dsp = spot(r.dpick);
     return { title:(r.title || '').trim(), intro:one ? (w.make.report.intro[r.ipick] || '') : (r.intro || '').trim(), secs, dyk:one ? (dsp ? dsp.k : '') : (r.dyk || '').trim().replace(/^did you know(\s+that)?[,:]?\s*/i, '').replace(/^./, c => c.toUpperCase()) };
   }
@@ -148,10 +170,11 @@
     const one = r.lvl === '1', two = r.lvl === '2', st = Math.max(0, Math.min(5, M.rstep));
     const pickStop = n => `<p class="mk-ask">What is this part about? Choose one.</p><div class="mk-words" role="group" aria-label="Choose what part ${n + 1} is about">${w.spots.map(s => `<button type="button" class="mk-word ${r.s[n].id === s.id ? 'sel' : ''}" data-mk="stop" data-n="${n}" data-id="${s.id}" ${r.s[1 - n].id === s.id ? 'disabled' : ''}><span aria-hidden="true">${s.e}</span> ${h(s.n)}</button>`).join('')}</div>`;
     const sec = n => { const sp = w.spots.find(x => x.id === r.s[n].id); if(!sp) return `<section class="mk-sec"><h4>Part ${n + 1}: choose a subheading</h4>${pickStop(n)}</section>`;
-      const sen = sentences(sp.t);
+      const sen = sentences(sp.t), mm = (me.notes[sp.id] || []), mine2 = mm.filter(x => x.own).map(x => x.t);
+      const fromMap = one ? (mine2.length ? `<p class="mk-ask">From your mind map:</p><div class="mk-picks">${mine2.map(t => `<button type="button" class="mk-pick ${(r.s[n].own || []).includes(t) ? 'sel' : ''}" data-mk="ownpick" data-n="${n}" data-t="${h(t)}" aria-pressed="${(r.s[n].own || []).includes(t)}">✏️ ${h(t)}</button>`).join('')}</div>` : '') : (mm.length ? `<p class="hint">From your mind map: tap one to add it.</p>${chips(mm.map(x => endDot(x.t)), 'mkS' + n)}` : '');
       return `<section class="mk-sec"><h4>${h(sp.n)} <button type="button" class="mk-link" data-mk="stop" data-n="${n}" data-id="">change</button></h4>
-        ${one ? `<p class="mk-ask">Tap the facts you want in this part.</p><div class="mk-picks">${sen.map((t, i) => `<button type="button" class="mk-pick ${r.s[n].pick.includes(i) ? 'sel' : ''}" data-mk="pick" data-n="${n}" data-id="${i}" aria-pressed="${r.s[n].pick.includes(i)}">${h(t)}</button>`).join('')}</div>`
-          : `${two ? `<p class="mk-fact"><b>Fact card:</b> ${h(sp.t)}</p>${chips(['One interesting fact is that', 'It was used for', 'People', 'I was surprised that'], 'mkS' + n)}` : ''}<label class="sr-only" for="mkS${n}">Write about ${h(sp.n)}</label><textarea id="mkS${n}" class="mk-ta" data-mkf="s${n}" rows="4" maxlength="600" placeholder="Write your facts in your own words.">${h(r.s[n].text)}</textarea>${two ? `<p class="hint">Word bank: tap a word to add it.</p>${chips(k.words, 'mkS' + n)}` : ''}`}</section>`; };
+        ${one ? `<p class="mk-ask">Tap the facts you want in this part.</p><div class="mk-picks">${sen.map((t, i) => `<button type="button" class="mk-pick ${r.s[n].pick.includes(i) ? 'sel' : ''}" data-mk="pick" data-n="${n}" data-id="${i}" aria-pressed="${r.s[n].pick.includes(i)}">${h(t)}</button>`).join('')}</div>${fromMap}`
+          : `${two ? `<p class="mk-fact"><b>Fact card:</b> ${h(sp.t)}</p>${chips(['One interesting fact is that', 'It was used for', 'People', 'I was surprised that'], 'mkS' + n)}` : ''}<label class="sr-only" for="mkS${n}">Write about ${h(sp.n)}</label><textarea id="mkS${n}" class="mk-ta" data-mkf="s${n}" rows="4" maxlength="600" placeholder="Write your facts in your own words.">${h(r.s[n].text)}</textarea>${fromMap}${two ? `<p class="hint">Word bank: tap a word to add it.</p>${chips(k.words, 'mkS' + n)}` : ''}`}</section>`; };
     const chosen = r.s.map(x => w.spots.find(s => s.id === x.id)).filter(Boolean);
     const body = [
       `<div class="fab-say"><span class="fab-char bell" role="img" aria-label="Miss Bell"></span><div class="bubble"><b>Read mine first</b>Look at how my report is built: a title, an introduction, subheadings with facts, and a “Did you know?”.</div></div>
@@ -180,7 +203,7 @@
     const cards = t.secs.filter(x => x.t).map(x => ({ h:x.h, text:x.t }));
     if(me.png){ const noun = String(w.make.art.noun || ''), word = noun.replace(/^My /i, '').toLowerCase(), own = word && cards.find(c => String(c.h).toLowerCase().includes(word));
       if(own) own.pic = { src:me.png, alt:noun, cap:noun }; else cards.push({ h:noun, pic:{ src:me.png, alt:noun } }); }
-    if(me.mapDone && me.map.length) cards.push({ h:'My mind map', html:mapSVG(w, me.map) });
+    if(me.mapDone && me.map.length) cards.push({ h:'My mind map', html:mapSVG(w, me.map, me.notes), wide:me.map.some(id => (me.notes[id] || []).length) });
     if(me.order) cards.push({ h:o.noun.replace(/^My /, ''), html:`<ol class="mk-strip paper">${o.items.map(it => `<li>${orderItem(it)}</li>`).join('')}</ol>`, wide:true });
     /* keep the picture in proportion: if its own card would have to stretch across the page, it sits beside the last part's words instead */
     { const pc = cards.find(c => c.pic && !c.text && !c.html), host = pc && cards.filter(c => !c.wide).length % 2 ? [...cards].reverse().find(c => c.text && !c.pic) : null;
@@ -231,14 +254,21 @@
     if(a === 'artdone'){ if(!/[1-9]/.test(M.grid)){ M.note = { k:'fix', h:'Add some colour first.', t:'Pick a colour, then tap a tile.' }; return X.render(); }
       const cv = q1('#mkArt'), first = !me.artDone; me.art = M.grid; try{ me.png = cv.toDataURL('image/png'); }catch(err){} me.artDone = 1; save(d); if(first) star(); else X.snd('ding');
       M.note = { k:'win', h:'What a design!', t:first ? 'That earned a star for Fab Fox World. It is saved for your report.' : 'It is saved for your report.' }; return X.render(); }
-    if(a === 'mapadd'){ if(me.map.includes(id)) me.map = me.map.filter(x => x !== id); else if(me.map.length < 6) me.map.push(id); else { M.note = { k:'fix', h:'Six is plenty.', t:'Tap one to take it away, then choose another.' }; return X.render(); } M.note = null; save(d); X.snd('tick'); return X.render(); }
+    if(a === 'mapadd'){ if(me.map.includes(id)){ me.map = me.map.filter(x => x !== id); if(M.sel === id) M.sel = ''; } else if(me.map.length < 6){ me.map.push(id); M.sel = id; } else { M.note = { k:'fix', h:'Six is plenty.', t:'Tap one to take it away, then choose another.' }; return X.render(); } M.note = null; save(d); X.snd('tick'); return X.render(); }
+    if(a === 'mapsel'){ M.sel = M.sel === id ? '' : id; M.note = null; X.snd('tick'); return X.render(); }
+    if(a === 'notefact' || a === 'noteown'){ const sid = M.sel; if(!me.map.includes(sid)) return; const ns = me.notes[sid] = me.notes[sid] || []; if(ns.length >= 2) return X.render();
+      let t = ''; if(a === 'notefact'){ const sp = w.spots.find(x => x.id === sid); t = (sp && sentences(sp.t)[+id]) || ''; } else { const el = q1('#mkNote'); t = el ? el.value.replace(/\s+/g, ' ').trim().slice(0, 90) : ''; }
+      if(!t){ M.note = { k:'fix', h:'Nothing to add yet.', t:'Tap a fact, or type a thought first.' }; return X.render(); }
+      if(!ns.some(n => n.t === t)) ns.push({ t, own:a === 'noteown' }); M.note = null; save(d); X.snd('tick'); return X.render(); }
+    if(a === 'notedel'){ const ns = me.notes[M.sel] || []; ns.splice(+id, 1); save(d); X.snd('tick'); return X.render(); }
+    if(a === 'ownpick'){ const n = +b.dataset.n, t = b.dataset.t, ow = r.s[n].own || []; r.s[n].own = ow.includes(t) ? ow.filter(x => x !== t) : ow.concat(t); save(d); X.snd('tick'); return X.render(); }
     if(a === 'mapdone'){ if(me.map.length < 3){ M.note = { k:'fix', h:'Add a few more ideas.', t:'Try to choose at least three things.' }; return X.render(); }
-      const first = !me.mapDone; me.mapDone = 1; me.map.slice(0, 2).forEach((sid, n) => { if(!r.s[n].id && r.s[1 - n].id !== sid) r.s[n] = { id:sid, text:'', pick:[] }; }); save(d); if(first) star(); else X.snd('ding');
-      M.note = { k:'win', h:'Your ideas are ready!', t:'Your first two ideas are now the subheadings in your report.' }; return X.render(); }
+      const first = !me.mapDone; me.mapDone = 1; me.map.slice(0, 2).forEach((sid, n) => { if(!r.s[n].id && r.s[1 - n].id !== sid) r.s[n] = secFor(w, me, sid); }); save(d); if(first) star(); else X.snd('ding');
+      M.note = { k:'win', h:'Your ideas are ready!', t:'Your first two ideas are now the subheadings in your report, with the facts and thoughts you added.' }; return X.render(); }
     if(a === 'lvl'){ r.lvl = id; save(d); M.rstep = r.read ? 1 : 0; X.snd('tick'); return X.render(); }
     if(a === 'rstep'){ try{ X.say.stop(); }catch(err){} M.rstep = +id; if(M.rstep > 0 && !r.read){ r.read = 1; save(d); } X.snd('tick'); X.render(); const top = q1('.mk-steps'); if(top) try{ top.scrollIntoView({ block:'nearest' }); }catch(err){} return; }
     if(a === 'saymodel'){ return X.say.toggle('mk:model', modelText(w), 'f'); }
-    if(a === 'stop'){ const n = +b.dataset.n; r.s[n] = { id:id, text:r.s[n].id === id ? r.s[n].text : '', pick:[] }; if(r.dpick && !r.s.some(x => x.id === r.dpick)) r.dpick = ''; save(d); X.snd('tick'); return X.render(); }
+    if(a === 'stop'){ const n = +b.dataset.n; r.s[n] = id ? secFor(w, me, id, r.s[n].id === id ? r.s[n].text : null) : { id:'', text:'', pick:[], own:[] }; if(r.dpick && !r.s.some(x => x.id === r.dpick)) r.dpick = ''; save(d); X.snd('tick'); return X.render(); }
     if(a === 'pick'){ const n = +b.dataset.n, i = +id, pk = r.s[n].pick; r.s[n].pick = pk.includes(i) ? pk.filter(x => x !== i) : pk.concat(i); save(d); X.snd('tick'); return X.render(); }
     if(a === 'ipick'){ r.ipick = r.ipick === +id ? -1 : +id; save(d); X.snd('tick'); return X.render(); }
     if(a === 'dpick'){ r.dpick = r.dpick === id ? '' : id; save(d); X.snd('tick'); return X.render(); }
@@ -252,6 +282,7 @@
   }
   document.addEventListener('click', click);
   document.addEventListener('input', e => { if(e.target.closest && e.target.closest('.mk')) field(e.target); });
+  document.addEventListener('keydown', e => { if(e.key === 'Enter' && e.target && e.target.id === 'mkNote'){ e.preventDefault(); const b = q1('[data-mk="noteown"]'); if(b) b.click(); } });
   document.addEventListener('focusin', e => { if(e.target.classList && e.target.classList.contains('mk-ta')) M.last = e.target.id; });
 
   const css = document.createElement('style'); css.textContent = `
@@ -281,7 +312,11 @@
 .mk-pairs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:760px}.mk-pc{aspect-ratio:4/3;border:3px solid var(--ink,#2B1A12);border-radius:16px;background:var(--flame,#FE4D02);color:#fff;font:inherit;cursor:pointer;display:grid;place-items:center;padding:6px;min-height:92px}
 .mk-pc.up{background:#fff;color:var(--ink,#2B1A12)}.mk-pc.got{background:#eef7e6}.mk-pe{font-size:3rem;line-height:1}.mk-pw{font-weight:800;font-size:1.25rem;text-align:center}.mk-paw{font-size:2rem;opacity:.9}.mk-pc:focus-visible,.mk-jump:focus-visible,.mk-steps button:focus-visible{outline:4px solid var(--sky,#5aa9e6);outline-offset:3px}
 .mk-state{font-size:1.7rem;line-height:1.4;font-weight:700;background:#fff;border:3px solid var(--ink,#2B1A12);border-radius:18px;padding:18px 22px;margin:8px 0 14px;max-width:820px}.mk-tf .btn{font-size:1.4rem;min-width:150px}
-.mk-map{display:block;width:100%;max-width:900px;height:auto;margin:10px auto;background:#fffaf0;border-radius:16px}
+.mk-map{display:block;width:100%;max-width:900px;height:auto;margin:10px auto;background:#fffaf0;border-radius:16px}.mk-map.big{max-width:1180px}.mk-map text{font-family:Aleo,Georgia,serif}
+.mk-node{cursor:pointer}.mk-node:focus-visible rect{stroke:#FE4D02;stroke-width:7}.mk-node:hover rect{fill:#FFE9B8}
+.mk-noteadd{background:#FFF6E6;border:3px solid var(--ink,#2B1A12);border-radius:18px;padding:12px 16px;margin:10px auto;max-width:1180px}.mk-noteadd h4{margin:0 0 8px;font-size:var(--t-lead,1.25rem)}
+.mk-noterow{display:flex;gap:10px;align-items:center;margin:10px 0 8px}.mk-noterow .mk-in{flex:1;min-width:0;margin:0}
+.mk-notes{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px}.mk-notes li{background:#fff;border:2px solid var(--ink,#2B1A12);border-radius:12px;padding:6px 12px;font-size:var(--t-body,1.1rem)}.mk-nudge{text-align:center;font-weight:700}
 .mk-steps{list-style:none;display:flex;gap:8px;margin:6px 0 4px;padding:0}.mk-steps button{width:44px;height:44px;border-radius:50%;border:3px solid var(--ink,#2B1A12);background:#fff;font:800 1.1rem var(--body,Aleo),serif;color:inherit;cursor:pointer}.mk-steps button.on{background:var(--sunshine,#FFD483)}
 .mk-stepname{margin:0 0 12px;font-size:var(--t-lead,1.3rem)}.mk-nav{margin-top:14px}.mk-jump{border:0;background:none;font:inherit;font-weight:700;color:inherit;cursor:pointer;text-align:left;padding:4px 0}.mk-in-list{list-style:none;padding:0;margin:0 0 14px;display:grid;gap:8px}
 .mk-tag{display:inline-block;background:var(--sky,#5aa9e6);color:#fff;font-weight:800;font-size:.95rem;border-radius:999px;padding:2px 12px;margin:10px 0 2px}.mk-modelrep{margin:12px 0;max-width:none}.mk-modelrep h2{text-align:left}

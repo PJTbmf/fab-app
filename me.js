@@ -314,12 +314,14 @@
   function bellClip(text){ const B = window.FAB_BELL; if(!B || !B.clips) return null; const c = B.clips[bellKey(bellNorm(text))]; return c ? { file:'voice/' + B.files[c[0]] + '.mp3', start:c[1], end:c[1] + c[2] } : null; }
   let bellNow = null;
   function bellStop(){ const b = bellNow; bellNow = null; if(b){ try{ b.a.pause(); }catch(e){} } }
-  function bellPlay(clip, text, fallback){
+  function bellPlay(clip, text, fallback, after){
     const a = new Audio(clip.file + '#t=' + Math.max(0, clip.start - .04).toFixed(2) + ',' + (clip.end + .08).toFixed(2)), me = { a, text, file:clip.file }; bellNow = me;
     const fail = () => { if(bellNow === me){ bellNow = null; fallback(); } };
-    a.addEventListener('timeupdate', () => { if(a.currentTime >= clip.end + .1){ a.pause(); if(bellNow === me) bellNow = null; } });
-    a.addEventListener('ended', () => { if(bellNow === me) bellNow = null; });
-    a.addEventListener('pause', () => { if(bellNow === me && a.currentTime >= clip.end) bellNow = null; });
+    /* when her line ends by itself (not because someone stopped it), carry on with whatever comes next */
+    const finish = () => { if(bellNow !== me) return; bellNow = null; if(after){ try{ after(); }catch(e){} } };
+    a.addEventListener('timeupdate', () => { if(a.currentTime >= clip.end + .1){ a.pause(); finish(); } });
+    a.addEventListener('ended', finish);
+    a.addEventListener('pause', () => { if(a.currentTime >= clip.end) finish(); });
     a.addEventListener('error', fail, { once:true });
     try{ const pr = a.play(); if(pr && pr.catch) pr.catch(fail); }catch(e){ fail(); }
   }
@@ -337,11 +339,11 @@
       return true; }catch(e){ return false; }
   }
   /* Read to me: Miss Bell's recording when there is one for these exact words (tap again to stop), otherwise the device voice. */
-  function readAloud(text, voice){
+  function readAloud(text, voice, more){
     try{ window.speechSynthesis && speechSynthesis.cancel(); }catch(e){}
     const was = bellNow; bellStop();
-    if(!voice){ const clip = bellClip(text); if(clip){ if(was && was.text === text) return true; bellPlay(clip, text, () => deviceSay(text)); return true; } }
-    return deviceSay(text, voice);
+    if(!voice){ const clip = bellClip(text); if(clip){ if(was && was.text === text) return true; bellPlay(clip, text, () => deviceSay(more ? text + ' ' + more : text), more ? () => deviceSay(more) : null); return true; } }
+    return deviceSay(more ? text + ' ' + more : text, voice);
   }
   /* Ask for the voice list as soon as the app opens, so it is ready before the first tap. */
   try{ if(window.speechSynthesis){ speechSynthesis.getVoices(); speechSynthesis.addEventListener && speechSynthesis.addEventListener('voiceschanged', () => { try{ speechSynthesis.getVoices(); }catch(e){} }); } }catch(e){}
@@ -374,7 +376,7 @@
         const box = p.closest('.pw-main') || p.parentNode;
         const ch = [...new Set([...box.querySelectorAll('.pw-choices button, button.pw-choice')].map(x => x.textContent.trim()).filter(Boolean))];
         const qt = p.textContent.replace('🔊', '').trim();
-        if(bellClip(qt)){ window.__fabSaid = qt; readAloud(qt); return; } /* Miss Bell's own example: her recording of the question */
+        if(bellClip(qt)){ const rest = ch.length ? 'Is it: ' + ch.join(', or ') + '?' : ''; window.__fabSaid = qt + (rest ? ' ' + rest : ''); readAloud(qt, null, rest); return; } /* Miss Bell's recording of the question, then the choices in the device voice */
         window.__fabSaid = qt + (/[?.!]$/.test(qt) ? '' : '.') + (ch.length ? ' Is it: ' + ch.join(', or ') + '?' : '');
         readAloud(window.__fabSaid);
       }));
