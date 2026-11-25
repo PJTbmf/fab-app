@@ -1,0 +1,123 @@
+/* Fab Code (working title): the look. Fab Fox World rules: flat warm colour, thick ink outline, a little wonky, italic serif on plaques, no shadows.
+   Every size is in em from .fc, whose font size the script sets from the window, so the page fills a phone and a very big screen alike. */
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#FFD483;color:#2B1A12;font-family:Aleo,Georgia,serif;overscroll-behavior:none}
+button{font:inherit;color:inherit}
+.fc{--ink:#2B1A12;--cream:#FFF6E6;--gold:#F0B913;--orange:#FE4D02;--grass:#BFD88E;--glass:#CFE7F2;--sand:#F6D08F;
+  height:100vh;height:100dvh;display:flex;flex-direction:column;font-size:18px;overflow:hidden}
+.fc [hidden]{display:none!important}
+
+/* ---- top bar ---- */
+.fc-top{flex:none;display:flex;align-items:center;gap:1em;padding:.5em 1em;background:var(--cream);border-bottom:.22em solid var(--ink);min-height:3.6em}
+.fc-title{margin:0;display:flex;align-items:baseline;gap:.5em;font-family:'BMF Display',Aleo,Georgia,serif;font-size:1.7em;line-height:1;color:var(--orange);white-space:nowrap}
+.fc-draft{font:italic 700 .5em Aleo,Georgia,serif;color:var(--ink);background:var(--gold);border:.16em solid var(--ink);border-radius:999px;padding:.12em .7em .18em;transform:rotate(-2deg)}
+.fc-where{font:italic 700 1.15em Aleo,Georgia,serif;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.fc-dots{list-style:none;display:flex;gap:.4em;margin:0;padding:0}
+.fc-dots button{width:2.5em;height:2.5em;border:.17em solid var(--ink);border-radius:50% 46% 52% 48%;background:var(--cream);font:700 1em Aleo,Georgia,serif;cursor:pointer;display:grid;place-items:center;padding:0}
+.fc-dots li:nth-child(odd) button{transform:rotate(-3deg)}.fc-dots li:nth-child(even) button{transform:rotate(3deg)}
+.fc-dots button.done{background:var(--gold)}.fc-dots button.now{background:#fff;border-color:var(--orange);border-style:dashed;color:#D9400A}
+.fc-dots button svg{width:1.4em;height:1.4em}
+
+/* ---- buttons: flat, cream, ink outline ---- */
+.fc-b{display:inline-flex;align-items:center;justify-content:center;gap:.45em;min-height:2.9em;padding:.35em 1em .42em .8em;background:#FFFDF7;border:.17em solid var(--ink);border-radius:.9em 1.1em .9em 1em;font:italic 700 1em Aleo,Georgia,serif;cursor:pointer;text-align:left;line-height:1.15}
+.fc-b svg{width:1.55em;height:1.55em;flex:none}
+.fc-b:hover:not(:disabled){transform:translateY(-.06em)}.fc-b:active:not(:disabled){transform:translateY(.06em)}
+.fc-b:focus-visible,.fc-card:focus-visible,.fc-dots button:focus-visible{outline:.22em solid var(--orange);outline-offset:.16em}
+.fc-b:disabled{opacity:.45;cursor:default}
+.fc-b.gold{background:var(--gold)}.fc-b.leaf{background:var(--grass)}.fc-b.sky{background:var(--glass)}.fc-b.peach{background:#F4B58F}
+.fc-b.big{font-size:1.3em;min-height:3em;padding-right:1.3em}
+.fc-back{flex:none}
+
+/* ---- home: the projects ---- */
+.fc-home{flex:1;min-height:0;overflow:auto;padding:1.4em;display:flex;flex-direction:column;align-items:center;gap:1.2em}
+.fc-hello{display:flex;align-items:flex-end;gap:1em;max-width:54em;width:100%}
+.fc-who{flex:none;width:6.4em;aspect-ratio:393/555;background:center/contain no-repeat}
+.fc-who.dad{background-image:url(dad.webp)}.fc-who.doc{background-image:url(doc.webp)}.fc-who.elder{background-image:url(elder.webp)}
+.fc-bubble{position:relative;background:#fff;border:.17em solid var(--ink);border-radius:1.1em 1.4em 1.2em 1.5em;padding:.6em 1em .7em;font-size:1.12em;line-height:1.4;margin-bottom:1.6em;flex:1;min-width:0}
+.fc-bubble b{display:block;font:italic 700 1.06em Aleo,Georgia,serif}
+.fc-bubble::before{content:'';position:absolute;left:-.62em;bottom:.9em;width:1em;height:1em;background:#fff;border-left:.17em solid var(--ink);border-bottom:.17em solid var(--ink);transform:rotate(45deg)}
+.fc-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,17em),1fr));gap:1.3em;max-width:54em;width:100%}
+.fc-card{display:flex;flex-direction:column;gap:.5em;background:#FFFDF7;border:.2em solid var(--ink);border-radius:1.3em 1.7em 1.4em 1.8em / 1.7em 1.3em 1.8em 1.4em;padding:0 0 1em;cursor:pointer;text-align:left;overflow:hidden}
+.fc-card:nth-child(odd){transform:rotate(-.6deg)}.fc-card:nth-child(even){transform:rotate(.7deg)}
+.fc-card:hover{transform:translateY(-.15em)}
+.fc-card canvas{display:block;width:100%;aspect-ratio:2/1;border-bottom:.2em solid var(--ink);background:var(--grass)}
+.fc-card h2{margin:.5em .9em 0;font:italic 700 1.5em Aleo,Georgia,serif;align-self:flex-start;background:var(--gold);border:.13em solid var(--ink);border-radius:.6em;padding:.05em .6em .12em;transform:rotate(-1.5deg)}
+.fc-card:nth-child(even) h2{background:var(--glass)}
+.fc-card p{margin:0 1em;font-size:1.1em;line-height:1.4}
+.fc-card .fc-prog{font:italic 700 1em Aleo,Georgia,serif;display:flex;align-items:center;gap:.4em;margin-top:auto;padding-top:.3em}
+.fc-card .fc-prog svg{width:1.4em;height:1.4em}
+.fc-foot{font-size:.95em;opacity:.85;margin:.4em 0 0;text-align:center}.fc-foot a{color:inherit}
+
+/* ---- the work view: brief · blocks · stage ---- */
+.fc-work{flex:1;min-height:0;display:grid;grid-template-columns:minmax(14em,20%) minmax(0,1fr) minmax(0,47%);gap:.8em;padding:.8em}
+.fc-brief{min-width:0;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:.7em;padding-right:.1em}
+.fc-say{display:flex;align-items:flex-end;gap:.5em}
+.fc-say .fc-who{width:4.4em}
+.fc-say .fc-bubble{font-size:1em;margin-bottom:1em;padding:.5em .8em .6em}
+.fc-steps{margin:0;padding:.6em .8em .7em 2.3em;background:#FFFDF7;border:.17em solid var(--ink);border-radius:1em 1.2em 1em 1.3em;font-size:1em;line-height:1.35;display:grid;gap:.35em}
+.fc-steps li::marker{font:italic 700 1em Aleo,Georgia,serif}
+.fc-steps .k{display:inline-block;background:var(--gold);border:.12em solid var(--ink);border-radius:.5em;padding:0 .4em;font:italic 700 .95em Aleo,Georgia,serif;white-space:nowrap}
+.fc-help{display:grid;gap:.5em}
+.fc-help .fc-b{width:100%;justify-content:flex-start}
+.fc-tip{display:flex;align-items:flex-end;gap:.5em}
+.fc-tip .fc-who{width:4em}.fc-tip .fc-bubble{font-size:1em;margin-bottom:.9em;background:var(--glass);padding:.5em .8em .6em}.fc-tip .fc-bubble::before{background:var(--glass)}
+.fc-win{background:var(--gold);border:.2em solid var(--ink);border-radius:1.4em 1.1em 1.5em 1.2em / 1.1em 1.4em 1.2em 1.5em;padding:.7em .8em .8em;display:grid;gap:.5em;transform:rotate(-.5deg)}
+.fc-win .fc-say .fc-bubble{margin-bottom:.8em}.fc-win .fc-say .fc-who{width:3.6em}
+.fc-brief.won>.fc-say,.fc-brief.won>.fc-steps,.fc-brief.won>.fc-help{display:none}
+.fc-win h3{margin:0;font:italic 700 1.15em Aleo,Georgia,serif}
+.fc-win .fc-b{width:100%;justify-content:flex-start}
+.fc-blocks{min-width:0;min-height:0;display:flex;flex-direction:column;border:.2em solid var(--ink);border-radius:1.1em 1.4em 1.2em 1.5em;overflow:hidden;background:var(--cream)}
+.fc-blocklabel{flex:none;display:flex;gap:1em;justify-content:space-between;padding:.25em 1em .3em;background:var(--gold);border-bottom:.2em solid var(--ink);font:italic 700 1.05em Aleo,Georgia,serif}
+.fc-blockly{flex:1;min-height:0;position:relative}
+.fc-stage{min-width:0;min-height:0;display:flex;flex-direction:column;gap:.7em}
+.fc-canvaswrap{flex:1;min-width:0;min-height:0;position:relative;overflow:hidden}
+.fc-canvaswrap canvas{display:block;position:absolute;inset:0;margin:auto;border:.2em solid var(--ink);border-radius:1.2em 1.6em 1.3em 1.7em / 1.6em 1.2em 1.7em 1.3em;background:var(--grass);touch-action:none}
+.fc-ctrl{flex:none;display:flex;flex-wrap:wrap;gap:.6em;justify-content:center;align-items:center}
+.fc-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0}
+
+/* ---- Blockly in the Fab Fox look ---- */
+.fc .blocklySvg{background:transparent}
+.fc .blocklyMainBackground{stroke:none}
+.fc .blocklyText,.fc .zelos-renderer.fabfox-theme .blocklyDropdownText,.fc .zelos-renderer.fabfox-theme .blocklyEditableField>text{fill:#2B1A12!important;font-family:Aleo,Georgia,serif!important;font-weight:700!important;font-style:italic}
+.fc .blocklyPath{stroke:#2B1A12!important;stroke-width:2.6px;stroke-linejoin:round}
+.fc .blocklyInsertionMarker>.blocklyPath{stroke:none!important}
+.fc .blocklyFieldRect.blocklyDropdownRect{stroke:#2B1A12!important;stroke-width:1.6px}
+.fc .blocklyEditableField image{filter:brightness(0)}
+.fc .blocklyFlyoutBackground{fill:#FFD483;fill-opacity:1}
+.fc .blocklyFlyout{border-right:3px solid #2B1A12}
+.fc .blocklyDisabledPattern,.fc .blocklyDisabled>.blocklyPath{fill-opacity:.45}
+.fc .blocklyHighlightedConnectionPathVisible{stroke:#FE4D02;stroke-width:5px}
+.fc .blocklySelected>.blocklyPath{stroke-width:3.8px}
+.fc .fc-lit>.blocklyPath{stroke:#FE4D02!important;stroke-width:5px!important}
+.fc .blocklyScrollbarHandle{fill:#2B1A12;fill-opacity:.28}
+.fc .blocklyTrash{opacity:.9!important}
+.blocklyWidgetDiv .blocklyMenu,.blocklyDropDownDiv{font-family:Aleo,Georgia,serif}
+.blocklyDropDownDiv{border:3px solid #2B1A12!important;border-radius:14px!important;background:#FFF6E6!important;box-shadow:none!important}
+.blocklyDropDownDiv .blocklyMenuItem{font:italic 700 22px/1.2 Aleo,Georgia,serif;color:#2B1A12;padding:8px 26px 8px 34px;min-width:90px}
+.blocklyDropDownDiv .blocklyMenuItemContent{color:#2B1A12!important}
+.blocklyDropDownDiv .blocklyMenuItemHighlight{background:#F0B913}
+.blocklyDropDownArrow{display:none}
+
+/* ---- upright screens. A tablet: the stage beside the task, the blocks underneath. A phone: stage, task, blocks in one column. ---- */
+.fc.tall .fc-work{grid-template-columns:minmax(0,1fr) minmax(0,40%);grid-template-rows:minmax(0,45%) minmax(0,1fr);gap:.7em;padding:.7em}
+.fc.tall .fc-stage{grid-column:1;grid-row:1}
+.fc.tall .fc-brief{grid-column:2;grid-row:1}
+.fc.tall .fc-blocks{grid-column:1 / -1;grid-row:2}
+.fc.tall .fc-top{gap:.6em;padding:.4em .6em;flex-wrap:wrap}
+.fc.tall .fc-where{display:none}
+.fc.tall .fc-dots{margin-left:auto}
+.fc.tall .fc-ctrl .fc-b.big{font-size:1.15em}
+.fc.narrow .fc-work{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,31%) auto minmax(0,1fr);gap:.5em;padding:.5em}
+.fc.narrow .fc-stage{grid-column:1;grid-row:1;flex-direction:row;align-items:stretch}
+.fc.narrow .fc-ctrl{flex-direction:column;flex-wrap:nowrap;align-self:center}
+.fc.narrow .fc-brief{grid-column:1;grid-row:2;gap:.4em;max-height:46vh}
+.fc.narrow .fc-blocks{grid-column:1;grid-row:3}
+.fc.narrow .fc-steps{display:none}
+.fc.narrow .fc-help{grid-template-columns:1fr 1fr}
+.fc.narrow .fc-brief.tipped>.fc-say{display:none}
+.fc.narrow .fc-say .fc-who,.fc.narrow .fc-tip .fc-who{width:3.2em}
+.fc.narrow .fc-say .fc-bubble,.fc.narrow .fc-tip .fc-bubble{margin-bottom:.5em;font-size:.95em}
+.fc.narrow .fc-win{grid-template-columns:1fr 1fr}.fc.narrow .fc-win .fc-say,.fc.narrow .fc-win h3,.fc.narrow .fc-win p{grid-column:1 / -1}
+.fc.narrow .fc-ctrl .fc-b span{display:none}.fc.narrow .fc-ctrl .fc-b{padding:.35em .6em}
+.fc.small .fc-draft{display:none}
+.fc.small .fc-dots button{width:2.1em;height:2.1em}
