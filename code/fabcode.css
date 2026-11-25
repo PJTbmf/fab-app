@@ -128,5 +128,18 @@ button{font:inherit;color:inherit}
 .fc.narrow .fc-ctrl .fc-b span{display:none}.fc.narrow .fc-ctrl .fc-b{padding:.35em .6em}
 .fc.small .fc-draft{display:none}
 /* inside Fab Fox World the scene’s own close button sits in the top right corner */
-.fc.embed .fc-top{padding-right:72px}
+.fc-theme{flex:none}
+/* ---- dark: the child's choice. The page and the code area go dark; the cards, bubbles, blocks and the stage stay light, so nothing is hard to read ---- */
+html.dark,html.dark body{background:#2E2118}
+.fc.dark{color:#FFF6E6}
+.fc.dark .fc-top{background:#3B2B20;border-bottom-color:#160E09}
+.fc.dark .fc-where{color:#FFF6E6}
+.fc.dark .fc-card,.fc.dark .fc-steps,.fc.dark .fc-bubble,.fc.dark .fc-b,.fc.dark .fc-dots button{color:#2B1A12}
+.fc.dark .fc-blocks{background:#3B2B20;border-color:#160E09}
+.fc.dark .blocklyMainBackground{fill:#3B2B20!important}
+.fc.dark .blocklyFlyoutBackground{fill:#4A3628}
+.fc.dark .blocklyFlyout{border-right-color:#160E09}
+.fc.dark .blocklyScrollbarHandle{fill:#FFF6E6;fill-opacity:.35}
+.fc.dark .blocklyTrash image{filter:invert(1) brightness(.8)}
+.fc.dark .fc-foot a{color:#FFD483}
 .fc.small .fc-dots button{width:2.1em;height:2.1em}

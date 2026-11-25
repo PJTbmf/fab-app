@@ -18,6 +18,15 @@
   const root = $('fc');
   const EMBED = (() => { try{ return new URLSearchParams(location.search).get('embed') === '1'; }catch(e){ return false; } })();
   root.classList.toggle('embed', EMBED);
+  /* Where Back goes when Fox Blocks sits inside something else: Fab Fox World (the default), the Games section or the Learning Hub */
+  const BACKTO = (() => { try{ return new URLSearchParams(location.search).get('back') || 'world'; }catch(e){ return 'world'; } })();
+  const BACKLABEL = { world:'Back to Fab Fox World', games:'Back to Games', learn:'Back to the Learning Hub', app:'Back to the Fab App' }[BACKTO] || 'Back';
+  /* Light or dark: the child's choice, shared with Fab Fox World on this device */
+  const THEMEKEY = 'fab-theme';
+  const themeNow = () => { try{ return localStorage.getItem(THEMEKEY) === 'dark' ? 'dark' : 'light'; }catch(e){ return 'light'; } };
+  function paintTheme(){ const d = themeNow() === 'dark'; root.classList.toggle('dark', d); document.documentElement.classList.toggle('dark', d);
+    const b = document.getElementById('fcTheme'); if(b){ b.innerHTML = svg(d ? 'sun' : 'moon') + '<span>' + (d ? 'Light' : 'Dark') + '</span>'; b.setAttribute('aria-label', d ? 'Switch to light' : 'Switch to dark'); b.setAttribute('aria-pressed', String(d)); } }
+  window.addEventListener('storage', e => { if(e.key === THEMEKEY){ paintTheme(); try{ ws && ws.setTheme(makeTheme()); }catch(_){} } });
 
   /* ---------- hand-drawn icons (ink outline, flat fill) ---------- */
   const P = (d, fill) => `<path d="${d}" fill="${fill || 'none'}" stroke="${INK}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -36,6 +45,8 @@
     stop:`<rect x="8" y="8" width="24" height="24" rx="5" fill="${CREAM}" stroke="${INK}" stroke-width="3"/>`,
     home:P('M5 20L20 6.5 35 20M9.5 17.5V34h21V17.5', CREAM) + P('M17 34v-9h6v9'),
     back:P('M24.5 8L12 20l12.5 12'),
+    moon:P('M25 5.5A15 15 0 1 0 35 25.5 11.5 11.5 0 1 1 25 5.5z', GOLD),
+    sun:`<circle cx="20" cy="20" r="7.5" fill="${GOLD}" stroke="${INK}" stroke-width="2.6"/>` + P('M20 3.5v5M20 31.5v5M3.5 20h5M31.5 20h5M8.3 8.3l3.5 3.5M28.2 28.2l3.5 3.5M8.3 31.7l3.5-3.5M28.2 11.8l3.5-3.5'),
     reset:P('M9 20a11.5 11.5 0 1 0 3.5-8.2') + P('M7.5 5.5v8h8', CREAM),
     bin:P('M10 12.5h20l-1.8 21H11.8z', CREAM) + P('M6.5 12.5h27M15.5 12V7h9v5M16.5 18v10M23.5 18v10'),
     eye:P('M3.5 20C9 10.5 31 10.5 36.5 20 31 29.5 9 29.5 3.5 20z', CREAM) + `<circle cx="20" cy="20" r="5" fill="${INK}"/>`,
@@ -134,6 +145,44 @@
   try{ const j = JSON.parse(localStorage.getItem(KEY) || 'null'); if(j && typeof j === 'object') SAVE = { done:j.done || {}, code:j.code || {} }; }catch(e){}
   const store = () => { try{ localStorage.setItem(KEY, JSON.stringify(SAVE)); }catch(e){} };
   /* one star for Fab Fox World: the same waiting pot the lessons use (index.html, fabWorldAward) */
+  /* Fab wears what he wears in Fab Fox World: the kit stack (the plain fox, then each worn layer by z), read from the world's save on this device.
+     code/fab.png is the plain fox cropped to the kit's fox box, so the stack is drawn with that box where fab.png would go. */
+  const KITW = { spr:null, box:null, ids:'' };
+  (async () => { try{
+    const S = JSON.parse(localStorage.getItem('fabworld-v2-' + (who || 'local')) || 'null'), k = S && S.kit, wear = k && k.wear; if(!wear || !Object.keys(wear).length) return;
+    const m = await fetch('shop/manifest.json').then(r => r.json()), by = {}; m.items.forEach(it => { by[it.id] = it; });
+    const list = Object.keys(wear).map(sl => { const it = by[wear[sl]]; return it && it.slot === sl && k.own && k.own[it.id] ? it : null; }).filter(Boolean).sort((a, b) => a.z - b.z); if(!list.length) return;
+    const load = src => new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = 'shop/' + src; });
+    const ims = await Promise.all([m.base].concat(list.map(it => it.layer)).map(load));
+    const c = document.createElement('canvas'); c.width = Math.round(m.canvas.width / 2); c.height = Math.round(m.canvas.height / 2); const g = c.getContext('2d'); g.imageSmoothingQuality = 'high';
+    ims.forEach(im => g.drawImage(im, 0, 0, c.width, c.height));
+    KITW.spr = c; KITW.m = m; KITW.ids = list.map(it => it.id).join(); need = true; if(root.dataset.view === 'home') homeArt();
+  }catch(e){} })();
+  /* "My build": a build from Dad's Workshop, carried across with "Code with Fox Blocks" (the world keeps it under fabcode-build-<code>).
+     Seen from the top, it becomes the maze: Fab starts bottom left and the bramble bush is top right. Row 0, row 7 and column 0 are always clear,
+     so there is always a way. The model answer is the way with the fewest blocks. */
+  (() => { try{
+    const B = JSON.parse(localStorage.getItem('fabcode-build-' + (who || 'local')) || 'null'); if(!B || !B.cells) return;
+    const N = 6, cols = 8, rows = 8, walls = [];
+    Object.keys(B.cells).forEach(k => { const [i, j] = k.split(',').map(Number), c = B.cells[k]; if(c && c.h > 0 && i >= 0 && i < N && j >= 0 && j < N) walls.push([i + 1, j + 1, 'brick', /^#[0-9a-f]{3,8}$/i.test(c.c || '') ? c.c : '#FE4D02', c.h | 0]); });
+    if(!walls.length) return;
+    const start = [0, 7], goal = [6, 0], key = (x, y) => x + ',' + y, blocked = (x, y) => walls.some(w => w[0] === x && w[1] === y);
+    const D = [['up', 0, -1], ['right', 1, 0], ['down', 0, 1], ['left', -1, 0]], dist = {}, prv = {}, q = [start]; dist[key(start[0], start[1])] = 0;
+    while(q.length){ const [x, y] = q.shift();
+      D.forEach(([t, dx, dy]) => { let nx = x, ny = y; for(let n = 1; n <= 6; n++){   /* the move blocks offer 1 to 6 */ nx += dx; ny += dy; if(nx < 0 || ny < 0 || nx >= cols || ny >= rows || blocked(nx, ny)) break; const k = key(nx, ny); if(k in dist) continue; dist[k] = dist[key(x, y)] + 1; prv[k] = [x, y, t, n]; q.push([nx, ny]); } }); }
+    const ends = [[goal[0], goal[1]], [goal[0] + 1, goal[1]]].filter(e => key(e[0], e[1]) in dist).sort((a, b) => dist[key(a[0], a[1])] - dist[key(b[0], b[1])]); if(!ends.length) return;
+    const sol = []; let cur = ends[0]; while(prv[key(cur[0], cur[1])]){ const [px, py, t, n] = prv[key(cur[0], cur[1])]; sol.unshift([t, n]); cur = [px, py]; }
+    PROJECTS.push({ id:'build', name:'My build', about:'The build you made in Dad’s Workshop becomes a maze. Code Fab round it to the bramble bush.', levels:[
+      { id:'mb1', name:'Round my build', cols, rows, start, goal, walls, berries:[], blocks:['up', 'right', 'down', 'left', 'repeat'],
+        say:'Here is the build you made in my workshop, seen from the top. The numbers say how tall each part is. Can you code Fab round it to the bush?',
+        steps:['Trace a way round your build with your finger.', `Snap moves under ${K('Go')} and change the numbers.`, `Press ${K('Go')}. Bumped into your build? The orange edge shows which block to change.`],
+        sol, win:'Your build became a maze, and your code found the way through.' }] });
+  }catch(e){} })();
+  /* draw Fab standing with his feet at 0,0, his body h tall */
+  function drawFab(g, h){
+    if(KITW.spr){ const b = KITW.m.fox_box_in_canvas, k = h / (b.bottom - b.top), cw = KITW.m.canvas.width * k, ch = KITW.m.canvas.height * k; g.drawImage(KITW.spr, -(b.left + (b.right - b.left) / 2) * k, -b.bottom * k, cw, ch); return; }
+    const w = h * IMG.fab.naturalWidth / IMG.fab.naturalHeight; g.drawImage(IMG.fab, -w / 2, -h, w, h);
+  }
   const star = () => { try{ const k = 'fabworld-pending-' + (who || 'local'); localStorage.setItem(k, String((parseInt(localStorage.getItem(k), 10) || 0) + 1)); }catch(e){} };
 
   /* ---------- Blockly: our blocks, our look ---------- */
@@ -155,11 +204,13 @@
     defs.push(Object.assign({ type:'fab_ifelse', message0:'%1 if %2', args0:[img('fork'), { type:'field_dropdown', name:'C', options:[CONDS[1], CONDS[0], CONDS[2]] }], message1:'%1', args1:[{ type:'input_statement', name:'DO' }], message2:'else', message3:'%1', args3:[{ type:'input_statement', name:'ELSE' }], style:'fab_logic', tooltip:'If this is true, the top part runs. If not, the else part runs.' }, stack));
     B.common.defineBlocksWithJsonArray(defs);
   }
+  const THEMES = {};
   function makeTheme(){
     const st = (a, b, c, hat) => Object.assign({ colourPrimary:a, colourSecondary:b, colourTertiary:c }, hat ? { hat:'cap' } : {});
-    return B.Theme.defineTheme('fabfox', { name:'fabfox', base:B.Themes.Zelos || B.Themes.Classic,
+    const mode = themeNow(); if(THEMES[mode]) return THEMES[mode];
+    return THEMES[mode] = B.Theme.defineTheme('fabfox', { name:'fabfox', base:B.Themes.Zelos || B.Themes.Classic,
       blockStyles:{ fab_event:st(GOLD, '#F7D873', '#D9A30F', true), fab_move:st('#F4A46E', '#FBD9BF', '#E88A4C'), fab_look:st(GLASS, '#EAF5FA', '#A6D2E4'), fab_loop:st(GRASS, '#DFEDC6', '#A2C76C'), fab_logic:st(SAND, '#FBE7BE', '#E0B26A') },
-      componentStyles:{ workspaceBackgroundColour:CREAM, toolboxBackgroundColour:'#FFD483', flyoutBackgroundColour:'#FFD483', flyoutOpacity:1, scrollbarColour:INK, scrollbarOpacity:.28, insertionMarkerColour:INK, insertionMarkerOpacity:.28, cursorColour:ORANGE },
+      componentStyles:{ workspaceBackgroundColour:themeNow() === 'dark' ? '#3B2B20' : CREAM, toolboxBackgroundColour:'#FFD483', flyoutBackgroundColour:themeNow() === 'dark' ? '#4A3628' : '#FFD483', flyoutOpacity:1, scrollbarColour:INK, scrollbarOpacity:.28, insertionMarkerColour:INK, insertionMarkerOpacity:.28, cursorColour:ORANGE },
       fontStyle:{ family:'Aleo, Georgia, serif', weight:'700', size:13 }, startHats:true });
   }
   let ws = null;
@@ -256,7 +307,7 @@
   }
   const wallAt = (L, x, y) => (L.walls || []).find(w => w[0] === x && w[1] === y);
   const isGoal = (L, x, y) => !!L.goal && y === L.goal[1] && (x === L.goal[0] || x === L.goal[0] + 1);
-  const WHAT = { pond:'the pond', stone:'the stone', log:'the log', edge:'the edge of the grass', cone:'a cone', ball:'the ball' };
+  const WHAT = { pond:'the pond', stone:'the stone', log:'the log', edge:'the edge of the grass', cone:'a cone', ball:'the ball', brick:'your build' };
 
   function wobbly(g, pts){ g.beginPath(); const n = pts.length; for(let i = 0; i < n; i++){ const a = pts[i], b = pts[(i + 1) % n], mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2; if(!i) g.moveTo(mx, my); else g.quadraticCurveTo(a[0], a[1], mx, my); } const a = pts[0], b = pts[1]; g.quadraticCurveTo(a[0], a[1], (a[0] + b[0]) / 2, (a[1] + b[1]) / 2); g.closePath(); }
   function blob(g, cx, cy, rx, ry, seed, n){ n = n || 9; const pts = []; for(let i = 0; i < n; i++){ const a = i / n * Math.PI * 2, r = 1 + (rnd(seed + i) - .5) * .2; pts.push([cx + Math.cos(a) * rx * r, cy + Math.sin(a) * ry * r]); } wobbly(g, pts); }
@@ -269,7 +320,8 @@
     for(let y = 0; y < L.rows; y++) for(let x = 0; x < L.cols; x++){ tileRect(g, x, y, T, T * .045, x * 31 + y * 17); g.strokeStyle = 'rgba(43,26,18,.17)'; g.lineWidth = lw * .7; g.stroke();
       const s = x * 13 + y * 7; if(rnd(s) > .45 && !wallAt(L, x, y)){ const tx = (x + .2 + rnd(s + 1) * .6) * T, ty = (y + .25 + rnd(s + 2) * .55) * T, u = T * .05; g.beginPath(); g.moveTo(tx - u, ty - u * 1.5); g.lineTo(tx, ty); g.lineTo(tx + u, ty - u * 1.7); g.strokeStyle = 'rgba(43,26,18,.3)'; g.lineWidth = lw * .55; g.stroke(); } }
     (L.path || []).forEach(([x, y], i) => { tileRect(g, x, y, T, T * .07, i * 11 + 5); g.fillStyle = SAND; g.fill(); g.strokeStyle = 'rgba(43,26,18,.6)'; g.lineWidth = lw * .8; g.stroke(); });
-    (L.walls || []).forEach(([x, y, k], i) => { const cx = (x + .5) * T, cy = (y + .5) * T; g.strokeStyle = INK; g.lineWidth = lw;
+    (L.walls || []).forEach(([x, y, k, col, hh], i) => { const cx = (x + .5) * T, cy = (y + .5) * T; g.strokeStyle = INK; g.lineWidth = lw;
+      if(k === 'brick'){ g.beginPath(); g.roundRect(x * T + T * .08, y * T + T * .08, T * .84, T * .84, T * .12); g.fillStyle = col; g.fill(); g.stroke(); g.fillStyle = INK; g.font = `italic 700 ${Math.round(T * .42)}px Aleo, Georgia, serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(hh || ''), cx, cy + T * .03); return; }
       if(k === 'pond'){ blob(g, cx, cy, T * .43, T * .38, i * 9 + 2); g.fillStyle = GLASS; g.fill(); g.stroke(); g.beginPath(); g.arc(cx - T * .08, cy - T * .04, T * .13, Math.PI * 1.1, Math.PI * 1.75); g.moveTo(cx + T * .2, cy + T * .1); g.arc(cx + T * .1, cy + T * .1, T * .1, 0, Math.PI * .7); g.lineWidth = lw * .6; g.strokeStyle = 'rgba(43,26,18,.5)'; g.stroke(); }
       else if(k === 'stone'){ blob(g, cx, cy + T * .06, T * .36, T * .28, i * 5 + 40, 7); g.fillStyle = STONE; g.fill(); g.stroke(); g.beginPath(); g.moveTo(cx - T * .12, cy - T * .06); g.lineTo(cx - T * .02, cy + T * .04); g.lineTo(cx + T * .1, cy); g.lineWidth = lw * .6; g.stroke(); }
       else { g.save(); g.translate(cx, cy + T * .05); g.rotate(-.12); g.beginPath(); g.roundRect(-T * .4, -T * .17, T * .8, T * .34, T * .15); g.fillStyle = WOOD; g.fill(); g.stroke(); g.beginPath(); g.ellipse(T * .3, 0, T * .07, T * .13, 0, 0, Math.PI * 2); g.fillStyle = '#E3B58F'; g.fill(); g.lineWidth = lw * .7; g.stroke(); g.beginPath(); g.moveTo(-T * .28, -T * .05); g.lineTo(-T * .02, -T * .05); g.moveTo(-T * .2, T * .06); g.lineTo(T * .1, T * .06); g.stroke(); g.restore(); } });
@@ -288,7 +340,7 @@
     if(F.ball){ const bx = (F.ball.px + .5) * T, by = (F.ball.py + .74) * T, br = T * .17; g.save(); g.translate(bx, by); g.rotate(F.ball.spin || 0); g.beginPath(); g.arc(0, 0, br, 0, Math.PI * 2); g.fillStyle = '#FFFDF7'; g.strokeStyle = INK; g.lineWidth = lw; g.fill(); g.stroke();
       g.fillStyle = INK; g.beginPath(); for(let i = 0; i < 5; i++){ const a = -Math.PI / 2 + i * Math.PI * 2 / 5; g[i ? 'lineTo' : 'moveTo'](Math.cos(a) * br * .45, Math.sin(a) * br * .45); } g.closePath(); g.fill(); g.restore(); }
     if(ok(IMG.fab)){ const h = T * 1.08 * F.size, w = h * IMG.fab.naturalWidth / IMG.fab.naturalHeight, fx = (F.px + .5) * T + Math.sin(F.shake * 30) * F.shake * T * .12, fy = (F.py + .93) * T - F.lift * T;
-      g.save(); g.translate(fx, fy); g.rotate(F.rot); g.scale(F.sx, 1); g.drawImage(IMG.fab, -w / 2, -h, w, h); g.restore();
+      g.save(); g.translate(fx, fy); g.rotate(F.rot); g.scale(F.sx, 1); drawFab(g, h); g.restore();
       if(F.say){ g.font = `italic 700 ${Math.round(T * .2)}px Aleo, Georgia, serif`; const tw = g.measureText(F.say).width, bw = tw + T * .3, bh = T * .36, bx = clamp(lw, fx - bw / 2, W - bw - lw), by = Math.max(lw, fy - h - bh - T * .06);
         g.beginPath(); g.roundRect(bx, by, bw, bh, T * .12); g.fillStyle = '#fff'; g.fill(); g.strokeStyle = INK; g.lineWidth = lw; g.stroke(); g.fillStyle = INK; g.textBaseline = 'middle'; g.textAlign = 'center'; g.fillText(F.say, bx + bw / 2, by + bh / 2 + T * .01); } }
   }
@@ -444,14 +496,14 @@
   }
   function home(){
     if(RUN.on) RUN.stop = true; saveCode(); PJ = null; LV = null;
-    root.dataset.view = 'home'; $('fcHome').hidden = false; $('fcWork').hidden = true; $('fcBack').hidden = true; $('fcWhere').textContent = ''; $('fcDots').innerHTML = ''; document.title = 'Fox Blocks · BeMoreFab Virtual School';
+    root.dataset.view = 'home'; $('fcHome').hidden = false; $('fcWork').hidden = true; $('fcBack').hidden = !EMBED; if(EMBED){ $('fcBack').innerHTML = svg('back') + '<span>' + esc(BACKLABEL) + '</span>'; $('fcBack').dataset.a = 'leave'; } $('fcWhere').textContent = ''; $('fcDots').innerHTML = ''; document.title = 'Fox Blocks · BeMoreFab Virtual School';
     $('fcHome').innerHTML = `<div class="fc-hello"><span class="fc-who dad" role="img" aria-label="Dad"></span><div class="fc-bubble"><b>Welcome to my coding corner</b>Code is a list of instructions. Snap the blocks together, press Go, and Fab does exactly what they say. There is no timer, and you can stop whenever you like.</div></div>
       <div class="fc-cards">${PROJECTS.map(p => { const d = p.levels.filter(l => SAVE.done[l.id]).length; return `<button type="button" class="fc-card" data-a="project" data-p="${p.id}"><canvas data-art="${p.id}" width="640" height="320" aria-hidden="true"></canvas><h2>${esc(p.name)}</h2><p>${esc(p.about)}</p><p class="fc-prog">${d ? svg(d === p.levels.length ? 'star' : 'tick') : ''}${d ? `${d} of ${p.levels.length} done` : `${p.levels.length} puzzles`}</p></button>`; }).join('')}</div>
-      <p class="fc-foot">A first draft of Fox Blocks, built with Blockly.${EMBED ? ' Close with the cross to go back to Fab Fox World.' : ' <a href="index.html">Back to the Fab App</a>'}</p>`;
+      <p class="fc-foot">A first draft of Fox Blocks, built with Blockly.${EMBED ? '' : ' <a href="index.html">Back to the Fab App</a>'}</p>`;
     homeArt(); lay();
   }
   function homeArt(){
-    document.querySelectorAll('canvas[data-art]').forEach(c => { const p = PROJECTS.find(x => x.id === c.dataset.art), L = p.id === 'bush' ? Object.assign({}, p.levels[0], { rows:3, start:[0, 1], goal:[4, 1], path:[[1, 1], [2, 1], [3, 1]], walls:[[1, 0, 'pond'], [3, 2, 'log']], berries:[[2, 1]] }) : p.id === 'goal' ? Object.assign({}, p.levels[3], { cols:7, ball:[5, 1] }) : Object.assign({}, p.levels[0], { cols:6, rows:3, start:[2, 1], walls:[[5, 0, 'stone'], [0, 2, 'pond']] }), g = c.getContext('2d'), T = c.width / L.cols;
+    document.querySelectorAll('canvas[data-art]').forEach(c => { const p = PROJECTS.find(x => x.id === c.dataset.art), L = p.id === 'bush' ? Object.assign({}, p.levels[0], { rows:3, start:[0, 1], goal:[4, 1], path:[[1, 1], [2, 1], [3, 1]], walls:[[1, 0, 'pond'], [3, 2, 'log']], berries:[[2, 1]] }) : p.id === 'goal' ? Object.assign({}, p.levels[3], { cols:7, ball:[5, 1] }) : p.id === 'build' ? Object.assign({}, p.levels[0]) : Object.assign({}, p.levels[0], { cols:6, rows:3, start:[2, 1], walls:[[5, 0, 'stone'], [0, 2, 'pond']] }), g = c.getContext('2d'), T = c.width / L.cols;
       g.setTransform(1, 0, 0, 1, 0, 0); g.save(); g.translate(0, -(L.rows * T - c.height) / 2);
       scene(g, L, T, { px:L.start[0], py:L.start[1], lift:p.id === 'dance' ? .3 : 0, rot:p.id === 'dance' ? .15 : 0, sx:1, size:1, say:p.id === 'dance' ? 'Hooray!' : null, prints:[], got:{}, shake:0, ball:L.kind === 'goal' ? { px:L.ball[0], py:L.ball[1] } : null, cones:L.kind === 'goal' ? [[2, 1], [4, 1]] : [] }, null); g.restore(); });
   }
@@ -474,6 +526,8 @@
     if(a !== 'clear' && clearArmed){ clearArmed = 0; }
     if(a === 'project') open(b.dataset.p);
     else if(a === 'home') home();
+    else if(a === 'leave'){ saveCode(); try{ window.parent.fabCodeBack(); }catch(e){} }
+    else if(a === 'theme'){ try{ localStorage.setItem(THEMEKEY, themeNow() === 'dark' ? 'light' : 'dark'); }catch(e){} paintTheme(); if(ws) try{ ws.setTheme(makeTheme()); }catch(e){} }
     else if(a === 'go') play(program());
     else if(a === 'stop'){ RUN.stop = true; }
     else if(a === 'reset'){ resetFab(); lit(null); panel(null); }
@@ -497,12 +551,12 @@
   function relay(){ if(root.classList.contains('narrow')) requestAnimationFrame(() => { if(ws) try{ B.svgResize(ws); }catch(e){} sizeStage(); }); }
   let layT = 0; window.addEventListener('resize', () => { lay(); clearTimeout(layT); layT = setTimeout(lay, 120); });
 
-  defineBlocks(); home(); requestAnimationFrame(frame);
+  defineBlocks(); paintTheme(); home(); requestAnimationFrame(frame);
   try{ document.fonts.ready.then(() => { need = true; lay(); }); }catch(e){}
   try{ const q = new URLSearchParams(location.search), p = q.get('project'); if(p) open(p, q.get('puzzle') ? +q.get('puzzle') - 1 : null); }catch(e){}
 
   window.FabCode = window.FoxBlocks = FC;
   Object.assign(FC, { open, home, projects:PROJECTS, setProgram, program:() => plain(program()), run:() => play(program()), stop:() => { RUN.stop = true; }, addNext, showWay, route,
-    state:() => ({ view:root.dataset.view, project:PJ && PJ.id, level:LV && LV.id, x:FAB && FAB.x, y:FAB && FAB.y, running:RUN.on, done:Object.assign({}, SAVE.done), got:FAB ? Object.keys(FAB.got).length : 0, ball:FAB && FAB.ball ? [FAB.ball.x, FAB.ball.y] : null, cones:FAB ? FAB.cones.length : 0, prints:FAB ? FAB.prints.length : 0, tile:TILE, way:!!VIEW.way, panel:tipNow }),
+    state:() => ({ view:root.dataset.view, project:PJ && PJ.id, level:LV && LV.id, x:FAB && FAB.x, y:FAB && FAB.y, running:RUN.on, done:Object.assign({}, SAVE.done), got:FAB ? Object.keys(FAB.got).length : 0, wearing:KITW.ids, ball:FAB && FAB.ball ? [FAB.ball.x, FAB.ball.y] : null, cones:FAB ? FAB.cones.length : 0, prints:FAB ? FAB.prints.length : 0, tile:TILE, way:!!VIEW.way, panel:tipNow }),
     ws:() => ws, key:KEY });
 })();
