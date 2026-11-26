@@ -2227,6 +2227,9 @@ const FAB_HUBS = ['screen-hub', 'screen-games', 'screen-learn', 'screen-wellbein
 window.fabWorldFill = true;
 function fabLeaveWorld(){ try{ fabWorldFull(false); }catch(e){} showScreen(window.fabWorldFrom || 'screen-hub'); }
 function fabSoundToggle(){ try{ soundBtn.click(); }catch(e){} return !!(window.Sound && Sound.enabled); }
+/* Fox Blocks has its own Sounds button: it changes the same setting, then asks the app to catch up */
+function fabSoundSync(){ try{ const v = localStorage.getItem('bmf_sound') || 'on'; store.mem['bmf_sound'] = v; Sound.enabled = v !== 'off'; if(!Sound.enabled) Music.stop(); soundBtnPaint(); }catch(e){} }
+window.addEventListener('storage', e => { if(e.key === 'bmf_sound') fabSoundSync(); });
 /* Fox Blocks from the Games section or the Learning Hub: the whole window, with its own Back button (back to where it was opened from).
    Stars earned here wait under the Fab code and arrive as berries the next time Fab Fox World opens. */
 function fabOpenCode(project){
@@ -8680,6 +8683,7 @@ if(!Live.start()) learnDeepLink();
 <script src="explorer-voices.js"></script>
 <script src="icons.js"></script>
 <script src="bigscreen.js"></script>
+<script src="theme.js"></script>
 <link rel="stylesheet" href="typescale.css">
 </body>
 </html>
