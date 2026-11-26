@@ -1818,6 +1818,68 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(tabs === 'Fab’s shop:true:true|Pip’s fur:true:true|Dress Pip:true:true|Pip’s nest:true:true|Decorate:true:true#true', 'the five My stuff tabs have drawn icons and do not overlap: ' + tabs);
     await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
   });
+  await test('Round 25: the 3D view is one piece to the top; six kinds of berry bush and a Berry book; drawn gates, pond and map pins; Fox Blocks sounds; dark menu pages', async () => {
+    await page.setViewportSize({ width:1366, height:768 });
+    /* nothing in the world is still drawn with these emoji, and the 3D sky is the same haze as the far grass */
+    const g = fs.readFileSync(path.join(ROOT, 'games.js'), 'utf8');
+    const gone = ['em(\\"🔒\\"', 'em(\\"🌈\\"', 'em(\\"🪷\\"', 'em(\\"🦆\\"', 'fillText(\\"🦊\\",cx,cy)', 'fillText(\\"🔒\\",-60', '#D3E5B0'].filter(k => g.includes(k));
+    assert(!gone.length, 'gates, pond, map pins and the hint card are drawn, and the far hills strip is gone: ' + gone.join(' '));
+    await page.evaluate(() => { showScreen('screen-games'); showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await page.$('.game-frame[data-game="world"]')).contentFrame();
+    await fr.waitForFunction(() => !!window.WORLD && typeof BUSHES !== 'undefined', null, { timeout:15000 });
+    const r = await fr.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), S = WORLD.S(), out = {}; try{ WORLD.closeScene(true); }catch(e){}
+      const src = ground3D.toString(); out.sky = /uSky0,hex3\(artMix\("#E4EFD2"/.test(src) && /uSky1,hex3\(artMix\("#E4EFD2"/.test(src) && !/far hills/.test(src);
+      out.kinds = BUSHES.map(b => b.k + b.z).join(); out.safe = BUSH_SAFE;
+      S.missions = 0; S.bk = {}; S.bkn = {}; const spk = S.spk;
+      /* a bush in a part of the world that isn't open yet can't be picked */
+      const keep = { v:S.visited, c:S.col, d:S.decor, care:S.cub.care }; S.visited = {}; S.col = {}; S.decor = []; S.cub.care = 0;
+      const go = BUSHES.find(b => b.k === 'gooseberry'); P.x = go.x + 84; P.y = go.y + 22; out.locked = maxZone() === 0 && bushNear() === null;
+      S.visited = keep.v; S.col = keep.c; S.decor = keep.d; S.cub.care = keep.care;
+      /* walk up to the bramble: the gold button picks; then it opens the Berry book */
+      const br = BUSHES.find(b => b.k === 'bramble'); teleportTo(br.x + 150, br.y + 22); WORLD.coll().length = 0; await wait(600);
+      const gi = document.getElementById('goIn'); out.pick = [!gi.classList.contains('hide'), gi.textContent.trim()].join('|');
+      gi.click(); await wait(400); out.got = [S.spk - spk, S.bkn.bramble, bushRipe(br)].join('|');
+      out.after = gi.textContent.trim(); gi.click(); await wait(300);
+      let el = WORLD.scene() && WORLD.scene().el; out.book = el ? [WORLD.scene().cls, el.querySelectorAll('.bbc').length, el.querySelectorAll('.bbc.no').length, el.querySelector('.bbdet b').textContent, /never pick or eat wild berries/.test(el.querySelector('.bbsafe').textContent)].join('|') : '-';
+      const ink = 'rgb(43, 26, 18)'; out.cards = el ? [...el.querySelectorAll('.bbc')].every(c => getComputedStyle(c).borderTopColor === ink && getComputedStyle(c).boxShadow === 'none') && getComputedStyle(el).backgroundColor : '-';
+      /* tapping a bush that is far away walks Fab beside it */
+      WORLD.closeScene(true); const st = BUSHES.find(b => b.k === 'strawberry'); teleportTo(st.x - 500, st.y); await wait(200); out.tapFind = (bushAt({ x:st.x, y:st.y - 40 }) || {}).k;
+      /* the Treasure book opens the Berry book */
+      mBook(); await wait(200); el = WORLD.scene().el; const bb = el.querySelector('.bbopen'); out.tbook = bb ? bb.textContent.trim() : '-'; out.tcard = getComputedStyle(el.querySelector('.tc')).boxShadow === 'none' && getComputedStyle(el.querySelector('.tc')).borderTopColor === ink;
+      bb.click(); await wait(200); out.tbook2 = WORLD.scene().cls; WORLD.closeScene(true);
+      out.icons = ['lock', 'arch', 'lily', 'duck', 'berrybook', 'bush_raspberry', 'bush_raspberry0'].every(k => !!ICO[k]);
+      S.bk = {}; S.bkn = {}; S.spk = spk; S.missions = 0; return out; });
+    const j = JSON.stringify(r);
+    assert(r.sky, 'the 3D view has no separate sky or hills: the top is the same haze as the far grass: ' + j);
+    assert(r.kinds === 'bramble0,strawberry0,gooseberry1,raspberry1,bilberry2,redcurrant2' && /never pick or eat wild berries/.test(r.safe), 'six kinds of berry, two in each part of the world, with the safety line: ' + j);
+    assert(r.locked, 'a bush in a part of the world that is still closed cannot be picked: ' + j);
+    assert(r.pick === 'true|Pick blackberries' && r.got === '1|1|false' && r.after === 'Blackberries: see the Berry book', 'near a bush the gold button picks once a day for one berry, then opens the Berry book: ' + j);
+    assert(r.book === 'sc-berries|6|5|Blackberries|true' && r.cards === 'rgb(255, 212, 131)', 'the Berry book has six pages, shows what Fab found, and keeps the style rules: ' + j);
+    assert(r.tapFind === 'strawberry' && r.tbook === 'Berry book: 1 of 6' && r.tcard && r.tbook2 === 'sc-berries' && r.icons, 'a tap finds a bush; the Treasure book links to the Berry book and its cards have ink outlines: ' + j);
+    /* Fox Blocks: soft sounds that follow the app's sound setting, and a Sounds button */
+    const cp = await codePage('?learner=code-fox-5');
+    const q = await cp.evaluate(async () => { const F = FabCode, wait = ms => new Promise(res => setTimeout(res, ms)); F.speed = 40; const out = {};
+      localStorage.setItem('bmf_sound', 'on'); F.open('bush', 0); await wait(300); const L = F.projects.find(p => p.id === 'bush').levels[0];
+      const b = document.getElementById('fcSound'); out.btn = b ? b.getAttribute('aria-pressed') + '|' + !!b.querySelector('svg') : '-';
+      const n0 = fcSounds(); F.setProgram(L.sol); let x = await F.run(); const n1 = fcSounds(); out.on = x.ok + '|' + (n1 > n0);
+      b.click(); out.off = localStorage.getItem('bmf_sound') + '|' + b.getAttribute('aria-pressed');
+      F.setProgram(L.sol); x = await F.run(); out.quiet = fcSounds() === n1; b.click(); out.back = localStorage.getItem('bmf_sound');
+      try{ localStorage.removeItem(F.key); }catch(e){} return out; });
+    await cp.close();
+    assert(q.btn === 'true|true' && q.on === 'true|true' && q.off === 'off|false' && q.quiet && q.back === 'on', 'Fox Blocks plays soft sounds when sounds are on, none when they are off, and has its own Sounds button: ' + JSON.stringify(q));
+    /* dark menu pages: Hub, Games, Wellbeing, Early Years and the Learning Hub; lessons and games stay light */
+    await page.evaluate(() => { try{ localStorage.setItem('fab-theme', 'light'); }catch(e){} showScreen('screen-games'); }); await page.waitForTimeout(200);
+    const d = await page.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {}, b = document.getElementById('themeToggle');
+      out.light = [!!b && !b.hidden, document.body.classList.contains('fab-dark')].join('|');
+      b.click(); await wait(100); out.dark = [document.body.classList.contains('fab-dark'), localStorage.getItem('fab-theme'), getComputedStyle(document.querySelector('#screen-games .tile')).backgroundColor].join('|');
+      showScreen('screen-pairs'); await wait(150); out.game = [document.body.classList.contains('fab-dark'), b.hidden].join('|');
+      showScreen('screen-wellbeing'); await wait(150); out.well = [document.body.classList.contains('fab-dark'), getComputedStyle(document.querySelector('.wb2-group')).backgroundColor].join('|');
+      showScreen('screen-learn'); await wait(150); out.learn = document.body.classList.contains('fab-dark');
+      b.click(); await wait(100); out.back = [document.body.classList.contains('fab-dark'), localStorage.getItem('fab-theme')].join('|'); return out; });
+    assert(d.light === 'true|false' && /^true\|dark\|/.test(d.dark) && d.game === 'false|true' && d.well === 'true|rgb(255, 212, 131)' && d.learn && d.back === 'false|light', 'menu pages can be dark with light cards; lessons and games stay light: ' + JSON.stringify(d));
+    await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
+  });
+
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
 
   await browser.close(); server.close();
