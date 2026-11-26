@@ -129,6 +129,8 @@ button{font:inherit;color:inherit}
 .fc.small .fc-draft{display:none}
 /* inside Fab Fox World the scene’s own close button sits in the top right corner */
 .fc-theme{flex:none}
+/* the Sounds button shows just its speaker when the top bar is short of room */
+@media (max-width:1560px){.fc-sound span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.fc-sound{padding-left:.7em;padding-right:.7em}}
 /* ---- dark: the child's choice. The page and the code area go dark; the cards, bubbles, blocks and the stage stay light, so nothing is hard to read ---- */
 html.dark,html.dark body{background:#2E2118}
 .fc.dark{color:#FFF6E6}

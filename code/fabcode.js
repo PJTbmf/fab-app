@@ -26,6 +26,28 @@
   const themeNow = () => { try{ return localStorage.getItem(THEMEKEY) === 'dark' ? 'dark' : 'light'; }catch(e){ return 'light'; } };
   function paintTheme(){ const d = themeNow() === 'dark'; root.classList.toggle('dark', d); document.documentElement.classList.toggle('dark', d);
     const b = document.getElementById('fcTheme'); if(b){ b.innerHTML = svg(d ? 'sun' : 'moon') + '<span>' + (d ? 'Light' : 'Dark') + '</span>'; b.setAttribute('aria-label', d ? 'Switch to light' : 'Switch to dark'); b.setAttribute('aria-pressed', String(d)); } }
+  /* Sounds: short, soft tones made in the browser, nothing to download. They follow the Fab App's sound setting (also the Sounds button in Fab Fox World). */
+  const SNDKEY = 'bmf_sound', SND = { ctx:null };
+  const soundOn = () => { try{ return localStorage.getItem(SNDKEY) !== 'off'; }catch(e){ return true; } };
+  function tone(f, d, type, vol, at, f2){
+    if(!soundOn()) return;
+    try{ const C = SND.ctx || (SND.ctx = new (window.AudioContext || window.webkitAudioContext)()); if(C.state === 'suspended') C.resume();
+      const t = C.currentTime + (at || 0), o = C.createOscillator(), g = C.createGain(); o.type = type || 'sine'; o.frequency.setValueAtTime(f, t); if(f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol || .1, t + .015); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(C.destination); o.start(t); o.stop(t + d + .03); SND.n = (SND.n || 0) + 1; }catch(e){}
+  }
+  const SFX = {
+    step:() => tone(500 + Math.random() * 60, .07, 'triangle', .05),
+    bump:() => tone(190, .24, 'sine', .12, 0, 120),
+    berry:() => { tone(880, .09, 'sine', .08); tone(1320, .13, 'sine', .07, .07); },
+    hop:() => tone(380, .22, 'sine', .07, 0, 720),
+    kick:() => tone(150, .12, 'triangle', .14, 0, 90),
+    goal:() => [523, 659, 784].forEach((f, i) => tone(f, .2, 'triangle', .09, i * .09)),
+    oops:() => tone(340, .2, 'sine', .06, 0, 280),
+    win:() => [523, 659, 784, 1047].forEach((f, i) => tone(f, .24, 'triangle', .08, .15 + i * .11)),
+  };
+  window.fcSounds = () => SND.n || 0;
+  function paintSound(){ const on = soundOn(), b = document.getElementById('fcSound'); if(!b) return; b.innerHTML = svg(on ? 'soundon' : 'soundoff') + '<span>' + (on ? 'Sounds on' : 'Sounds off') + '</span>'; b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', on ? 'Sounds are on. Turn them off' : 'Sounds are off. Turn them on'); }
+  window.addEventListener('storage', e => { if(e.key === SNDKEY) paintSound(); });
   window.addEventListener('storage', e => { if(e.key === THEMEKEY){ paintTheme(); try{ ws && ws.setTheme(makeTheme()); }catch(_){} } });
 
   /* ---------- hand-drawn icons (ink outline, flat fill) ---------- */
@@ -45,6 +67,8 @@
     stop:`<rect x="8" y="8" width="24" height="24" rx="5" fill="${CREAM}" stroke="${INK}" stroke-width="3"/>`,
     home:P('M5 20L20 6.5 35 20M9.5 17.5V34h21V17.5', CREAM) + P('M17 34v-9h6v9'),
     back:P('M24.5 8L12 20l12.5 12'),
+    soundon:P('M6 15h6l8-7v24l-8-7H6z', GOLD) + P('M25 14.5c2.4 3 2.4 8 0 11M29.5 10.5c4.6 5.4 4.6 13.6 0 19'),
+    soundoff:P('M6 15h6l8-7v24l-8-7H6z', CREAM) + P('M25.5 15.5l9 9M34.5 15.5l-9 9'),
     moon:P('M25 5.5A15 15 0 1 0 35 25.5 11.5 11.5 0 1 1 25 5.5z', GOLD),
     sun:`<circle cx="20" cy="20" r="7.5" fill="${GOLD}" stroke="${INK}" stroke-width="2.6"/>` + P('M20 3.5v5M20 31.5v5M3.5 20h5M31.5 20h5M8.3 8.3l3.5 3.5M28.2 28.2l3.5 3.5M8.3 31.7l3.5-3.5M28.2 11.8l3.5-3.5'),
     reset:P('M9 20a11.5 11.5 0 1 0 3.5-8.2') + P('M7.5 5.5v8h8', CREAM),
@@ -364,17 +388,17 @@
   const ease = k => k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
   async function move(d){
     const [dx, dy] = DIRS[d], nx = FAB.x + dx, ny = FAB.y + dy, off = nx < 0 || ny < 0 || nx >= LV.cols || ny >= LV.rows, wall = off ? null : wallAt(LV, nx, ny), hit = off ? 'edge' : wall ? wall[2] : coneAt(nx, ny) ? 'cone' : ballAt(nx, ny) ? 'ball' : null;
-    if(hit){ await anim(360, k => { const s = Math.sin(k * Math.PI); FAB.px = FAB.x + dx * s * .22; FAB.py = FAB.y + dy * s * .22; FAB.shake = (1 - k) * .5; }); FAB.shake = 0; throw { bump:hit }; }
-    const ox = FAB.x, oy = FAB.y;
+    if(hit){ SFX.bump(); await anim(360, k => { const s = Math.sin(k * Math.PI); FAB.px = FAB.x + dx * s * .22; FAB.py = FAB.y + dy * s * .22; FAB.shake = (1 - k) * .5; }); FAB.shake = 0; throw { bump:hit }; }
+    const ox = FAB.x, oy = FAB.y; SFX.step();
     await anim(400, k => { const e = ease(k); FAB.px = ox + dx * e; FAB.py = oy + dy * e; FAB.lift = Math.sin(k * Math.PI) * .13; });
     FAB.prints.push({ x:ox, y:oy, a:Math.atan2(dy, dx) + Math.PI / 2 }); FAB.x = nx; FAB.y = ny; FAB.px = nx; FAB.py = ny; FAB.lift = 0;
-    (LV.berries || []).forEach(([bx, by], i) => { if(bx === nx && by === ny && !FAB.got[i]){ FAB.got[i] = 1; const p = { x:bx, y:by, k:0 }; VIEW.pops.push(p); anim(500, k => { p.k = k; }).catch(() => {}).then(() => { VIEW.pops = VIEW.pops.filter(q => q !== p); need = true; }); } });
+    (LV.berries || []).forEach(([bx, by], i) => { if(bx === nx && by === ny && !FAB.got[i]){ FAB.got[i] = 1; SFX.berry(); const p = { x:bx, y:by, k:0 }; VIEW.pops.push(p); anim(500, k => { p.k = k; }).catch(() => {}).then(() => { VIEW.pops = VIEW.pops.filter(q => q !== p); need = true; }); } });
     if(isGoal(LV, nx, ny)) RUN.passed = true;
   }
   async function act(it){
     const t = it.t;
     if(DIRS[t]){ for(let i = 0; i < it.n; i++) await move(t); }
-    else if(t === 'hop') await anim(460, k => { FAB.lift = Math.sin(k * Math.PI) * .42; });
+    else if(t === 'hop'){ SFX.hop(); await anim(460, k => { FAB.lift = Math.sin(k * Math.PI) * .42; }); }
     else if(t === 'spin') await anim(620, k => { FAB.sx = Math.cos(k * Math.PI * 2); });
     else if(t === 'wiggle') await anim(620, k => { FAB.rot = Math.sin(k * Math.PI * 4) * .2; });
     else if(t === 'grow'){ const a = FAB.size, b = clamp(.6, a + .2, 1.6); await anim(340, k => { FAB.size = a + (b - a) * ease(k); }); }
@@ -382,13 +406,13 @@
     else if(t === 'say'){ FAB.say = it.n; await anim(1100, () => {}); FAB.say = null; }
     else if(t === 'wait') await anim(600, () => {});
     else if(t === 'jump'){ const nx = FAB.x + 2, y = FAB.y, hit = nx >= LV.cols ? 'edge' : coneAt(nx, y) ? 'cone' : ballAt(nx, y) ? 'ball' : wallAt(LV, nx, y) ? wallAt(LV, nx, y)[2] : null;
-      if(hit){ await anim(360, k => { FAB.lift = Math.sin(k * Math.PI) * .3; FAB.shake = (1 - k) * .5; }); FAB.shake = 0; FAB.lift = 0; throw { bump:hit }; }
-      const ox = FAB.x; await anim(520, k => { FAB.px = ox + 2 * ease(k); FAB.lift = Math.sin(k * Math.PI) * .7; }); FAB.prints.push({ x:ox, y, a:Math.PI / 2 }); FAB.x = nx; FAB.px = nx; }
+      if(hit){ SFX.bump(); await anim(360, k => { FAB.lift = Math.sin(k * Math.PI) * .3; FAB.shake = (1 - k) * .5; }); FAB.shake = 0; FAB.lift = 0; throw { bump:hit }; }
+      const ox = FAB.x; SFX.hop(); await anim(520, k => { FAB.px = ox + 2 * ease(k); FAB.lift = Math.sin(k * Math.PI) * .7; }); FAB.prints.push({ x:ox, y, a:Math.PI / 2 }); FAB.x = nx; FAB.px = nx; }
     else if(t === 'kick'){ const b = FAB.ball;
-      if(!b || b.x !== FAB.x + 1 || b.y !== FAB.y){ await anim(300, k => { FAB.rot = Math.sin(k * Math.PI) * .18; }); FAB.rot = 0; throw { miss:true }; }
-      await anim(220, k => { FAB.px = FAB.x + Math.sin(k * Math.PI) * .28; }); FAB.px = FAB.x;
+      if(!b || b.x !== FAB.x + 1 || b.y !== FAB.y){ SFX.oops(); await anim(300, k => { FAB.rot = Math.sin(k * Math.PI) * .18; }); FAB.rot = 0; throw { miss:true }; }
+      await anim(220, k => { FAB.px = FAB.x + Math.sin(k * Math.PI) * .28; }); FAB.px = FAB.x; SFX.kick();
       let tx = b.x; while(tx + 1 < LV.cols && !coneAt(tx + 1, b.y)) tx++; const ox = b.x;
-      await anim(150 * (tx - ox) + 120, k => { b.px = ox + (tx - ox) * ease(k); b.spin = k * (tx - ox) * 2.6; }); b.x = tx; b.px = tx; if(tx === LV.cols - 1) RUN.scored = true; }
+      await anim(150 * (tx - ox) + 120, k => { b.px = ox + (tx - ox) * ease(k); b.spin = k * (tx - ox) * 2.6; }); b.x = tx; b.px = tx; if(tx === LV.cols - 1){ RUN.scored = true; SFX.goal(); } }
     FAB.lift = 0; FAB.rot = 0; FAB.sx = 1;
     if(t !== 'repeat') RUN.trace.push(t);
   }
@@ -439,7 +463,7 @@
       else if(!on){ const d = Math.min(Math.abs(L.goal[0] - FAB.x), Math.abs(L.goal[0] + 1 - FAB.x)) + Math.abs(L.goal[1] - FAB.y); tip = `Fab stopped ${d} square${d === 1 ? '' : 's'} from the bush. Add a block, or change a number, and press Go again.`; }
     } else if(L.check) tip = L.check(res);
     if(tip){ res.tip = tip; panel('tip', tip); live(tip); return res; }
-    res.ok = true; const first = !SAVE.done[L.id]; SAVE.done[L.id] = 1; store(); if(first) star(); res.first = first;
+    res.ok = true; SFX.win(); const first = !SAVE.done[L.id]; SAVE.done[L.id] = 1; store(); if(first) star(); res.first = first;
     cheer(); panel('win', res); dots(); return res;
   }
   function cheer(){ const a = () => anim(420, k => { FAB.lift = Math.sin(k * Math.PI) * .4; }); RUN.stop = false; a().then(a).catch(() => {}).then(() => { if(FAB){ FAB.lift = 0; need = true; } }); }
@@ -527,6 +551,7 @@
     if(a === 'project') open(b.dataset.p);
     else if(a === 'home') home();
     else if(a === 'leave'){ saveCode(); try{ window.parent.fabCodeBack(); }catch(e){} }
+    else if(a === 'sound'){ try{ localStorage.setItem(SNDKEY, soundOn() ? 'off' : 'on'); }catch(e){} paintSound(); try{ window.parent.fabSoundSync && window.parent.fabSoundSync(); }catch(e){} if(soundOn()) SFX.berry(); }
     else if(a === 'theme'){ try{ localStorage.setItem(THEMEKEY, themeNow() === 'dark' ? 'light' : 'dark'); }catch(e){} paintTheme(); if(ws) try{ ws.setTheme(makeTheme()); }catch(e){} }
     else if(a === 'go') play(program());
     else if(a === 'stop'){ RUN.stop = true; }
@@ -551,7 +576,7 @@
   function relay(){ if(root.classList.contains('narrow')) requestAnimationFrame(() => { if(ws) try{ B.svgResize(ws); }catch(e){} sizeStage(); }); }
   let layT = 0; window.addEventListener('resize', () => { lay(); clearTimeout(layT); layT = setTimeout(lay, 120); });
 
-  defineBlocks(); paintTheme(); home(); requestAnimationFrame(frame);
+  defineBlocks(); paintTheme(); paintSound(); home(); requestAnimationFrame(frame);
   try{ document.fonts.ready.then(() => { need = true; lay(); }); }catch(e){}
   try{ const q = new URLSearchParams(location.search), p = q.get('project'); if(p) open(p, q.get('puzzle') ? +q.get('puzzle') - 1 : null); }catch(e){}
 
