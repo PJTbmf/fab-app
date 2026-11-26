@@ -1380,7 +1380,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     const cp = await codePage('?learner=code-fox-1');
     const home = await cp.evaluate(() => ({ cards:[...document.querySelectorAll('.fc-card')].map(c => c.querySelector('h2').textContent + ':' + !!c.querySelector('canvas')).join('|'), dad:!!document.querySelector('.fc-hello .fc-who.dad'),
       text:document.body.innerText, name:document.querySelector('.fc-word').textContent + '|' + document.title, back:(document.querySelector('.fc-foot a') || {}).getAttribute('href'), v:Blockly.VERSION, font:getComputedStyle(document.querySelector('.fc-bubble')).fontFamily }));
-    assert(home.cards === 'To the bramble bush:true|Fab’s dance:true|Score a goal:true' && home.dad && home.back === 'index.html' && /^Aleo/.test(home.font) && home.name === 'Fox Blocks|Fox Blocks · BeMoreFab Virtual School', 'the home page: three projects with pictures, Dad, and a way back: ' + JSON.stringify(home).slice(0, 400));
+    assert(home.cards === 'To the bramble bush:true|Fab’s dance:true|Tap and play:true|Score a goal:true' && home.dad && home.back === 'index.html' && /^Aleo/.test(home.font) && home.name === 'Fox Blocks|Fox Blocks · BeMoreFab Virtual School', 'the home page: four projects with pictures, Dad, and a way back: ' + JSON.stringify(home).slice(0, 400));
     assert(/^13\./.test(home.v) && !/\p{Extended_Pictographic}/u.test(home.text), 'Blockly 13 is loaded and there are no emoji: ' + home.v);
     await cp.click('.fc-card[data-p="bush"]'); await cp.waitForTimeout(500);
     const look = await cp.evaluate(() => { const ws = FabCode.ws(), go = ws.getBlocksByType('fab_go')[0], fly = ws.getFlyout().getWorkspace().getTopBlocks(true).map(b => b.type).join();
@@ -1432,7 +1432,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       /* the low-energy route builds the model answer one block at a time, and every model answer solves its puzzle */
       out.solved = [];
       for(const p of F.projects) for(let i = 0; i < p.levels.length; i++){ const L = p.levels[i]; F.open(p.id, i); let n = 0; while(JSON.stringify(F.program()) !== JSON.stringify(L.sol) && n++ < 12) F.addNext();
-        const res = await F.run(); out.solved.push(L.id + ':' + res.ok + ':' + n + ':' + (L.berries ? F.state().got : '-')); }
+        const res = await F.run(); out.solved.push(L.id + ':' + (res && res.ok) + ':' + n + ':' + (L.berries ? F.state().got : '-')); }
       out.done = Object.keys(F.state().done).join();
       F.open('bush', 4); out.kept = JSON.stringify(F.program());
       /* stop */
@@ -1447,11 +1447,11 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(/stopped 5 squares from the bush/.test(r.far) && /edge of the grass/.test(r.edge) && /walked right past the bush/.test(r.past) && /2 berries are still on the grass/.test(r.berries) && /no code yet/.test(r.empty), 'tips say what happened and what to look at, never “wrong”: ' + j);
     assert(/hop first, and then spin/.test(r.d1) && /only takes 2 blocks/.test(r.d2) && /hopped 3 times/.test(r.d2b) && /2 moves of 1 kind/.test(r.d3) && r.none === 0, 'the dance challenges give tips too, and nothing is ticked until it is done: ' + j);
     assert(r.way === 'true|[[0,4],[1,4],[2,4],[2,3],[2,2],[3,2],[4,2],[4,1],[4,0]]', '“Show me the way” draws the model route: ' + r.way);
-    assert(r.solved.join() === 'b1:true:1:-,b2:true:3:-,b3:true:3:-,b4:true:4:3,b5:true:2:-,b6:true:1:3,d1:true:2:-,d2:true:1:-,d3:true:3:-,g1:true:2:-,g2:true:2:-,g3:true:4:-,g4:true:2:-', '“Add the next block for me” builds each model answer, and every one solves its puzzle: ' + r.solved);
-    assert(r.done === 'b1,b2,b3,b4,b5,b6,d1,d2,d3,g1,g2,g3,g4' && r.kept === '[["repeat",3,[["right",1],["up",1]]],["right",1]]', 'finished puzzles are ticked and the code is kept: ' + j);
+    assert(r.solved.join() === 'b1:true:1:-,b2:true:3:-,b3:true:3:-,b4:true:4:3,b5:true:2:-,b6:true:1:3,d1:true:2:-,d2:true:1:-,d3:true:3:-,e1:true:1:-,e2:true:2:-,e3:true:3:-,g1:true:2:-,g2:true:2:-,g3:true:4:-,g4:true:2:-', '“Add the next block for me” builds each model answer, and every one solves its puzzle: ' + r.solved);
+    assert(r.done === 'b1,b2,b3,b4,b5,b6,d1,d2,d3,e1,e2,e3,g1,g2,g3,g4' && r.kept === '[["repeat",3,[["right",1],["up",1]]],["right",1]]', 'finished puzzles are ticked and the code is kept: ' + j);
     assert(r.running === 'true|Stop' && r.stopped === 'true|false|null', 'Stop ends a long dance at once: ' + j);
     assert(/^Tap again to clear\|/.test(r.arm) && r.cleared === '[]', 'clearing the blocks takes two taps: ' + j);
-    assert(r.home === '6 of 6 done|3 of 3 done|4 of 4 done', 'the home page shows what is done: ' + r.home);
+    assert(r.home === '6 of 6 done|3 of 3 done|3 of 3 done|4 of 4 done', 'the home page shows what is done: ' + r.home);
     /* the page fills the screen */
     const boxes = async () => cp.evaluate(() => { const b = s => { const r = document.querySelector(s).getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom)]; };
       const btns = [...document.querySelectorAll('.fc-ctrl .fc-b')].map(x => x.getBoundingClientRect()), clash = btns.some((a, i) => btns.some((c, k) => k > i && a.left < c.right - 1 && c.left < a.right - 1 && a.top < c.bottom - 1 && c.top < a.bottom - 1));
@@ -1504,7 +1504,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       try{ localStorage.removeItem(F.key); localStorage.removeItem('fabworld-pending-code-fox-3'); }catch(e){}
       return out; });
     const j = JSON.stringify(r);
-    assert(r.home === 'bush6,dance3,goal4|3', 'Score a goal is a third project with four puzzles: ' + j);
+    assert(r.home === 'bush6,dance3,tap3,goal4|4', 'Score a goal is a project with four puzzles: ' + j);
     assert(r.blocks1 === 'fab_right,fab_left,fab_kick' && r.long === 'true|true|true|true|true|true', 'the long pitch sits across the top with the blocks full width underneath, and nothing leaves the screen: ' + j);
     assert(/^tip:Fab walked into the ball/.test(r.g1a) && /^tip:Fab kicked, but the ball was not on the next square/.test(r.g1b) && /^tip:The ball has not gone in yet/.test(r.g1c) && r.g1 === 'ok::[7,1]', 'walk to the square before the ball, then kick it into the net; tips say what happened: ' + j);
     assert(/^You did it!\s*Goal! Fab scored with 2 blocks\. Walk, then kick/.test(r.win1) && /Next puzzle,Try it another way,All projects/.test(r.win1), 'Mr Elder celebrates and “What next?” follows: ' + r.win1);
@@ -1527,7 +1527,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       const cs = (s, k) => getComputedStyle(document.querySelector(s))[k], ink = 'rgb(43, 26, 18)';
       out.style = [cs('.mini', 'borderTopColor') === ink && cs('.mini', 'boxShadow') === 'none', cs('.mini-big', 'borderTopColor') === ink && cs('.mini-big', 'backgroundColor') === 'rgb(255, 246, 230)', cs('.stick', 'borderTopColor') === ink && cs('.stick', 'boxShadow') === 'none', cs('#knob', 'backgroundColor') === 'rgb(240, 185, 19)' && cs('#knob', 'borderTopColor') === ink, cs('.turn .tb', 'borderTopColor') === ink && cs('.turn .tb', 'boxShadow') === 'none', cs('.joy', 'borderTopColor') === ink && cs('.joy', 'boxShadow') === 'none'].join('|');
       cheer('Well done', 'A lovely build'); out.toast = [cs('#cheer', 'borderTopColor') === ink, cs('#cheer', 'boxShadow') === 'none', cs('#cheer', 'backgroundColor') === 'rgb(255, 246, 230)', cs('#cheer b', 'fontStyle') === 'italic'].join('|');
-      S.missions = 30; delete S.onShow; mCad('blocks'); await wait(400); let el = WORLD.scene().el;
+      S.missions = 30; delete S.onShow; S.shows = []; mCad('blocks'); await wait(400); let el = WORLD.scene().el;
       const v3 = document.getElementById('cad3d'); out.sharp = [v3.width >= 780, Math.abs(v3.width / v3.height - 520 / 420) < .01, v3.width >= v3.clientWidth * .95].join('|') + '|' + v3.width + 'x' + v3.height + ' shown ' + v3.clientWidth;
       out.row = [...el.querySelectorAll('#cadViewBtns .cadb')].map(b => b.textContent.trim() + ':' + !!b.querySelector('svg') + ':' + !emo.test(b.textContent)).join('|');
       el.querySelector('[data-a="show"]').click(); await wait(100); out.none = !S.onShow + '|' + el.querySelector('.sub').textContent;
@@ -1544,14 +1544,14 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       /* Code with Fox Blocks from What next */
       mCad('blocks'); await wait(300); el = WORLD.scene().el; el.querySelector('.cadch[data-ch]').click(); for(let i = 0; i < 4; i++){ await wait(250); const b = [...el.querySelectorAll('#cadGoal button')].find(x => /Build this step/.test(x.textContent)); if(b) b.click(); } await wait(300);
       [...el.querySelectorAll('.cadnext button')].find(b => /Code with Fox Blocks/.test(b.textContent)).click(); await wait(300); out.code = WORLD.scene().cls + '|' + !!WORLD.scene().el.querySelector('iframe.codeframe');
-      WORLD.closeScene(true); delete S.onShow; S.missions = 0; S.cadDone = {}; return out; });
+      WORLD.closeScene(true); delete S.onShow; S.shows = []; S.missions = 0; S.cadDone = {}; return out; });
     const j = JSON.stringify(r);
     assert(r.style === 'true|true|true|true|true|true', 'the mini-map, the joystick, the look buttons and the joy bar have ink outlines and no shadows: ' + j);
     assert(r.toast === 'true|true|true|true', 'the pop-up card is paper cream with an ink outline: ' + j);
     assert(/^true\|true\|true\|/.test(r.sharp), 'on a big screen the 3D picture has as many dots as it is shown at: ' + r.sharp);
     assert(/Put it on show:true:true\|Code it:true:true$/.test(r.row) && /^true\|Build something first/.test(r.none), 'the 3D view has a drawn “Put it on show” button, and an empty build gets a gentle nudge: ' + j);
     assert(r.next === 'Keep it in My makes:true|Make it your own:true|Build it for real:true|Put it on show:true|Code with Fox Blocks:true|Next challenge:true' && r.fits, '“What next?” offers the show table and Fox Blocks, with drawn icons, and still fits: ' + j);
-    assert(/^blocks\|6\|It is on show!\s*Find it on the table outside Dad’s Workshop\.$/.test(r.show) && r.where && r.pic === '520x420|true|true|true', 'the build is kept for the table outside Dad’s Workshop and drawn with a clear background: ' + j);
+    assert(/^blocks\|6\|It is on show!\s*Find it on the show bench outside Dad’s Workshop\.$/.test(r.show) && r.where && r.pic === '520x420|true|true|true', 'the build is kept for the table outside Dad’s Workshop and drawn with a clear background: ' + j);
     assert(r.code === 'sc-code|true', '“Code with Fox Blocks” opens Fox Blocks from the workshop: ' + j);
     /* the 3D view: a flat sky and ink-edged hills */
     const sky = await fr.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)); document.getElementById('v3Btn').click(); await wait(500); const on = document.getElementById('v3Btn').getAttribute('aria-pressed'); const bg = getComputedStyle(document.querySelector('.stage')).backgroundColor; document.getElementById('v3Btn').click(); await wait(200); return on + '|' + bg; });
@@ -1584,7 +1584,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await page.evaluate(() => { showScreen('screen-learn'); learnRenderList(); document.querySelector('#learnFilters [data-subject="Computing"]').click(); }); await wait(200);
     r = await page.evaluate(() => { const cards = [...document.querySelectorAll('#learnList .lesson-card')], note = document.querySelector('#learnList .learn-code-note');
       return { cards:cards.map(c => c.dataset.code + ':' + c.querySelector('.lc-subject').textContent + ':' + !!c.querySelector('svg')).join(','), oak:note ? [...note.querySelectorAll('a')].filter(a => /thenational\.academy\/teachers\/curriculum\/computing-primary\/units\//.test(a.href)).length : 0, ogl:note ? /Open Government Licence v3\.0/.test(note.textContent) : false, nc:note ? /Use sequence, selection and repetition in programs/.test(note.textContent) : false }; });
-    assert(r.cards === 'bush:Computing · Years 1–4:true,dance:Computing · Years 1–3:true,goal:Computing · Years 4–6:true' && r.oak >= 6 && r.ogl && r.nc, 'Computing lists the three Fox Blocks projects with year groups, and a teachers’ note links them to the curriculum and to Oak’s units: ' + JSON.stringify(r));
+    assert(r.cards === 'bush:Computing · Years 1–4:true,dance:Computing · Years 1–3:true,tap:Computing · Years 2–3:true,goal:Computing · Years 4–6:true' && r.oak >= 7 && r.ogl && r.nc, 'Computing lists the four Fox Blocks projects with year groups, and a teachers’ note links them to the curriculum and to Oak’s units: ' + JSON.stringify(r));
     const y5 = await page.evaluate(() => { document.querySelector('#learnYears [data-year="5"]').click(); return [...document.querySelectorAll('#learnList .lesson-card')].map(c => c.dataset.code).join(); });
     assert(y5 === 'goal', 'the year filter applies: Year 5 sees Score a goal: ' + y5);
     await page.evaluate(() => document.querySelector('#learnList .lesson-card[data-code="goal"]').click()); f = await inside(); await wait(400);
@@ -1610,7 +1610,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       out.hud = [chip('leaveBtn'), chip('sndBtn'), chip('thmBtn')].join('|') + '|' + document.querySelector('.hud').firstElementChild.id;
       const was = window.parent.Sound.enabled; document.getElementById('sndBtn').click(); out.snd = [was !== window.parent.Sound.enabled, chip('sndBtn')].join('|'); document.getElementById('sndBtn').click();
       document.getElementById('thmBtn').click(); out.dark = [document.body.classList.contains('dark'), localStorage.getItem('fab-theme'), chip('thmBtn')].join('|');
-      mStem(); await wait(150); let el = WORLD.scene().el; out.darkScene = getComputedStyle(el).backgroundColor + '|' + el.querySelector('.sthm').textContent.trim();
+      mStem(); await wait(500); let el = WORLD.scene().el; out.darkScene = getComputedStyle(el).backgroundColor + '|' + el.querySelector('.sthm').textContent.trim();
       el.querySelector('.sthm').click(); out.lightScene = getComputedStyle(el).backgroundColor + '|' + localStorage.getItem('fab-theme');
       const bx = el.querySelector(':scope > .sx'), br = bx.getBoundingClientRect(); out.back = [bx.textContent.trim(), Math.round(br.left) <= 16, Math.round(br.top) <= 16, getComputedStyle(bx).boxShadow === 'none'].join('|');
       bx.click(); await wait(100); out.closed = !WORLD.scene(); document.getElementById('leaveBtn').click(); out.guard = window.parent.document.querySelector('.screen.active').id;
@@ -1669,7 +1669,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       try{ localStorage.removeItem('fabworld-v2-code-fox-4'); localStorage.removeItem('fabcode-build-code-fox-4'); localStorage.removeItem(F.key); localStorage.removeItem('fabworld-pending-code-fox-4'); }catch(e){}
       return out; });
     await cp.close();
-    assert(q.projects === 'bush,dance,goal,build' && q.maze === '8|8|6|true|[0,7]|[6,0]', 'a build carried from the workshop becomes a fourth project, “My build”, an 8 by 8 maze of the child’s own blocks: ' + JSON.stringify(q));
+    assert(q.projects === 'bush,dance,tap,goal,build' && q.maze === '8|8|6|true|[0,7]|[6,0]', 'a build carried from the workshop becomes a fourth project, “My build”, an 8 by 8 maze of the child’s own blocks: ' + JSON.stringify(q));
     assert(q.wearing === 'star-t-shirt,wizard-hat', 'Fab wears what he wears in Fab Fox World on the Fox Blocks stage: ' + q.wearing);
     assert(/^Fab bumped into your build/.test(q.bump) && /^true\|\d+$/.test(q.solved), 'bumping into the build gets a gentle tip, and the model answer (the fewest blocks) gets through: ' + JSON.stringify(q));
     /* the world: the small activities, Fox's Den, missions and the Music Hut, and "Code it" in the 3D workshop */
@@ -1874,9 +1874,72 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       b.click(); await wait(100); out.dark = [document.body.classList.contains('fab-dark'), localStorage.getItem('fab-theme'), getComputedStyle(document.querySelector('#screen-games .tile')).backgroundColor].join('|');
       showScreen('screen-pairs'); await wait(150); out.game = [document.body.classList.contains('fab-dark'), b.hidden].join('|');
       showScreen('screen-wellbeing'); await wait(150); out.well = [document.body.classList.contains('fab-dark'), getComputedStyle(document.querySelector('.wb2-group')).backgroundColor].join('|');
-      showScreen('screen-learn'); await wait(150); out.learn = document.body.classList.contains('fab-dark');
+      showScreen('screen-learn'); await wait(150); out.learn = [document.body.classList.contains('fab-dark'), b.hidden].join('|');
       b.click(); await wait(100); out.back = [document.body.classList.contains('fab-dark'), localStorage.getItem('fab-theme')].join('|'); return out; });
-    assert(d.light === 'true|false' && /^true\|dark\|/.test(d.dark) && d.game === 'false|true' && d.well === 'true|rgb(255, 212, 131)' && d.learn && d.back === 'false|light', 'menu pages can be dark with light cards; lessons and games stay light: ' + JSON.stringify(d));
+    assert(d.light === 'true|false' && /^true\|dark\|/.test(d.dark) && d.game === 'false|true' && d.well === 'true|rgb(255, 212, 131)' && d.learn === 'false|true' && d.back === 'false|light', 'menu pages can be dark with light cards; the Learning Hub, lessons and games stay light: ' + JSON.stringify(d));
+    await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
+  });
+
+  await test('Round 26: Dark brings evening light to the world; berries feed Pip, have a mission and say when they ripen; a show bench for three builds; dances kept in My makes; Fox Blocks events (Tap and play)', async () => {
+    await page.setViewportSize({ width:1366, height:768 });
+    await page.evaluate(() => { showScreen('screen-games'); showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await page.$('.game-frame[data-game="world"]')).contentFrame();
+    await fr.waitForFunction(() => !!window.WORLD && typeof SHOWMAX !== 'undefined', null, { timeout:15000 });
+    const r = await fr.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), S = WORLD.S(), out = {}; try{ WORLD.closeScene(true); }catch(e){}
+      /* Dark: evening light */
+      const th = THM; setThm('dark'); const d = tod(); out.dusk = d.a >= .26 && d.n >= .65; setThm('light'); setThm(th);
+      /* berries: when they ripen, Pip's snack, the mission */
+      out.ripe = BUSHES.every(b => /\(/.test(b.ripe || ''));
+      const keep = { bk:S.bk, bkn:S.bkn, spk:S.spk, tr:S.treats, has:S.cub.has, nm:S.cub.name };
+      S.bk = {}; S.bkn = {}; S.cub.has = true; S.cub.name = 'Pip'; S.treats = 0;
+      const br = BUSHES[0]; teleportTo(br.x + 150, br.y + 22); WORLD.coll().length = 0; await wait(500); pickBush(br); await wait(100);
+      out.snack = [S.treats, /a snack for Pip/.test(document.getElementById('cheer').textContent)].join('|');
+      const el = mBerryBook('bramble'); out.when = /In real life they ripen in late summer and early autumn/.test(el.querySelector('.bbdet').textContent); WORLD.closeScene(true);
+      const m = MISSIONS.find(x => x.id === 'berries'); out.mission = m ? [m.of, m.v(), m.st].join('|') : '-';
+      mMissions(); await wait(100); const row = [...WORLD.scene().el.querySelectorAll('.mrow')].find(x => /six kinds of berry/.test(x.textContent)); out.misIcon = !!(row && row.querySelector('.mi svg')); WORLD.closeScene(true);
+      Object.assign(S, { bk:keep.bk, bkn:keep.bkn, spk:keep.spk, treats:keep.tr }); S.cub.has = keep.has; S.cub.name = keep.nm;
+      /* the show bench */
+      const keepS = { a:S.shows, b:S.onShow }; S.shows = []; delete S.onShow; S.missions = 30;
+      const bld = n => ({ m:'blocks', cells:{ '2,2':{ h:n, c:'#FE4D02' } }, c:'#FE4D02' }); const offs = [1, 2, 3, 4].map(n => putOnShow(bld(n)));
+      out.bench = [S.shows.length, offs.join(), S.onShow.cells['2,2'].h, S.shows.map(x => x.cells['2,2'].h).join()].join('|');
+      teleportTo(ONSHOW.x, ONSHOW.y + 90); await wait(600); out.goin = document.getElementById('goIn').textContent.trim();
+      document.getElementById('goIn').click(); await wait(200); const sc = WORLD.scene(); out.scene = sc ? [sc.cls, sc.el.querySelectorAll('.shc').length].join('|') : '-';
+      const off = sc.el.querySelectorAll('.shc .mgo')[2]; off.click(); await wait(50); out.arm = off.textContent; off.click(); await wait(200); out.after = [S.shows.length, WORLD.scene() && WORLD.scene().el.querySelectorAll('.shc').length].join('|');
+      WORLD.closeScene(true); S.shows = keepS.a; if(keepS.b) S.onShow = keepS.b; else delete S.onShow; S.missions = 0;
+      /* a dance kept in Fox Blocks shows in My makes, with Watch it */
+      const who = KEY.replace('fabworld-v2-', '') || 'local', mk = 'fabcode-makes-' + who, was = localStorage.getItem(mk);
+      localStorage.setItem(mk, JSON.stringify([{ k:'dance', t:12345, name:'My dance', n:4, level:'d3', prog:[['hop'], ['spin']], pic:'' }]));
+      mStudio('makes'); await wait(200); const fig = WORLD.scene().el.querySelector('.dgal .dfig'); out.makes = fig ? fig.querySelector('figcaption').textContent + '|' + /Watch it/.test(fig.textContent) : '-';
+      fig.querySelector('.mgo').click(); await wait(300); const cf = WORLD.scene() && WORLD.scene().el.querySelector('iframe.codeframe'); out.watch = cf ? [/project=dance/.test(cf.src), /play=12345/.test(cf.src)].join('|') : '-';
+      WORLD.closeScene(true); if(was == null) localStorage.removeItem(mk); else localStorage.setItem(mk, was);
+      return out; });
+    const j = JSON.stringify(r);
+    assert(r.dusk, 'with Dark chosen the world is in evening light: ' + j);
+    assert(r.ripe && r.when && r.snack === '1|true' && r.mission === '6|1|3' && r.misIcon, 'each berry says when it ripens, a picked bush gives Pip a snack, and a mission asks for all six kinds: ' + j);
+    assert(r.bench === '3|false,false,false,true|4|4,3,2' && r.goin === 'See the show bench' && r.scene === 'sc-shows|3' && /Tap again/.test(r.arm) && r.after === '2|2', 'the show bench holds three builds, newest first, and a build can be taken off: ' + j);
+    assert(r.makes === 'My dance · 4 blocks|true' && r.watch === 'true|true', 'a dance kept in Fox Blocks is in My makes and plays again in Fox Blocks: ' + j);
+    /* Fox Blocks: events, and Keep my dance */
+    const cp = await codePage('?learner=code-fox-6');
+    const q = await cp.evaluate(async () => { const F = FabCode, wait = ms => new Promise(res => setTimeout(res, ms)), out = {}; F.speed = 40;
+      F.open('tap', 0); await wait(200); out.blocks = [...document.querySelectorAll('.fc-ctrl [data-a]')].map(b => b.dataset.a).join();
+      let x = await F.tap('fab'); out.none = /Nothing happened/.test(x.tip);
+      F.setProgram({ fab:[['spin']] }); x = await F.tap('fab'); out.wrong = /not a hop/.test(x.tip || '');
+      F.setProgram({ fab:[['hop']] }); const cv = document.getElementById('fcStage'), b = cv.getBoundingClientRect(), T = F.state().tile;
+      cv.dispatchEvent(new PointerEvent('pointerdown', { clientX:b.left + 1.5 * T, clientY:b.top + 1.6 * T, bubbles:true })); await wait(100); while(F.state().running) await wait(50);
+      out.e1 = F.state().done.e1 + '|' + F.state().panel;
+      F.open('tap', 1); F.setProgram({ fab:[['spin']], bush:[['say', 'Yum!']] }); x = await F.tap('fab'); out.wait = x.wait + '|' + ((document.querySelector('.fc-note') || {}).textContent || '');
+      document.querySelector('.fc-ctrl [data-a="tapbush"]').click(); await wait(100); while(F.state().running) await wait(50); out.e2 = F.state().done.e2 + '|' + F.state().panel;
+      F.open('tap', 2); F.setProgram({ go:[['hop']], fab:[['hop']], bush:[['spin']] }); x = await F.run(); out.same = /the same thing/.test(x.tip || '');
+      /* keep my dance */
+      F.open('dance', 2); F.setProgram([['repeat', 2, [['hop'], ['wiggle']]], ['spin'], ['say', 'Hooray!']]); x = await F.run(); const kb = document.querySelector('[data-a="keepdance"]'); out.keepBtn = !!kb;
+      kb.click(); const kept = JSON.parse(localStorage.getItem(F.makesKey) || '[]'); out.kept = [kept.length, kept[0] && kept[0].k, kept[0] && kept[0].n, !!(kept[0] && /^data:image/.test(kept[0].pic))].join('|');
+      const again = F.keepDance(); out.again = again.kept + '|' + JSON.parse(localStorage.getItem(F.makesKey)).length;
+      const pr = await F.playKept(kept[0].t); out.play = [!!pr, F.state().project, F.state().level].join('|');
+      localStorage.removeItem(F.makesKey); try{ localStorage.removeItem(F.key); }catch(e){} return out; });
+    await cp.close();
+    assert(q.blocks === 'go,tapfab,reset,clear' && q.none && q.wrong && q.e1 === '1|win', 'Tap and play: a tap with no code, or the wrong code, gets a gentle tip; a tap on Fab on the stage runs his code: ' + JSON.stringify(q));
+    assert(/^Now tap the bush\.\|Now tap the bush\.$/.test(q.wait) && q.e2 === '1|win' && q.same, 'with two events Fox Blocks says what to tap next, and each event must do something different in the last puzzle: ' + JSON.stringify(q));
+    assert(q.keepBtn && q.kept === '1|dance|5|true' && q.again === 'false|1' && q.play === 'true|dance|d3', 'a finished dance can be kept in My makes (once) and played again: ' + JSON.stringify(q));
     await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
   });
 
