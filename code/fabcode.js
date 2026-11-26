@@ -82,6 +82,9 @@
     kick:P('M3 13h7M2 20h5M3 27h7') + `<circle cx="24" cy="20" r="12" fill="${CREAM}" stroke="${INK}" stroke-width="3"/>` + P('M24 13.5l6 4.4-2.3 7h-7.4L18 17.9z', INK),
     jump:P('M4 31C8 7 27 7 33 25') + P('M26.5 22.5l6.6 4 2.5-7.5', CREAM) + P('M14 35l4.5-10 4.5 10z', ORANGE),
     until:P('M8.5 17A12 12 0 0 1 30 12.5') + P('M31.5 4.5v9h-9', CREAM) + P('M31.5 23A12 12 0 0 1 10 27.5') + P('M8.5 35.5v-9h9', CREAM) + `<circle cx="20" cy="20" r="3.4" fill="${ORANGE}" stroke="${INK}" stroke-width="2"/>`,
+    tap:P('M17 35V16a3 3 0 0 1 6 0v9l7 1.6c2.4.6 3.6 2.6 3 5L32 35z', CREAM) + P('M12 9.5l-3-3M20 6.5V2.5M28 9.5l3-3'),
+    tapbush:`<circle cx="12" cy="24" r="8" fill="${GRASS}" stroke="${INK}" stroke-width="2.6"/><circle cx="10" cy="22" r="2" fill="#3B2440"/><circle cx="14.5" cy="26" r="2" fill="#3B2440"/>` + P('M23 36V20a2.6 2.6 0 0 1 5.2 0v7l5.5 1.3c2 .5 3 2.2 2.6 4.2L35.5 36z', CREAM),
+    keep:P('M6 8h28v24H6z', CREAM) + P('M20 27c-5-3.5-8-6-8-9.2 0-2.3 1.8-4 4-4 1.7 0 3 1 4 2.4 1-1.4 2.3-2.4 4-2.4 2.2 0 4 1.7 4 4 0 3.2-3 5.7-8 9.2z', ORANGE),
     fork:P('M20 37V23M20 23L9 11M20 23l11-12') + `<circle cx="8.5" cy="9" r="4.6" fill="${GOLD}" stroke="${INK}" stroke-width="3"/><circle cx="31.5" cy="9" r="4.6" fill="${GLASS}" stroke="${INK}" stroke-width="3"/>`
   };
   const svg = k => `<svg viewBox="0 0 40 40" aria-hidden="true">${ICON[k] || ''}</svg>`;
@@ -134,6 +137,25 @@
         steps:['Try each block to see what it does.', 'Build your dance. A repeat makes a good chorus.', 'Press Go and dance along.'],
         sol:[['repeat', 2, [['hop'], ['wiggle']]], ['spin'], ['say', 'Hooray!']], win:'You are a choreographer and a coder.',
         check:r => { const kinds = new Set(r.trace).size; return r.trace.length >= 5 && kinds >= 3 ? null : `That dance had ${r.trace.length} move${r.trace.length === 1 ? '' : 's'} of ${kinds} kind${kinds === 1 ? '' : 's'}. Try for 5 moves and 3 different kinds.`; } }
+    ] },
+    /* Events (Year 3, "events and actions in programs"): code that waits for something to happen. Go is an event too.
+       Each script sits under its own hat: Go, "when I tap Fab" or "when I tap the bush". A puzzle is done when each event it needs has happened. */
+    { id:'tap', name:'Tap and play', about:'Code that waits for something to happen. Tap Fab, tap the bush, and watch your code run.', levels:[
+      { id:'e1', events:true, name:'Tap Fab', cols:5, rows:3, start:[1, 1], tapBush:[3, 1], need:['fab'], blocks:['whenfab', 'hop', 'spin', 'wiggle', 'say'],
+        say:'Some code waits for something to happen. Make Fab hop when you tap him.',
+        steps:[`Drag ${K('when I tap Fab')} onto the blocks.`, `Snap ${K('hop')} under it.`, 'Now tap Fab on the stage.'],
+        sol:{ fab:[['hop']] }, win:'Tapping Fab is an event. Your code waited for it, and then it ran.',
+        check:E => (E.fab || []).includes('hop') ? null : 'Fab did something, but not a hop. Look at the block under “when I tap Fab”.' },
+      { id:'e2', events:true, name:'Two things to tap', cols:5, rows:3, start:[1, 1], tapBush:[3, 1], need:['fab', 'bush'], blocks:['whenfab', 'whenbush', 'hop', 'spin', 'wiggle', 'say'],
+        say:'Make Fab spin when you tap him, and say something when you tap the bush.',
+        steps:[`Use ${K('when I tap Fab')} and ${K('when I tap the bush')}: one for each.`, 'Snap a block under each one.', 'Tap Fab, then tap the bush.'],
+        sol:{ fab:[['spin']], bush:[['say', 'Yum!']] }, win:'Two events, two bits of code. Each one waits for its own tap.',
+        check:E => !(E.fab || []).includes('spin') ? 'When you tapped Fab, he did not spin. Look at the code under “when I tap Fab”.' : !(E.bush || []).includes('say') ? 'When you tapped the bush, Fab did not say anything. Put a say block under “when I tap the bush”.' : null },
+      { id:'e3', events:true, name:'Go, tap, tap', cols:5, rows:3, start:[1, 1], tapBush:[3, 1], need:['go', 'fab', 'bush'], blocks:['whenfab', 'whenbush', 'hop', 'spin', 'wiggle', 'grow', 'shrink', 'say', 'wait', 'repeat'],
+        say:'Go is an event too! Give Fab something to do when you press Go, when you tap him and when you tap the bush.',
+        steps:[`Snap blocks under ${K('Go')}, ${K('when I tap Fab')} and ${K('when I tap the bush')}.`, 'Make each one different.', `Press ${K('Go')}, then tap Fab and the bush.`],
+        sol:{ go:[['say', 'Hello!']], fab:[['repeat', 2, [['hop']]]], bush:[['grow'], ['shrink']] }, win:'Three events, three bits of code. That is how games know what to do when you press or tap.',
+        check:E => { const a = ['go', 'fab', 'bush'].map(k => (E[k] || []).join()); return a[0] === a[1] || a[1] === a[2] || a[0] === a[2] ? 'Two of your events make Fab do the same thing. Make each one different.' : null; } }
     ] },
     /* The next level: the code has to look before it moves. ballAt / conesAt list the places things can be; one is picked afresh on every Go,
        and a puzzle only counts as done when the code would score wherever they land. */
@@ -226,6 +248,8 @@
     const CONDS = [['next to the ball', 'ball'], ['a cone is ahead', 'cone'], ['the way is clear', 'clear']];
     defs.push(Object.assign({ type:'fab_until', message0:'%1 repeat until %2', args0:[img('until'), { type:'field_dropdown', name:'C', options:CONDS }], message1:'%1', args1:[{ type:'input_statement', name:'DO' }], style:'fab_loop', tooltip:'Everything inside runs again and again until this is true.' }, stack));
     defs.push(Object.assign({ type:'fab_ifelse', message0:'%1 if %2', args0:[img('fork'), { type:'field_dropdown', name:'C', options:[CONDS[1], CONDS[0], CONDS[2]] }], message1:'%1', args1:[{ type:'input_statement', name:'DO' }], message2:'else', message3:'%1', args3:[{ type:'input_statement', name:'ELSE' }], style:'fab_logic', tooltip:'If this is true, the top part runs. If not, the else part runs.' }, stack));
+    defs.push({ type:'fab_whenfab', message0:'%1 when I tap Fab', args0:[img('tap')], nextStatement:null, style:'fab_event', tooltip:'The code under this runs every time you tap Fab on the stage.' });
+    defs.push({ type:'fab_whenbush', message0:'%1 when I tap the bush', args0:[img('tapbush')], nextStatement:null, style:'fab_event', tooltip:'The code under this runs every time you tap the bramble bush on the stage.' });
     B.common.defineBlocksWithJsonArray(defs);
   }
   const THEMES = {};
@@ -266,7 +290,7 @@
     B.Events.enable(); loading = false;
     try{ ws.scroll(0, 0); }catch(e){}
   }
-  function setProgram(list){ loadState(fresh(list)); saveCode(); panel(null); lit(null); }
+  function setProgram(list){ loadState(list && !Array.isArray(list) ? freshEv(list) : fresh(list)); saveCode(); panel(null); lit(null); EVT = {}; EVNOTE = ''; }
   function readList(block){
     const out = [];
     for(let b = block; b; b = b.getNextBlock()){
@@ -282,6 +306,12 @@
     return out;
   }
   const program = () => { const go = ws && ws.getBlocksByType('fab_go', false)[0]; return go ? readList(go.getNextBlock()) : []; };
+  /* event puzzles: one script per hat, in the order Go, tap Fab, tap the bush (empty scripts left out) */
+  const EVK = { go:'fab_go', fab:'fab_whenfab', bush:'fab_whenbush' };
+  const scripts = () => { const o = {}; Object.keys(EVK).forEach(k => { const h = ws && ws.getBlocksByType(EVK[k], false)[0], l = h ? readList(h.getNextBlock()) : []; if(l.length) o[k] = l; }); return o; };
+  const plainEv = o => { const r = {}; Object.keys(EVK).forEach(k => { if(o[k] && o[k].length) r[k] = plain(o[k]); }); return r; };
+  const freshEv = sol => { const st = fresh(sol.go || []); let y = 24 + (1 + count(fromPlain(sol.go || []))) * 64 + 30;
+    ['fab', 'bush'].forEach(k => { if(!sol[k]) return; const h = { type:EVK[k], x:24, y }, c = chain(sol[k]); if(c) h.next = { block:c }; st.blocks.blocks.push(h); y += (1 + count(fromPlain(sol[k]))) * 64 + 30; }); return st; };
   const plain = list => list.map(it => it.t === 'ifelse' ? [it.t, it.n, plain(it.body || []), plain(it.other || [])] : it.t === 'repeat' || it.t === 'until' ? [it.t, it.n, plain(it.body || [])] : it.n != null ? [it.t, it.n] : [it.t]);
   const fromPlain = list => (list || []).map(([t, n, body, other]) => ({ t, n, body:body ? fromPlain(body) : undefined, other:other ? fromPlain(other) : undefined }));
   const count = list => list.reduce((a, it) => a + 1 + (it.body ? count(it.body) : 0) + (it.other ? count(it.other) : 0), 0);
@@ -299,6 +329,7 @@
   const rnd = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
   let PJ = null, LV = null, LI = 0, FAB = null, VIEW = { way:null, wayT:0, pops:[] };
   const RUN = { on:false, stop:false, count:0, trace:[], bump:null, passed:false };
+  let EVT = {}, EVNOTE = '';   /* what each event did since the code last changed; the next thing to do */
   const FC = { speed:1 };
   function resetFab(L){
     L = L || LV; if(!L) return;
@@ -352,7 +383,7 @@
     F.prints.forEach(p => { if(!ok(IMG.paw)) return; const s = T * .3; g.save(); g.translate((p.x + .5) * T, (p.y + .62) * T); g.rotate(p.a); g.globalAlpha = .62; g.drawImage(IMG.paw, -s / 2, -s / 2, s, s); g.restore(); });
     if(V && V.way && V.way.length > 1){ g.save(); g.setLineDash([T * .13, T * .13]); g.strokeStyle = ORANGE; g.lineWidth = lw * 1.5; g.beginPath(); V.way.forEach(([x, y], i) => { const X = (x + .5) * T, Y = (y + .5) * T; if(i) g.lineTo(X, Y); else g.moveTo(X, Y); }); g.stroke(); g.setLineDash([]);
       V.way.forEach(([x, y], i) => { g.beginPath(); g.arc((x + .5) * T, (y + .5) * T, T * (i === V.way.length - 1 ? .1 : .055), 0, Math.PI * 2); g.fillStyle = i === V.way.length - 1 ? ORANGE : CREAM; g.fill(); g.strokeStyle = INK; g.lineWidth = lw * .7; g.stroke(); }); g.restore(); }
-    if(L.goal && ok(IMG.bush)){ const w = T * 1.96, h = w * IMG.bush.naturalHeight / IMG.bush.naturalWidth; g.drawImage(IMG.bush, L.goal[0] * T + T * .02, (L.goal[1] + 1) * T - h - T * .1, w, h); }
+    const gb = L.goal || L.tapBush; if(gb && ok(IMG.bush)){ const w = T * 1.96, h = w * IMG.bush.naturalHeight / IMG.bush.naturalWidth; g.drawImage(IMG.bush, gb[0] * T + T * .02, (gb[1] + 1) * T - h - T * .1, w, h); }
     (L.berries || []).forEach(([x, y], i) => { if(F.got[i] || !ok(IMG.berry)) return; const s = T * .46; g.drawImage(IMG.berry, (x + .5) * T - s / 2, (y + .56) * T - s / 2, s, s); });
     if(V) V.pops.forEach(p => { if(!ok(IMG.berry)) return; const s = T * .4 * (1 - p.k * .3); g.save(); g.globalAlpha = 1 - p.k; g.drawImage(IMG.berry, (p.x + .5) * T - s / 2, (p.y + .3 - p.k * .7) * T - s / 2, s, s); g.restore(); });
     if(L.kind === 'goal'){ const x0 = (L.cols - 1) * T + T * .14, w = T * .78; g.fillStyle = 'rgba(255,253,247,.8)'; g.strokeStyle = INK; g.lineWidth = lw; g.beginPath(); g.roundRect(x0, T * .12, w, H - T * .24, T * .1); g.fill(); g.stroke();
@@ -379,6 +410,10 @@
     if(VIEW.way && performance.now() > VIEW.wayT){ VIEW.way = null; need = true; }
     requestAnimationFrame(frame);
   }
+  /* event puzzles: a tap on Fab or on the bush, on the stage itself */
+  cv.addEventListener('pointerdown', e => { if(!LV || !LV.events || RUN.on || !FAB) return; const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) / TILE, y = (e.clientY - r.top) / TILE;
+    const onFab = Math.abs(x - (FAB.px + .5)) < .55 && y > FAB.py - .2 && y < FAB.py + 1.05, b = LV.tapBush, onBush = b && x > b[0] && x < b[0] + 2 && y > b[1] - .3 && y < b[1] + 1.05;
+    if(onFab){ e.preventDefault(); fire('fab'); } else if(onBush && LV.blocks.includes('whenbush')){ e.preventDefault(); fire('bush'); } else if(onBush){ e.preventDefault(); live('In this puzzle the bush has no code. Tap Fab.'); } });
   const STOP = { stop:true };
   /* run fn(0..1) for ms; Stop ends it at once */
   function anim(ms, fn){
@@ -442,6 +477,28 @@
     if(model){ lit(null); return res; }
     return judge(res);
   }
+  const EVNAME = { go:'press Go', fab:'tap Fab', bush:'tap the bush' };
+  async function fire(k, model){
+    if(RUN.on || !LV || !LV.events) return null;
+    const list = model ? fromPlain(LV.sol[k] || []) : (scripts()[k] || []);
+    if(!list.length){ const tip = k === 'go' ? 'Nothing happened. There is no code under Go yet.' : `Nothing happened: there is no code for a tap on ${k === 'fab' ? 'Fab' : 'the bush'} yet. Drag ${k === 'fab' ? '“when I tap Fab”' : '“when I tap the bush”'} onto the blocks and snap a block under it.`;
+      if(!model){ panel('tip', tip); live(tip); } return { fired:k, tip }; }
+    RUN.on = true; RUN.stop = false; RUN.count = 0; RUN.trace = []; VIEW.way = null; if(!model) panel(null); controls();
+    const res = { ok:false, fired:k, blocks:count(list) };
+    try{ await runList(list); }catch(e){ if(e === STOP) res.stopped = true; else if(e && e.limit) res.limit = true; else if(e && e.bump) res.bump = e.bump; else { RUN.on = false; controls(); throw e; } }
+    FAB.lift = 0; FAB.rot = 0; FAB.sx = 1; FAB.say = null; FAB.shake = 0; need = true; lit(null); RUN.on = false;
+    if(model || res.stopped){ controls(); if(res.stopped) live('Stopped.'); return res; }
+    if(res.limit){ const tip = 'That is a very long dance! Fab needs a rest. Try a smaller number in repeat.'; res.tip = tip; panel('tip', tip); live(tip); controls(); return res; }
+    EVT[k] = RUN.trace.slice(); res.ev = JSON.parse(JSON.stringify(EVT));
+    const left = LV.need.filter(n => !EVT[n]);
+    if(left.length){ EVNOTE = 'Now ' + EVNAME[left[0]] + '.'; controls(); live(EVNOTE); res.wait = EVNOTE; return res; }
+    EVNOTE = ''; controls();
+    const tip = LV.check(EVT); if(tip){ res.tip = tip; panel('tip', tip); live(tip); return res; }
+    res.ok = true; res.blocks = count([].concat(...Object.values(scripts()))); SFX.win(); const first = !SAVE.done[LV.id]; SAVE.done[LV.id] = 1; store(); if(first) star(); res.first = first;
+    cheer(); panel('win', res); dots(); return res;
+  }
+  /* every event the puzzle needs, one after another (the model answer, and the tests) */
+  async function fireAll(model){ let r = null; EVT = {}; for(const k of LV.need){ r = await fire(k, model); if(!r || r.stopped || (r.tip && !model)) break; } return r; }
   function judge(res){
     const L = LV; res.x = FAB.x; res.y = FAB.y;
     if(res.stopped){ live('Stopped.'); return res; }
@@ -477,9 +534,9 @@
   /* ---------- the page ---------- */
   const live = t => { $('fcLive').textContent = t; };
   let tipNow = null, clearArmed = 0;
-  function edited(){ if(RUN.on) return; if(tipNow){ panel(null); } lit(null); }
+  function edited(){ if(RUN.on) return; if(tipNow){ panel(null); } lit(null); if(LV && LV.events && (Object.keys(EVT).length || EVNOTE)){ EVT = {}; EVNOTE = ''; controls(); } }
   function brief(){
-    const L = LV, dance = !L.goal, show = L.goal ? 'Show me the way' : L.kind === 'goal' ? 'Show me how' : 'Show me the dance';
+    const L = LV, dance = !L.goal, show = L.goal ? 'Show me the way' : L.kind === 'goal' || L.events ? 'Show me how' : 'Show me the dance';
     $('fcBrief').innerHTML = `<div class="fc-say"><span class="fc-who dad" role="img" aria-label="Dad"></span><div class="fc-bubble"><b>Dad says</b>${esc(L.say)}</div></div>
       <div id="fcPanel"></div>
       <ol class="fc-steps">${L.steps.map(s => `<li>${s}</li>`).join('')}</ol>
@@ -491,17 +548,20 @@
     relay();
     if(kind === 'tip'){ $('fcBrief').scrollTop = 0; el.innerHTML = `<div class="fc-tip"><span class="fc-who doc" role="img" aria-label="Doctor McPhee"></span><div class="fc-bubble"><b>Doctor McPhee’s tip</b>${esc(data)}</div></div>`; return; }
     const L = LV, last = LI === PJ.levels.length - 1, other = PROJECTS[(PROJECTS.indexOf(PJ) + 1) % PROJECTS.length], n = data.blocks;
-    const line = (L.goal ? `Fab reached the bramble bush${(L.berries || []).length ? ' and picked every berry' : ''} with ${n} block${n === 1 ? '' : 's'}.` : L.kind === 'goal' ? `Goal! Fab scored with ${n} block${n === 1 ? '' : 's'}${layouts(L).length > 1 ? ', wherever things landed' : ''}.` : `Fab danced with ${n} block${n === 1 ? '' : 's'}.`) + ' ' + L.win;
+    const line = (L.goal ? `Fab reached the bramble bush${(L.berries || []).length ? ' and picked every berry' : ''} with ${n} block${n === 1 ? '' : 's'}.` : L.kind === 'goal' ? `Goal! Fab scored with ${n} block${n === 1 ? '' : 's'}${layouts(L).length > 1 ? ', wherever things landed' : ''}.` : L.events ? `Your code waited, then ran: ${n} block${n === 1 ? '' : 's'}.` : `Fab danced with ${n} block${n === 1 ? '' : 's'}.`) + ' ' + L.win;
     el.innerHTML = `<div class="fc-win"><div class="fc-say"><span class="fc-who elder" role="img" aria-label="Mr Elder, the head teacher"></span><div class="fc-bubble"><b>You did it!</b>${esc(line)}${data.first ? ' You earned a star. It turns into a berry for Fab’s basket.' : ''}</div></div>
       <h3>What next?</h3>
       ${last ? btn('next', esc('Next project: ' + other.name), '', `data-a="project" data-p="${other.id}"`) : btn('next', 'Next puzzle', '', 'data-a="nextlevel"')}
+      ${PJ && PJ.id === 'dance' ? btn('keep', 'Keep my dance in My makes', 'gold', 'data-a="keepdance"') : ''}
       ${btn('again', 'Try it another way', '', 'data-a="another"')}
       ${btn('home', 'All projects', '', 'data-a="home"')}
       <p style="margin:0;font-size:.95em">Or stop here. This is a good place to finish.</p></div>`;
     live('You did it! ' + line); $('fcBrief').scrollTop = 0;
   }
   function controls(){
+    const ev = LV && LV.events;
     $('fcCtrl').innerHTML = (RUN.on ? btn('stop', 'Stop', 'peach big', 'data-a="stop"') : btn('go', 'Go', 'gold big', 'data-a="go"'))
+      + (ev ? btn('tap', 'Tap Fab', 'sky', `data-a="tapfab" ${RUN.on ? 'disabled' : ''}`) + (LV.blocks.includes('whenbush') ? btn('tapbush', 'Tap the bush', 'sky', `data-a="tapbush" ${RUN.on ? 'disabled' : ''}`) : '') + (EVNOTE ? `<span class="fc-note" role="status">${esc(EVNOTE)}</span>` : '') : '')
       + btn('reset', 'Fab back to the start', '', `data-a="reset" ${RUN.on ? 'disabled' : ''}`) + btn('bin', clearArmed ? 'Tap again to clear' : 'Clear my blocks', clearArmed ? 'peach' : '', `data-a="clear" ${RUN.on ? 'disabled' : ''}`);
   }
   function dots(){
@@ -513,8 +573,9 @@
     PJ = p; LI = clamp(0, li | 0, p.levels.length - 1); LV = p.levels[LI];
     root.dataset.view = 'work'; $('fcHome').hidden = true; $('fcWork').hidden = false; $('fcBack').hidden = false; $('fcBack').innerHTML = svg('back') + '<span>All projects</span>'; $('fcBack').dataset.a = 'home';
     $('fcWhere').textContent = `${p.name} · ${LI + 1}. ${LV.name}`; document.title = `${LV.name} · Fox Blocks`;
-    cv.setAttribute('aria-label', LV.goal ? 'Fab on the grass, with a bramble bush to reach' : LV.kind === 'goal' ? 'Fab on the pitch, with a ball and a net' : 'Fab on the grass, ready to dance');
-    VIEW = { way:null, wayT:0, pops:[] }; clearArmed = 0; LAYNOW = null; brief(); dots(); controls(); resetFab();
+    cv.setAttribute('aria-label', LV.goal ? 'Fab on the grass, with a bramble bush to reach' : LV.kind === 'goal' ? 'Fab on the pitch, with a ball and a net' : LV.events ? 'Fab on the grass beside a bramble bush. Tap Fab or the bush.' : 'Fab on the grass, ready to dance');
+    root.classList.toggle('events', !!LV.events);
+    VIEW = { way:null, wayT:0, pops:[] }; clearArmed = 0; LAYNOW = null; EVT = {}; EVNOTE = ''; brief(); dots(); controls(); resetFab();
     if(!ws) inject(LV); else ws.updateToolbox(toolbox(LV));
     lay(); loadState(SAVE.code[LV.id] || fresh(LV.begin || [])); lit(null); need = true;
   }
@@ -527,12 +588,38 @@
     homeArt(); lay();
   }
   function homeArt(){
-    document.querySelectorAll('canvas[data-art]').forEach(c => { const p = PROJECTS.find(x => x.id === c.dataset.art), L = p.id === 'bush' ? Object.assign({}, p.levels[0], { rows:3, start:[0, 1], goal:[4, 1], path:[[1, 1], [2, 1], [3, 1]], walls:[[1, 0, 'pond'], [3, 2, 'log']], berries:[[2, 1]] }) : p.id === 'goal' ? Object.assign({}, p.levels[3], { cols:7, ball:[5, 1] }) : p.id === 'build' ? Object.assign({}, p.levels[0]) : Object.assign({}, p.levels[0], { cols:6, rows:3, start:[2, 1], walls:[[5, 0, 'stone'], [0, 2, 'pond']] }), g = c.getContext('2d'), T = c.width / L.cols;
+    document.querySelectorAll('canvas[data-art]').forEach(c => { const p = PROJECTS.find(x => x.id === c.dataset.art), L = p.id === 'bush' ? Object.assign({}, p.levels[0], { rows:3, start:[0, 1], goal:[4, 1], path:[[1, 1], [2, 1], [3, 1]], walls:[[1, 0, 'pond'], [3, 2, 'log']], berries:[[2, 1]] }) : p.id === 'goal' ? Object.assign({}, p.levels[3], { cols:7, ball:[5, 1] }) : p.id === 'build' ? Object.assign({}, p.levels[0]) : p.id === 'tap' ? Object.assign({}, p.levels[0], { cols:6, rows:3, start:[1, 1], tapBush:[3, 1] }) : Object.assign({}, p.levels[0], { cols:6, rows:3, start:[2, 1], walls:[[5, 0, 'stone'], [0, 2, 'pond']] }), g = c.getContext('2d'), T = c.width / L.cols;
       g.setTransform(1, 0, 0, 1, 0, 0); g.save(); g.translate(0, -(L.rows * T - c.height) / 2);
       scene(g, L, T, { px:L.start[0], py:L.start[1], lift:p.id === 'dance' ? .3 : 0, rot:p.id === 'dance' ? .15 : 0, sx:1, size:1, say:p.id === 'dance' ? 'Hooray!' : null, prints:[], got:{}, shake:0, ball:L.kind === 'goal' ? { px:L.ball[0], py:L.ball[1] } : null, cones:L.kind === 'goal' ? [[2, 1], [4, 1]] : [] }, null); g.restore(); });
   }
+  const MAKESKEY = 'fabcode-makes-' + (who || 'local');
+  function keepDance(){
+    const prog = plain(program()); if(!prog.length) return;
+    let pic = ''; try{ const L = LV, T = 48, c = document.createElement('canvas'); c.width = L.cols * T; c.height = L.rows * T; const g = c.getContext('2d');
+      scene(g, L, T, { px:L.start[0], py:L.start[1], lift:.3, rot:.12, sx:1, size:1, say:null, prints:[], got:{}, shake:0, ball:null, cones:[] }, null); pic = c.toDataURL('image/jpeg', .82); }catch(e){}
+    let all = []; try{ all = JSON.parse(localStorage.getItem(MAKESKEY) || '[]') || []; }catch(e){}
+    const same = all.find(x => x.k === 'dance' && JSON.stringify(x.prog) === JSON.stringify(prog));
+    if(!same){ all.unshift({ k:'dance', t:Date.now(), name:'My dance', n:count(program()), level:LV.id, prog, pic }); all = all.slice(0, 6); try{ localStorage.setItem(MAKESKEY, JSON.stringify(all)); }catch(e){ all.length = Math.max(1, all.length - 2); try{ localStorage.setItem(MAKESKEY, JSON.stringify(all)); }catch(e2){} } }
+    const msg = same ? 'This dance is already in My makes.' : 'Kept! Find your dance in the Studio in Fab Fox World, under My makes.';
+    const b = document.querySelector('[data-a="keepdance"]'); if(b){ b.disabled = true; b.innerHTML = svg('tick') + '<span>' + esc(same ? 'Already in My makes' : 'Kept in My makes') + '</span>'; }
+    live(msg); SFX.berry(); return { kept:!same, msg };
+  }
+  /* a kept dance played again from My makes: code.html?project=dance&play=<time kept> */
+  async function playKept(t){
+    let all = []; try{ all = JSON.parse(localStorage.getItem(MAKESKEY) || '[]') || []; }catch(e){}
+    const d = all.find(x => String(x.t) === String(t)); if(!d) return null;
+    const p = PROJECTS.find(x => x.id === 'dance'); open('dance', Math.max(0, p.levels.findIndex(l => l.id === (d.level || 'd3'))));
+    loadState(fresh(d.prog)); panel(null); live('Here is your dance from My makes.'); const r = await play(fromPlain(d.prog), true); resetFab(); return r;
+  }
   function addNext(){
-    if(RUN.on) return; const sol = LV.sol, cur = plain(program()); let k = 0;
+    if(RUN.on) return;
+    if(LV.events){ const sol = LV.sol, keys = Object.keys(sol), cur = plainEv(scripts()); let k = 0;
+      while(k < keys.length && JSON.stringify(cur[keys[k]]) === JSON.stringify(sol[keys[k]])) k++;
+      if(k >= keys.length && JSON.stringify(cur) === JSON.stringify(sol)){ panel('tip', 'Your code matches the model now. ' + LV.need.map(n => EVNAME[n]).join(', then ') + '!'); return; }
+      const next = {}; keys.slice(0, Math.min(keys.length, k + 1)).forEach(x => { next[x] = sol[x]; }); setProgram(next);
+      const msg = `I added the code for when you ${EVNAME[keys[Math.min(k, keys.length - 1)]]}. ${k + 1 >= keys.length ? 'That is everything. ' + LV.need.map(n => EVNAME[n]).join(', then ') + '!' : 'Try it, or ask me again.'}`;
+      panel('tip', msg); live(msg); return; }
+    const sol = LV.sol, cur = plain(program()); let k = 0;
     while(k < cur.length && k < sol.length && JSON.stringify(cur[k]) === JSON.stringify(sol[k])) k++;
     if(k >= sol.length && cur.length === sol.length){ panel('tip', 'Your code matches the model now. Press Go!'); return; }
     const swapped = cur.length > k; setProgram(sol.slice(0, Math.min(sol.length, k + 1)));
@@ -542,6 +629,7 @@
   function showWay(){
     if(RUN.on) return;
     if(LV.goal){ resetFab(); VIEW.way = route(LV); VIEW.wayT = performance.now() + 7000 / Math.max(.05, FC.speed); need = true; live('The orange dots show one way to the bush.'); }
+    else if(LV.events){ resetFab(); fireAll(true).then(() => { resetFab(); EVT = {}; live('That was one way to do it. Now build yours, then ' + LV.need.map(n => EVNAME[n]).join(', then ') + '.'); }); }
     else play(fromPlain(LV.sol), true).then(() => { resetFab(); live('That was one way to do it. Now build yours.'); });
   }
   root.addEventListener('click', e => {
@@ -553,14 +641,17 @@
     else if(a === 'leave'){ saveCode(); try{ window.parent.fabCodeBack(); }catch(e){} }
     else if(a === 'sound'){ try{ localStorage.setItem(SNDKEY, soundOn() ? 'off' : 'on'); }catch(e){} paintSound(); try{ window.parent.fabSoundSync && window.parent.fabSoundSync(); }catch(e){} if(soundOn()) SFX.berry(); }
     else if(a === 'theme'){ try{ localStorage.setItem(THEMEKEY, themeNow() === 'dark' ? 'light' : 'dark'); }catch(e){} paintTheme(); if(ws) try{ ws.setTheme(makeTheme()); }catch(e){} }
-    else if(a === 'go') play(program());
+    else if(a === 'go'){ if(LV && LV.events){ fire('go'); } else play(program()); }
+    else if(a === 'tapfab') fire('fab');
+    else if(a === 'tapbush') fire('bush');
+    else if(a === 'keepdance') keepDance();
     else if(a === 'stop'){ RUN.stop = true; }
-    else if(a === 'reset'){ resetFab(); lit(null); panel(null); }
+    else if(a === 'reset'){ resetFab(); lit(null); panel(null); EVT = {}; EVNOTE = ''; controls(); }
     else if(a === 'clear'){ if(clearArmed){ clearArmed = 0; setProgram(LV.begin || []); resetFab(); panel(null); live(LV.begin ? 'Back to the starting blocks.' : 'Blocks cleared.'); } else { clearArmed = 1; setTimeout(() => { if(clearArmed){ clearArmed = 0; if(!RUN.on && LV) controls(); } }, 3500); } controls(); }
     else if(a === 'way') showWay();
     else if(a === 'next') addNext();
     else if(a === 'nextlevel'){ saveCode(); open(PJ.id, LI + 1); }
-    else if(a === 'another'){ panel(null); resetFab(); }
+    else if(a === 'another'){ panel(null); resetFab(); EVT = {}; EVNOTE = ''; controls(); }
   });
 
   /* every size follows the window: a phone, a laptop and a very big screen all get a full page */
@@ -570,7 +661,7 @@
     root.classList.toggle('long', !tall && work && !!LV && LV.cols / LV.rows >= 2.5);   /* a long, low stage sits across the top */
     const fs = narrow ? clamp(12, Math.min(w * .036, h * .019), 24) : tall ? clamp(12, Math.min(w * .022, h * .0175), 34) : clamp(12, Math.min(w * .0128, h * .0232), 42);
     root.style.fontSize = fs.toFixed(2) + 'px';
-    if(ws && work){ try{ const s = clamp(.55, Math.min(fs / (tall ? 17 : 19), $('fcBlockly').clientWidth / (LV && LV.blocks.some(b => b === 'until' || b === 'ifelse') ? 600 : 440)) * (root.classList.contains('long') ? .9 : 1), 2.3); if(Math.abs(ws.getScale() - s) > .01) ws.setScale(s); B.svgResize(ws); }catch(e){} }
+    if(ws && work){ try{ const s = clamp(.55, Math.min(fs / (tall ? 17 : 19), $('fcBlockly').clientWidth / (LV && LV.blocks.some(b => b === 'until' || b === 'ifelse' || b === 'whenfab') ? 600 : 440)) * (root.classList.contains('long') ? .9 : 1), 2.3); if(Math.abs(ws.getScale() - s) > .01) ws.setScale(s); B.svgResize(ws); }catch(e){} }
     if(work) sizeStage();
   }
   function relay(){ if(root.classList.contains('narrow')) requestAnimationFrame(() => { if(ws) try{ B.svgResize(ws); }catch(e){} sizeStage(); }); }
@@ -578,10 +669,10 @@
 
   defineBlocks(); paintTheme(); paintSound(); home(); requestAnimationFrame(frame);
   try{ document.fonts.ready.then(() => { need = true; lay(); }); }catch(e){}
-  try{ const q = new URLSearchParams(location.search), p = q.get('project'); if(p) open(p, q.get('puzzle') ? +q.get('puzzle') - 1 : null); }catch(e){}
+  try{ const q = new URLSearchParams(location.search), p = q.get('project'), pl = q.get('play'); if(pl) setTimeout(() => playKept(pl), 400); else if(p) open(p, q.get('puzzle') ? +q.get('puzzle') - 1 : null); }catch(e){}
 
   window.FabCode = window.FoxBlocks = FC;
-  Object.assign(FC, { open, home, projects:PROJECTS, setProgram, program:() => plain(program()), run:() => play(program()), stop:() => { RUN.stop = true; }, addNext, showWay, route,
-    state:() => ({ view:root.dataset.view, project:PJ && PJ.id, level:LV && LV.id, x:FAB && FAB.x, y:FAB && FAB.y, running:RUN.on, done:Object.assign({}, SAVE.done), got:FAB ? Object.keys(FAB.got).length : 0, wearing:KITW.ids, ball:FAB && FAB.ball ? [FAB.ball.x, FAB.ball.y] : null, cones:FAB ? FAB.cones.length : 0, prints:FAB ? FAB.prints.length : 0, tile:TILE, way:!!VIEW.way, panel:tipNow }),
+  Object.assign(FC, { open, home, projects:PROJECTS, setProgram, program:() => LV && LV.events ? plainEv(scripts()) : plain(program()), run:() => LV && LV.events ? fireAll() : play(program()), tap:k => fire(k), keepDance, playKept, makesKey:MAKESKEY, stop:() => { RUN.stop = true; }, addNext, showWay, route,
+    state:() => ({ view:root.dataset.view, project:PJ && PJ.id, level:LV && LV.id, x:FAB && FAB.x, y:FAB && FAB.y, running:RUN.on, done:Object.assign({}, SAVE.done), got:FAB ? Object.keys(FAB.got).length : 0, wearing:KITW.ids, ball:FAB && FAB.ball ? [FAB.ball.x, FAB.ball.y] : null, cones:FAB ? FAB.cones.length : 0, prints:FAB ? FAB.prints.length : 0, tile:TILE, way:!!VIEW.way, panel:tipNow, note:EVNOTE, events:JSON.parse(JSON.stringify(EVT)) }),
     ws:() => ws, key:KEY });
 })();

@@ -145,3 +145,8 @@ html.dark,html.dark body{background:#2E2118}
 .fc.dark .blocklyTrash image{filter:invert(1) brightness(.8)}
 .fc.dark .fc-foot a{color:#FFD483}
 .fc.small .fc-dots button{width:2.1em;height:2.1em}
+
+/* v26: event puzzles ("Tap and play") and Keep my dance */
+.fc.events #fcStage{cursor:pointer}
+.fc-note{display:inline-flex;align-items:center;min-height:2.4em;padding:.2em .9em;background:#FFD483;border:.14em solid var(--ink);border-radius:1em .8em 1.1em .9em;font:italic 700 1em Aleo,Georgia,serif;color:var(--ink)}
+.fc-b:disabled{opacity:.6;cursor:default}
