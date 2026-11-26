@@ -1,0 +1,180 @@
+/* Fab's Sanctuary: the look. Fab Fox World rules: flat warm colour, thick ink outline, a little wonky, italic serif on plaques, no shadows.
+   Every size is in em from .sn, whose font size the script sets from the window, so the page fills a phone and a very big screen alike. */
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#FFD483;color:#2B1A12;font-family:Aleo,Georgia,serif;overscroll-behavior:none}
+button{font:inherit;color:inherit}
+.sn{--ink:#2B1A12;--cream:#FFF6E6;--paper:#FFFDF7;--gold:#F0B913;--orange:#FE4D02;--grass:#BFD88E;--glass:#CFE7F2;--sand:#F6D08F;--peach:#F4B58F;
+  height:100vh;height:100dvh;display:flex;flex-direction:column;font-size:18px;overflow:hidden;position:relative}
+.sn [hidden]{display:none!important}
+.sn svg.ic{width:1.6em;height:1.6em;flex:none;vertical-align:middle}
+
+/* ---- top bar ---- */
+.sn-top{flex:none;display:flex;align-items:center;gap:.9em;padding:.5em 1em;background:var(--cream);border-bottom:.22em solid var(--ink);min-height:3.6em}
+.sn-title{margin:0;display:flex;align-items:baseline;gap:.5em;font-family:'BMF Display',Aleo,Georgia,serif;font-size:1.7em;line-height:1;color:var(--orange);white-space:nowrap}
+.sn-draft{font:italic 700 .5em Aleo,Georgia,serif;color:var(--ink);background:var(--gold);border:.16em solid var(--ink);border-radius:999px;padding:.12em .7em .18em;transform:rotate(-2deg)}
+.sn-money{flex:1;min-width:0;display:flex;gap:.6em;justify-content:flex-end;align-items:center;flex-wrap:nowrap;overflow:hidden}
+.sn-chip{display:inline-flex;align-items:center;gap:.35em;background:#fff;border:.16em solid var(--ink);border-radius:999px;padding:.2em .8em .25em .45em;font:italic 700 1.05em Aleo,Georgia,serif;white-space:nowrap}
+.sn-chip:nth-child(odd){transform:rotate(-1deg)}.sn-chip:nth-child(even){transform:rotate(1deg)}
+.sn-chip svg,.sn-chip img{width:1.5em;height:1.5em;flex:none}
+.sn-chip small{font-weight:400;font-style:normal;font-size:.85em}
+
+/* ---- buttons: flat, cream, ink outline ---- */
+.sn-b{display:inline-flex;align-items:center;justify-content:center;gap:.45em;min-height:2.9em;padding:.35em 1em .42em .8em;background:var(--paper);border:.17em solid var(--ink);border-radius:.9em 1.1em .9em 1em;font:italic 700 1em Aleo,Georgia,serif;cursor:pointer;text-align:left;line-height:1.15}
+.sn-b svg{width:1.55em;height:1.55em;flex:none}
+.sn-b img.berry{width:1.35em;height:1.35em}
+.sn-b:hover:not(:disabled){transform:translateY(-.06em)}.sn-b:active:not(:disabled){transform:translateY(.06em)}
+.sn-b:focus-visible,.sn-hot button:focus-visible,.sn-q button:focus-visible{outline:.22em solid var(--orange);outline-offset:.16em}
+.sn-b:disabled{opacity:.45;cursor:default}
+.sn-b.gold{background:var(--gold)}.sn-b.leaf{background:var(--grass)}.sn-b.sky{background:var(--glass)}.sn-b.peach{background:var(--peach)}
+.sn-b.big{font-size:1.25em;min-height:2.9em;padding-right:1.2em}
+.sn-b.wide{width:100%;justify-content:flex-start}
+.sn-back,.sn-theme,.sn-sound{flex:none}
+
+/* ---- the park and the panel ---- */
+.sn-main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(20em,33%);gap:.8em;padding:.8em}
+.sn-park{min-width:0;min-height:0;position:relative;display:flex;align-items:center;justify-content:center}
+.sn-scene{position:relative;width:100%;aspect-ratio:1200/820;border:.22em solid var(--ink);border-radius:1.2em 1.6em 1.3em 1.7em / 1.6em 1.2em 1.7em 1.3em;overflow:hidden;background:#BFD88E;flex:none}
+.sn-scene svg{display:block;width:100%;height:100%}
+.sn-hot{position:absolute;inset:0}
+.sn-hot button{position:absolute;background:transparent;border:0;border-radius:1em;cursor:pointer;padding:0}
+.sn-hot button:hover{background:rgba(255,246,230,.18)}
+.sn-side{min-width:0;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:.75em;padding:.1em .15em .4em}
+
+/* speech: a friend and a bubble */
+.sn-say{display:flex;align-items:flex-end;gap:.5em}
+.sn-who{flex:none;width:4.6em;aspect-ratio:393/555;background:center bottom/contain no-repeat}
+.sn-who.fab{background-image:url(../code/fab.png);aspect-ratio:1/1.05}
+.sn-who.doc{background-image:url(../code/doc.webp)}.sn-who.elder{background-image:url(../code/elder.webp)}
+.sn-bubble{position:relative;background:#fff;border:.17em solid var(--ink);border-radius:1.1em 1.4em 1.2em 1.5em;padding:.55em .9em .65em;font-size:1.05em;line-height:1.42;margin-bottom:1.1em;flex:1;min-width:0}
+.sn-bubble b{font-style:italic}
+.sn-bubble::before{content:'';position:absolute;left:-.62em;bottom:.9em;width:1em;height:1em;background:inherit;border-left:.17em solid var(--ink);border-bottom:.17em solid var(--ink);transform:rotate(45deg)}
+.sn-say.tip .sn-bubble{background:var(--glass)}
+.sn-say.cheer .sn-bubble{background:#FFF1C9}
+
+/* cards in the panel */
+.sn-box{background:var(--paper);border:.18em solid var(--ink);border-radius:1.1em 1.4em 1.2em 1.5em / 1.4em 1.1em 1.5em 1.2em;padding:.7em .9em .8em;display:grid;gap:.5em}
+.sn-box:nth-of-type(odd){transform:rotate(-.3deg)}.sn-box:nth-of-type(even){transform:rotate(.3deg)}
+.sn-box h2,.sn-box h3{margin:0;font:italic 700 1.2em Aleo,Georgia,serif}
+.sn-box h2{display:flex;align-items:center;gap:.4em}
+.sn-box p{margin:0;line-height:1.4}
+.sn-plaque{justify-self:start;background:var(--gold);border:.15em solid var(--ink);border-radius:.6em;padding:.05em .7em .15em;font:italic 700 1.15em Aleo,Georgia,serif;transform:rotate(-1.5deg)}
+.sn-plaque.sky{background:var(--glass)}.sn-plaque.leaf{background:var(--grass)}
+.sn-acts{display:grid;gap:.5em}
+.sn-acts.two{grid-template-columns:1fr 1fr}
+.sn-row{display:flex;align-items:center;gap:.5em;flex-wrap:wrap}
+.sn-steps{display:flex;gap:.4em;align-items:center;justify-content:center;list-style:none;margin:0;padding:0}
+.sn-steps li{display:flex;align-items:center;gap:.3em;font:italic 700 .95em Aleo,Georgia,serif;background:var(--paper);border:.15em solid var(--ink);border-radius:999px;padding:.15em .7em .2em}
+.sn-steps li.now{background:#fff;border-color:var(--orange);border-style:dashed;color:#C63A08}
+.sn-steps li.done{background:var(--gold)}
+
+/* money lines: a little table */
+.sn-lines{display:grid;gap:.25em;margin:0;padding:0;list-style:none}
+.sn-lines li{display:flex;align-items:center;gap:.5em;padding:.2em .1em;border-bottom:.1em dashed rgba(43,26,18,.25);line-height:1.3}
+.sn-lines li:last-child{border-bottom:0}
+.sn-lines li span:first-child{flex:1}
+.sn-lines li b{font:italic 700 1.05em Aleo,Georgia,serif;white-space:nowrap;display:inline-flex;align-items:center;gap:.25em}
+.sn-lines svg{width:1.7em;height:1.7em;flex:none}
+.sn-lines li.total{border-top:.16em solid var(--ink);border-bottom:0;padding-top:.35em;font-weight:700}
+img.berry{width:1.25em;height:1.25em;vertical-align:-.25em}
+
+/* the savings jar bar */
+.sn-bar{height:1.1em;background:#fff;border:.15em solid var(--ink);border-radius:999px;overflow:hidden}
+.sn-bar i{display:block;height:100%;background:var(--gold);border-right:.15em solid var(--ink)}
+.sn-bar i.full{background:var(--grass);border-right:0}
+
+/* questions: big answer buttons, no red crosses */
+.sn-q{display:grid;gap:.55em}
+.sn-q .sn-ask{font:italic 700 1.15em/1.35 Aleo,Georgia,serif;margin:0}
+.sn-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:.5em}
+.sn-opts button{min-height:2.6em;background:#fff;border:.17em solid var(--ink);border-radius:.8em 1em .8em 1em;font:italic 700 1.45em Aleo,Georgia,serif;cursor:pointer}
+.sn-opts button:nth-child(2){transform:rotate(1deg)}.sn-opts button:nth-child(3){transform:rotate(-1deg)}
+.sn-opts button.tried{opacity:.38;cursor:default}
+.sn-opts button.right{background:var(--grass)}
+.sn-tap{display:flex;flex-wrap:wrap;gap:.35em}
+.sn-tap button{width:3em;height:3em;border-radius:50%;border:.16em solid var(--ink);background:#fff;cursor:pointer;display:grid;place-items:center;padding:0}
+.sn-tap button img{width:2em;height:2em}
+.sn-tap button.paid{background:var(--grass)}.sn-tap button.paid img{opacity:.35}
+.sn-count{margin:0;min-height:1.3em;font:italic 700 1.5em Aleo,Georgia,serif}
+.sn-faces{display:flex;flex-wrap:wrap;gap:.2em}
+.sn-faces svg{width:2.4em;height:2.4em}
+
+/* jars */
+.sn-jars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5em}
+.sn-jar{background:#fff;border:.17em solid var(--ink);border-radius:1em 1.2em 1em 1.3em;padding:.45em .4em .55em;display:grid;gap:.3em;justify-items:center;text-align:center}
+.sn-jar:nth-child(1){background:#FFF1C9}.sn-jar:nth-child(2){background:#E9F3D6}.sn-jar:nth-child(3){background:#E3F1F8}
+.sn-jar svg{width:3.4em;height:3.4em}
+.sn-jar h4{margin:0;font:italic 700 1.05em Aleo,Georgia,serif}
+.sn-jar small{font-size:.85em;line-height:1.25}
+.sn-jar .n{font:italic 700 1.7em Aleo,Georgia,serif;line-height:1}
+.sn-step{display:flex;gap:.3em}
+.sn-step button{width:2.4em;height:2.4em;border-radius:50%;border:.16em solid var(--ink);background:var(--paper);font:700 1.3em Aleo,Georgia,serif;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+.sn-step button:disabled{opacity:.35;cursor:default}
+
+/* the level picker */
+.sn-level{display:grid;grid-template-columns:repeat(3,1fr);gap:.35em}
+.sn-level button{min-height:2.5em;border:.15em solid var(--ink);border-radius:.7em .9em .7em .9em;background:var(--paper);font:italic 700 .95em Aleo,Georgia,serif;cursor:pointer;padding:.2em .3em}
+.sn-level button[aria-pressed="true"]{background:var(--gold)}
+.sn-note{font-size:.95em}
+.sn-note summary{cursor:pointer;font:italic 700 1em Aleo,Georgia,serif}
+.sn-note ul{margin:.4em 0 .2em;padding-left:1.2em;line-height:1.4}
+.sn-note p{margin:.4em 0 0}
+.sn-foot{font-size:.9em;opacity:.85;margin:0;text-align:center}.sn-foot a{color:inherit}
+
+/* ---- the sheet (build, basket, name an animal) ---- */
+.sn-sheet{position:absolute;inset:0;background:rgba(43,26,18,.5);display:flex;align-items:center;justify-content:center;padding:1em;z-index:20}
+.sn-card{background:var(--cream);border:.22em solid var(--ink);border-radius:1.3em 1.7em 1.4em 1.8em / 1.7em 1.3em 1.8em 1.4em;width:min(60em,100%);max-height:100%;overflow:auto;padding:1em 1.2em 1.2em;display:grid;gap:.8em;color:var(--ink)}
+.sn-card.small{width:min(34em,100%)}
+.sn-cardtop{display:flex;align-items:center;gap:.8em}
+.sn-cardtop h2{margin:0;flex:1;font:italic 700 1.5em Aleo,Georgia,serif}
+.sn-sec{margin:.2em 0 0;font:italic 700 1.15em Aleo,Georgia,serif;display:flex;align-items:center;gap:.5em}
+.sn-sec small{font:400 .8em Aleo,Georgia,serif}
+.sn-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,15em),1fr));gap:.8em}
+.sn-item{background:var(--paper);border:.18em solid var(--ink);border-radius:1.1em 1.4em 1.2em 1.5em;overflow:hidden;display:flex;flex-direction:column}
+.sn-item:nth-child(odd){transform:rotate(-.5deg)}.sn-item:nth-child(even){transform:rotate(.5deg)}
+.sn-item svg.thumb{display:block;width:100%;aspect-ratio:240/170;background:#BFD88E;border-bottom:.18em solid var(--ink)}
+.sn-item .in{padding:.5em .7em .7em;display:grid;gap:.35em;flex:1;align-content:start}
+.sn-item h3{margin:0;font:italic 700 1.2em Aleo,Georgia,serif}
+.sn-item p{margin:0;font-size:.95em;line-height:1.35}
+.sn-item .cost{font:italic 700 1.1em Aleo,Georgia,serif;display:flex;align-items:center;gap:.3em}
+.sn-item .sum{background:#fff;border:.13em dashed var(--ink);border-radius:.6em;padding:.2em .5em;font-size:.95em}
+.sn-item .tag{justify-self:start;font:italic 700 .85em Aleo,Georgia,serif;border:.13em solid var(--ink);border-radius:999px;padding:.05em .6em .1em;background:var(--glass)}
+.sn-item .tag.want{background:#FBD9C4}.sn-item .tag.make{background:var(--gold)}.sn-item .tag.goal{background:var(--grass)}
+.sn-item.built{opacity:.7}
+.sn-item .sn-b{width:100%;justify-content:flex-start}
+.sn-card.small .sn-item svg.thumb{width:72%;margin:0 auto;border:.18em solid var(--ink);border-radius:1em;margin-top:.6em}
+.sn-card.small .sn-item{transform:none}
+.sn-names{display:grid;grid-template-columns:repeat(3,1fr);gap:.5em}
+
+.sn-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:0}
+
+/* ---- the drawings move a little (not when the computer asks for less movement) ---- */
+@media (prefers-reduced-motion:no-preference){
+  .sn-scene .an{animation:snBob 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+  .sn-scene .an:nth-of-type(2n){animation-duration:3.9s;animation-delay:-1s}
+  .sn-scene .an.hop{animation:snHop .6s ease-out 1}
+  .sn-scene .flag{animation:snSway 4s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 0}
+}
+@keyframes snBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px) scaleY(1.02)}}
+@keyframes snHop{0%{transform:translateY(0)}35%{transform:translateY(-26px)}70%{transform:translateY(0)}85%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+@keyframes snSway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+
+/* ---- upright screens: the park across the top, the panel underneath ---- */
+.sn.tall .sn-main{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:.6em;padding:.6em}
+.sn.tall .sn-top{gap:.5em;padding:.4em .6em;flex-wrap:wrap}
+.sn.tall .sn-money{order:5;flex-basis:100%;justify-content:center}
+.sn.tall .sn-title{flex:1}
+.sn.small .sn-draft{display:none}
+.sn.small .sn-theme span,.sn.small .sn-sound span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.sn.small .sn-jars{grid-template-columns:1fr}
+.sn.small .sn-jar{grid-template-columns:auto 1fr auto;justify-items:start;text-align:left;align-items:center}
+.sn.small .sn-jar svg{grid-row:span 2}
+.sn.small .sn-acts.two{grid-template-columns:1fr}
+@media (max-width:1500px){.sn-sound span,.sn-theme span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.sn-sound,.sn-theme{padding-left:.7em;padding-right:.7em}}
+
+/* ---- dark: the child's choice. The page goes dark; the park, cards and bubbles stay light, so nothing is hard to read ---- */
+html.dark,html.dark body{background:#2E2118}
+.sn.dark{color:#FFF6E6}
+.sn.dark .sn-top{background:#3B2B20;border-bottom-color:#160E09}
+.sn.dark .sn-box,.sn.dark .sn-bubble,.sn.dark .sn-b,.sn.dark .sn-chip,.sn.dark .sn-steps li,.sn.dark .sn-level button{color:#2B1A12}
+.sn.dark .sn-scene{border-color:#160E09}
+.sn.dark .sn-foot a{color:#FFD483}
