@@ -1943,6 +1943,154 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await page.setViewportSize({ width:1280, height:800 }); await page.evaluate(() => showScreen('screen-hub'));
   });
 
+  /* ---------- Round 27: Fab's Sanctuary (sanctuary.html), and pawed games ---------- */
+  async function sanctPage(q, w, h){
+    const sp = await browser.newPage(); const url = '/sanctuary.html' + (q || '');
+    sp.on('pageerror', e => errors.push(`${url}: ${e.message}`));
+    sp.on('console', m => { if(m.type() === 'error' && !/^Failed to load resource/.test(m.text())) errors.push(`${url}: console: ${m.text()}`); });
+    sp.on('response', r => { if(r.status() >= 400 && !/\/favicon\.ico$/.test(r.url())) errors.push(`${url}: missing ${r.url()} (${r.status()})`); });
+    await sp.setViewportSize({ width:w || 1366, height:h || 768 }); await sp.goto(base + url); await sp.waitForFunction(() => window.FabSanct); await sp.waitForTimeout(200);
+    return sp;
+  }
+  async function sanctState(sp, code, st, extra){
+    await sp.evaluate(([code, st, extra]) => { localStorage.setItem('fabsanct-v1-' + code, JSON.stringify(Object.assign({ v:1, started:true }, st))); Object.keys(extra || {}).forEach(k => localStorage.setItem(k, extra[k])); }, [code, st, extra || {}]);
+    await sp.reload(); await sp.waitForFunction(() => window.FabSanct); await sp.waitForTimeout(150);
+  }
+  await test('Fab’s Sanctuary: a first day. Build a home and name the animal, needs first (with a tip, never a cross), open the gate, money in, then spend, save or share and a budget card', async () => {
+    const sp = await sanctPage('?learner=sanct-t1');
+    const r = await sp.evaluate(async () => { const F = FabSanct, wait = ms => new Promise(res => setTimeout(res, ms)), out = {}, side = () => document.getElementById('snSide').textContent;
+      F.reset(); localStorage.removeItem('fabworld-pending-sanct-t1');
+      out.first = /Welcome to Fab’s Sanctuary/.test(side()) && F.state().box === 20 && document.querySelectorAll('#snHot button').length === 9;
+      out.emoji = /\p{Extended_Pictographic}/u.test(document.body.innerText);
+      document.querySelector('[data-a="buildhomes"]').click(); await wait(100);
+      out.sheet = F.sheet() && document.querySelectorAll('.sn-item').length === 6 && /10 − 10 = 0|20 − 10 = 10/.test(document.getElementById('snCard').textContent);
+      document.querySelector('[data-build="hedgehog"]').click(); let n = 0; while(!/come to find a home/.test(document.getElementById('snCard').textContent) && n++ < 60) await wait(100);
+      out.ask = /A hedgehog has come to find a home/.test(document.getElementById('snCard').textContent) && document.querySelectorAll('[data-name]').length === 3;
+      document.querySelector('[data-name="Conker"]').click(); await wait(100);
+      out.built = [F.state().box, JSON.stringify(F.state().homes), F.state().names.hedgehog, !!document.querySelector('.sn-say.cheer .sn-who.elder')].join('|');
+      document.querySelector('[data-a="day"]').click(); await wait(100);
+      const q = F.q(); out.q = q.ask; const wrong = q.opts.find(o => o !== q.right);
+      document.querySelector(`[data-pick="${wrong}"]`).click(); await wait(100);
+      out.tip = !!document.querySelector('.sn-say.tip .sn-who.doc') && document.querySelector(`[data-pick="${wrong}"]`).classList.contains('tried') && F.state().box === 10;
+      document.querySelector(`[data-pick="${q.right}"]`).click(); await wait(100); out.paid = F.state().box;
+      document.querySelector('[data-a="togate"]').click(); document.querySelector('[data-a="open"]').click(); await wait(300);
+      out.walk = document.querySelectorAll('#snVis > g').length > 0 && F.day().step === 'walk';
+      document.querySelector('[data-a="skip"]').click(); await wait(100);
+      const d = F.day(); out.money = [d.visitors > 0, d.price, d.gate === d.visitors * 2, d.total === d.gate + d.box, d.step].join('|');
+      F.answer(F.right()); await wait(50); out.total = /Money in today/.test(side());
+      document.querySelector('[data-a="tojars"]').click(); ['savemore', 'savemore', 'sharemore'].forEach(a => document.querySelector(`[data-a="${a}"]`).click());
+      document.querySelector('[data-a="putaway"]').click(); await wait(100);
+      const s = F.state(); out.after = [s.day, s.box === 9 + d.total - 3, s.jar, s.shared, localStorage.getItem('fabworld-pending-sanct-t1'), s.visitors === d.visitors].join('|');
+      out.card = /Today’s budget card/.test(side()) && /What’s left/.test(side()) && /A good place to stop/.test(side()) && !!document.querySelector('.sn-say.cheer');
+      out.stop = [...document.querySelectorAll('#snSide [data-a]')].map(b => b.dataset.a).join();
+      return out; });
+    await sp.close();
+    assert(r.first && !r.emoji, 'a first visit: Fab says welcome, 20 berries from the Friends of the Sanctuary, nine places to tap in the park, no emoji: ' + JSON.stringify(r));
+    assert(r.sheet && r.ask && r.built === '10|{"e":"hedgehog"}|Conker|true', 'building a home costs its berries, the animal walks in and the child chooses its name; Mr Elder celebrates: ' + JSON.stringify(r));
+    assert(/You have 10 berries\. Food and bedding cost 1\./.test(r.q) && r.tip && r.paid === 9, 'needs first: a wrong answer gets Doctor McPhee’s tip and is set aside, the right one pays: ' + JSON.stringify(r));
+    assert(r.walk && /^true\|2\|true\|true\|money$/.test(r.money) && r.total, 'visitors walk in through the gate and pay 2 berries each at Years 3–4: ' + JSON.stringify(r));
+    assert(r.after === '1|true|2|1|1|true' && r.card && r.stop === 'build,again,home', 'the jars, the budget card, a thank-you berry for Fab’s basket and a good place to stop: ' + JSON.stringify(r));
+  });
+  await test('Fab’s Sanctuary: never below zero. The Friends of the Sanctuary pay for the needs, “Do the rounds for me” runs a day in one tap, and thank-you berries stop at three a day', async () => {
+    const sp = await sanctPage('?learner=sanct-t2');
+    await sanctState(sp, 'sanct-t2', { box:1, level:2, homes:{ e:'hedgehog', f:'rabbit' }, names:{ hedgehog:'Acorn' } }, { 'fabworld-pending-sanct-t2':'0' });
+    const r = await sp.evaluate(async () => { const F = FabSanct, out = {};
+      F.open(); const d = F.day(); out.friends = [d.friends, F.state().box, F.state().helped, /Friends of the Sanctuary/.test(document.getElementById('snSide').textContent), !!document.querySelector('[data-a="togate"]')].join('|');
+      F.end(); const boxes = [];
+      for(let i = 0; i < 4; i++){ F.rounds(); boxes.push(F.state().box); F.end(); }
+      out.rounds = [F.state().day, boxes.every(b => b >= 0), localStorage.getItem('fabworld-pending-sanct-t2'), F.state().thanks.n].join('|');
+      out.never = boxes.join(',');
+      return out; });
+    await sp.close();
+    assert(r.friends === '2|0|2|true|true', 'with 1 berry and needs of 3, the Friends pay the other 2 and the box stops at 0, not below: ' + JSON.stringify(r));
+    assert(r.rounds === '4|true|3|3', 'four quick days: the box never goes below zero, and Fab’s basket gets at most three thank-you berries a day: ' + JSON.stringify(r));
+  });
+  await test('Fab’s Sanctuary: three levels. Years 1–2 tap to pay and count the visitors; Years 5–6 plan for a week and choose the gate price', async () => {
+    const sp = await sanctPage('?learner=sanct-t3');
+    await sanctState(sp, 'sanct-t3', { box:20, level:1, homes:{ e:'hedgehog', f:'rabbit' } });
+    const r = await sp.evaluate(async () => { const F = FabSanct, wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
+      F.open(); out.tap = F.q().kind + '|' + document.querySelectorAll('[data-tap]').length;
+      for(let i = 0; i < 3; i++){ document.querySelector(`[data-tap="${i}"]`).click(); await wait(30); }
+      out.paid = F.state().box + '|' + !!document.querySelector('[data-a="togate"]');
+      F.toGate(); F.gate(); F.skip(); await wait(50); const d = F.day(), q = F.q();
+      out.count = [d.price, q.ask, q.right === d.visitors, document.querySelectorAll('.sn-faces svg').length === d.visitors].join('|');
+      F.end(); F.level(3); F.open(); out.week = F.q().ask + '|' + F.right();
+      F.answer(F.right()); F.toGate(); document.querySelector('[data-a="priceup"]').click(); out.price = F.day().price;
+      out.demand = F.visitorsFor(1) >= F.visitorsFor(3) && F.visitorsFor(3) >= F.visitorsFor(5) && F.visitorsFor(1) > F.visitorsFor(5);
+      F.gate(); F.skip(); await wait(50); const d3 = F.day(); out.times = F.q().right === d3.visitors * 4 && /paid 4 berries each/.test(F.q().ask);
+      F.answer(F.right()); F.toJars(); F.putAway(); F.end(); F.open(); F.answer(F.right()); F.toGate(); await wait(30);
+      out.tries = document.querySelectorAll('#snSide .sn-lines li').length >= 1 && /Day 1: 4 each/.test(document.getElementById('snSide').textContent);
+      return out; });
+    await sp.close();
+    assert(r.tap === 'tap|3' && r.paid === '17|true', 'Years 1–2: tap three berries to pay three: ' + JSON.stringify(r));
+    assert(/^1\|How many visitors came today\?\|true\|true$/.test(r.count), 'Years 1–2: visitors pay 1 berry and the child counts them: ' + JSON.stringify(r));
+    assert(r.week === 'Food and bedding cost 3 berries a day. How much is that for a whole week (7 days)?|21' && r.price === 4 && r.demand && r.times && r.tries, 'Years 5–6: a week’s needs, a gate price to choose, fewer visitors at a higher price, and the last tries to compare: ' + JSON.stringify(r));
+  });
+  await test('Fab’s Sanctuary: berries from Fab’s basket move only when the child chooses, never more than the basket holds; saving up builds a big goal from the jar', async () => {
+    const sp = await sanctPage('?learner=sanct-t4');
+    await sanctState(sp, 'sanct-t4', { box:2, homes:{ e:'hedgehog' } }, { 'fabworld-v2-sanct-t4':JSON.stringify({ x:1, y:1, spk:12 }), 'fabworld-pending-sanct-t4':'0', 'fabworld-spend-sanct-t4':'0' });
+    const r = await sp.evaluate(async () => { const F = FabSanct, wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
+      out.basket = F.basket();
+      document.querySelector('[data-a="basket"]').click(); await wait(50); document.querySelector('[data-a="movemore"]').click(); document.querySelector('[data-a="moveok"]').click(); await wait(50);
+      out.moved = [F.state().box, localStorage.getItem('fabworld-spend-sanct-t4'), F.basket()].join('|');
+      out.cap = F.move(50) + '|' + F.basket() + '|' + F.state().box;
+      F.goal('otter'); const st = JSON.parse(localStorage.getItem('fabsanct-v1-sanct-t4')); st.jar = 40; localStorage.setItem('fabsanct-v1-sanct-t4', JSON.stringify(st)); return out; });
+    await sp.reload(); await sp.waitForFunction(() => window.FabSanct);
+    const g = await sp.evaluate(async () => { const F = FabSanct, wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
+      out.ready = /saved enough for the otter pond/.test(document.getElementById('snSide').textContent);
+      document.querySelector('[data-a="build"]').click(); await wait(50); const b = document.querySelector('[data-build="otter"][data-from="jar"]'); out.btn = !!b; b.click();
+      const s = F.state(); out.built = [Object.values(s.homes).includes('otter'), s.jar, s.goal, s.goalsMet, s.box].join('|'); return out; });
+    await sp.close();
+    assert(r.basket === 12 && r.moved === '8|6|6' && r.cap === '6|0|14', 'Fab’s basket shows 12; the child moves 6, then asking for 50 moves only the 6 left: ' + JSON.stringify(r));
+    assert(g.ready && g.btn && g.built === 'true|0||1|14', 'with 40 in the savings jar the otter pond is built from the jar, not the money box: ' + JSON.stringify(g));
+  });
+  await test('Games: every game has a paw; pawed games sit in “My pawed games” at the top, kept per Fab code; Fab’s Sanctuary fills the window and Back returns to Games', async () => {
+    await page.setViewportSize({ width:1366, height:768 });
+    const r = await page.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {}, was = localStorage.getItem('fab-me');
+      localStorage.setItem('fab-me', 'paw-t1'); localStorage.removeItem('fab-paws-paw-t1'); localStorage.removeItem('fab-paws-paw-t2'); showScreen('screen-games'); await wait(50);
+      const tiles = document.querySelectorAll('#screen-games .hub-grid .tile'); out.paws = tiles.length + '|' + document.querySelectorAll('#screen-games .paw-btn').length + '|' + !!document.getElementById('gamesSanctBtn');
+      out.hint = /Tap the paw on any game/.test(document.getElementById('pawShelf').textContent);
+      document.querySelector('.paw-btn[data-paw="sanctuary"]').click(); document.querySelector('.paw-btn[data-paw="screen-c4"]').click();
+      out.saved = localStorage.getItem('fab-paws-paw-t1') + '|' + [...document.querySelectorAll('.paw-chip')].map(c => c.textContent).join(',') + '|' + document.querySelector('.paw-btn[data-paw="screen-c4"]').getAttribute('aria-pressed');
+      localStorage.setItem('fab-me', 'paw-t2'); fabPaws.paint(); out.other = document.querySelectorAll('.paw-chip').length;
+      localStorage.setItem('fab-me', 'paw-t1'); fabPaws.paint();
+      document.querySelector('.paw-btn[data-paw="screen-c4"]').click(); out.off = localStorage.getItem('fab-paws-paw-t1');
+      document.querySelector('.paw-chip[data-sanct-open]').click(); await wait(100);
+      const f = document.getElementById('sanctFrame'); out.open = [document.querySelector('.screen.active').id, /sanctuary\.html\?embed=1&back=games&learner=paw-t1/.test(f.src), getComputedStyle(f).position, document.body.classList.contains('in-code')].join('|');
+      let n = 0; while(!(f.contentWindow && f.contentWindow.FabSanct) && n++ < 80) await wait(100);
+      out.label = f.contentWindow.document.getElementById('snBack').textContent;
+      f.contentWindow.document.getElementById('snBack').click(); await wait(100);
+      out.back = document.querySelector('.screen.active').id + '|' + f.getAttribute('src');
+      localStorage.removeItem('fab-paws-paw-t1'); try{ localStorage.removeItem('fabsanct-v1-paw-t1'); }catch(e){} if(was === null) localStorage.removeItem('fab-me'); else localStorage.setItem('fab-me', was); fabPaws.paint();
+      return out; });
+    assert(/^(\d+)\|\1\|true$/.test(r.paws) && r.hint, 'each Games tile has a paw (and Fab’s Sanctuary is a tile): ' + JSON.stringify(r));
+    assert(r.saved === '["sanctuary","screen-c4"]|Fab’s Sanctuary,Connect 4|true' && r.other === 0 && r.off === '["sanctuary"]', 'paws are saved per Fab code and show as quick buttons; a second tap takes a paw off: ' + JSON.stringify(r));
+    assert(r.open === 'screen-sanct|true|fixed|true' && r.label === 'Back to Games' && r.back === 'screen-games|null', 'a pawed game opens from the shelf; the sanctuary fills the window and Back returns to Games: ' + JSON.stringify(r));
+    await page.evaluate(() => showScreen('screen-hub'));
+  });
+  await test('Fab Fox World: Fab’s Sanctuary opens from Fox’s Den; berries moved in leave Fab’s basket and thank-you berries arrive when it closes; three sanctuary missions', async () => {
+    await page.setViewportSize({ width:1366, height:768 });
+    await page.evaluate(() => { showScreen('screen-games'); showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){} });
+    const fr = await (await page.$('.game-frame[data-game="world"]')).contentFrame();
+    await fr.waitForFunction(() => !!window.WORLD && typeof mSanct === 'function', null, { timeout:15000 });
+    const r = await fr.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), S = WORLD.S(), out = {}, keep = S.spk, code = KEY.replace('fabworld-v2-', '');
+      try{ WORLD.closeScene(true); }catch(e){} S.spk = 30; save();
+      mGames(); await wait(100); const t = document.getElementById('sanctTile'); out.tile = !!t && /Fab’s Sanctuary/.test(t.textContent); t.click(); await wait(100);
+      const f = document.querySelector('.codeframe'); out.src = /sanctuary\.html\?embed=1&back=world/.test(f.src);
+      let n = 0; while(!(f.contentWindow && f.contentWindow.FabSanct) && n++ < 80) await wait(100);
+      const W = f.contentWindow, F = W.FabSanct; F.reset(); out.basket = F.basket();
+      out.moved = F.move(10); F.build('hedgehog'); W.document.getElementById('snSheet').hidden = true; F.rounds();
+      const pend = parseInt(localStorage.getItem('fabworld-pending-' + code), 10) || 0; out.label = W.document.getElementById('snBack').textContent;
+      W.document.getElementById('snBack').click(); await wait(400);
+      out.after = [S.spk === 30 - 10 + pend, localStorage.getItem('fabworld-spend-' + code), !!SCENE].join('|');
+      out.mis = MISSIONS.filter(m => /^sanct/.test(m.id)).map(m => m.id + ':' + m.v() + '/' + m.of + ':' + m.go + ':' + /<svg/.test(ico(m.e))).join(' ');
+      S.spk = keep; try{ localStorage.removeItem('fabsanct-v1-' + code); }catch(e){} save(); setTop(); return out; });
+    assert(r.tile && r.src && r.label === 'Back to Fab Fox World', 'Fox’s Den has a Fab’s Sanctuary tile that opens it in the world: ' + JSON.stringify(r));
+    assert(r.basket === 30 && r.moved === 10 && r.after === 'true||false', 'the 10 berries moved into the sanctuary leave Fab’s basket and the thank-you berry arrives when it closes: ' + JSON.stringify(r));
+    assert(r.mis === 'sanct:1/1:den:true sanctweek:1/7:den:true sanctsave:0/1:den:true', 'three sanctuary missions read the sanctuary’s save and have drawn icons: ' + r.mis);
+    await page.evaluate(() => showScreen('screen-hub'));
+  });
+
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
 
   await browser.close(); server.close();
