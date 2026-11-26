@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fab’s Sanctuary · BeMoreFab Virtual School</title>
+<link rel="icon" href="icon.png">
+<link rel="stylesheet" href="code/fonts.css">
+<link rel="stylesheet" href="sanctuary/sanct.css">
+</head>
+<body>
+<!-- Fab's Sanctuary: a first playable draft (26 Nov 2026). Children run an animal sanctuary and learn how money works.
+     It is its own page. It opens inside Fab Fox World (Fox's Den, for now) and from the Games page of the Fab App (sanctuary.html?embed=1).
+     Its place in Fab Fox World is still to be chosen. The drawings are drawn in code, for Andrew to redraw. -->
+<div id="sn" class="sn">
+  <header class="sn-top">
+    <button type="button" class="sn-b sn-back" id="snBack" hidden></button>
+    <h1 class="sn-title"><span class="sn-word">Fab’s Sanctuary</span><span class="sn-draft">first draft</span></h1>
+    <div class="sn-money" id="snMoney"></div>
+    <button type="button" class="sn-b sn-sound" id="snSound" data-a="sound"></button>
+    <button type="button" class="sn-b sn-theme" id="snTheme" data-a="theme"></button>
+  </header>
+  <main class="sn-main">
+    <section class="sn-park" id="snPark" aria-label="The sanctuary">
+      <div class="sn-scene" id="snScene">
+        <svg id="snSvg" viewBox="0 0 1200 820" role="img" aria-label="Fab’s Sanctuary from above: homes for animals, a path and the gate"></svg>
+        <div class="sn-hot" id="snHot"></div>
+      </div>
+    </section>
+    <section class="sn-side" id="snSide" aria-label="What to do"></section>
+  </main>
+  <div class="sn-sheet" id="snSheet" hidden><div class="sn-card" id="snCard" role="dialog" aria-modal="true" aria-labelledby="snCardTitle"></div></div>
+  <p class="sn-live" id="snLive" role="status" aria-live="polite"></p>
+</div>
+<script src="sanctuary/sanct.js"></script>
+</body>
+</html>

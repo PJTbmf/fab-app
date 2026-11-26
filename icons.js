@@ -65,7 +65,9 @@
     letters:r(4, 13, 18, 22, 3, CREAM) + r(26, 13, 18, 22, 3, CREAM) + p('M8.5 30l4.5-12 4.5 12M10.2 26h5.6', null, 2.4) + p('M31 18v12h4.5a3 3 0 0 0 0-6H31h4a3 3 0 0 0 0-6z', null, 2.4),
     chat:p('M6 9h36v23H20l-9 8v-8H6z', CREAM) + dot(15, 20.5, 2.6) + dot(24, 20.5, 2.6) + dot(33, 20.5, 2.6),
     wheel:c(24, 21, 16, GOLD) + p('M24 5v32M8 21h32M12.7 9.7l22.6 22.6M35.3 9.7L12.7 32.3', null, 2) + c(24, 21, 4, CREAM, 2.4) + p('M18 45h12l-6-7z', WOOD, 2.4),
-    door:r(13, 5, 22, 38, 3, WOOD) + c(29, 25, 2.2, INK, 0) + p('M8 43h32')
+    door:r(13, 5, 22, 38, 3, WOOD) + c(29, 25, 2.2, INK, 0) + p('M8 43h32'),
+    hedgehog:p('M5 33L6 27 3 24 8 21 7 15 12 16 14 10 18 14 21 8 24 13 28 9 30 15 34 13 34 19 38 21 C40 25 41 29 38 33Z', '#8A5A3C') + p('M30 18C37 17 44 23 45 30 40 33 33 33 30 30Z', SAND) + dot(44.5, 29.5, 2.2) + dot(36, 23.5, 1.9) + p('M12 33v5M24 33v5', '', 3),
+    paw:e(24, 31, 10, 8.5, ORANGE) + e(11.5, 20, 4.6, 5.8, ORANGE, 'rotate(-20 11.5 20)') + e(19.5, 12.5, 4.6, 6, ORANGE) + e(28.5, 12.5, 4.6, 6, ORANGE) + e(36.5, 20, 4.6, 5.8, ORANGE, 'rotate(20 36.5 20)')
   };
   /* which emoji each drawing stands in for (the selector sign that sometimes follows an emoji is ignored) */
   const MAP = { '🌻':'sunflower', '🎲':'dice', '🌈':'rainbow', '📚':'books', '📋':'canvas', '🎬':'cinema', '🎹':'piano', '🧭':'compass', '🗺':'map', '🙋':'help', '✋':'help', '👋':'wave', '😴':'rest',

@@ -35,7 +35,9 @@
   function stats(){
     let S = null;
     try{ const raw = (typeof fabLearnerCode === 'function' && fabLearnerCode()) || ''; const k = 'fabworld-v2-' + (raw ? raw.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20) : 'local'); S = JSON.parse(localStorage.getItem(k) || 'null');
-      const pend = parseInt(localStorage.getItem('fabworld-pending-' + (raw || 'local')), 10) || 0; if(S) S._pend = pend; else S = { _pend:pend }; }catch(e){}
+      const code = raw ? raw.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20) : 'local';
+      /* berries waiting to arrive (lesson stars, thank-you berries) and berries moved into Fab's Sanctuary, both settled next time Fab Fox World opens */
+      const pend = (parseInt(localStorage.getItem('fabworld-pending-' + (raw || 'local')), 10) || 0) - (parseInt(localStorage.getItem('fabworld-spend-' + code), 10) || 0); if(S) S._pend = pend; else S = { _pend:pend }; }catch(e){}
     return S || {};
   }
   function render(){
@@ -47,7 +49,7 @@
       const go = () => { try{ Sound.tick(); }catch(e){} showScreen('screen-world'); };
       el.addEventListener('click', go); el.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
     }
-    const S = stats(), stars = (S.spk || 0) + (S._pend || 0), cub = S.cub && S.cub.name, done = S.mis ? Object.keys(S.mis).length : 0;
+    const S = stats(), stars = Math.max(0, (S.spk || 0) + (S._pend || 0)), cub = S.cub && S.cub.name, done = S.mis ? Object.keys(S.mis).length : 0;
     el.innerHTML = `<div class="fw-scene" aria-hidden="true">
       <svg class="fw-map" viewBox="0 0 600 260" preserveAspectRatio="none">
         <defs><linearGradient id="fwz" x1="0" x2="1"><stop offset="0" stop-color="#a6db82"/><stop offset=".40" stop-color="#9fd47c"/><stop offset=".45" stop-color="#f2cf80"/><stop offset=".68" stop-color="#efca78"/><stop offset=".74" stop-color="#8eacdf"/><stop offset="1" stop-color="#7f9fd6"/></linearGradient></defs>

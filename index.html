@@ -993,9 +993,9 @@ body.fab-world-full{ overflow:hidden; }
 .game-frame.fab-full-frame, body.in-world #screen-world .game-frame.fab-full-frame{ height:100dvh !important; }
 /* Fab Fox World and Fox Blocks are the whole window: no strip above them. Their own Back and Leave buttons are inside them. */
 body.in-world #screen-world .screen-top{ display:none !important; }
-body.in-world #screen-world .game-frame.game-frame, #screen-code.active .code-frame{ position:fixed; inset:0; width:100vw; height:100vh; height:100dvh; min-height:0; border:0; border-radius:0; z-index:8000; display:block; }
+body.in-world #screen-world .game-frame.game-frame, #screen-code.active .code-frame, #screen-sanct.active .code-frame{ position:fixed; inset:0; width:100vw; height:100vh; height:100dvh; min-height:0; border:0; border-radius:0; z-index:8000; display:block; }
 body.in-world #screen-world .game-frame.game-frame{ background:#BFD88E; }
-#screen-code .code-frame{ background:#FFD483; }
+#screen-code .code-frame, #screen-sanct .code-frame{ background:#FFD483; }
 body.in-world, body.in-code{ overflow:hidden; }
 body.in-code .bunting{ display:none; }
 .lc-subject.computing{ background:#2B6E8C; }
@@ -1191,6 +1191,7 @@ body.bd-dock .lp-stage, body.bd-dock .lp-nav, body.bd-dock .lp-tips{ max-width:n
     <button class="tile" data-go="screen-battleships2"><span class="emoji" data-fi="ship"></span><h2>Battleships</h2><p>Hide your fleet, then hunt for theirs — Gentle to Tricky</p></button>
     <button class="tile" data-go="screen-world"><span class="emoji" data-fi="globe"></span><h2>Fab Fox World</h2><p>Build, collect and grow a cosy world with all the foxes</p></button>
     <button class="tile" data-code-open="" id="gamesCodeBtn"><span class="emoji" data-fi="code"></span><h2>Fox Blocks</h2><p>Snap code blocks together, press Go, and Fab does what they say</p></button>
+    <button class="tile" data-sanct-open="" id="gamesSanctBtn"><span class="emoji" data-fi="hedgehog"></span><h2>Fab’s Sanctuary</h2><p>Give animals a home, open the gate to visitors and look after the money</p></button>
     <button class="tile" data-go="screen-pairs"><span class="emoji" data-fi="cards"></span><h2>Fab Fox Pairs</h2><p>Turn cards, remember, and match — times tables, words and more</p></button>
     <button class="tile" data-go="screen-invaders"><span class="emoji" data-fi="rocket"></span><h2>Fab Fox Space Mission</h2><p>A gentle space game: sparkle grumpy clouds into rainbows. Times tables and number bonds too</p></button>
     <button class="tile" data-go="screen-pinball"><span class="emoji" data-fi="fox"></span><h2>Fab Fox Pinball</h2><p>Bounce the ball off Fab Fox and the rainbows</p></button>
@@ -1223,6 +1224,9 @@ body.bd-dock .lp-stage, body.bd-dock .lp-nav, body.bd-dock .lp-tips{ max-width:n
   <iframe class="game-frame" data-game="world" title="Fab Fox World" allow="fullscreen"></iframe>
 </section>
 
+<section id="screen-sanct" class="screen" aria-label="Fab’s Sanctuary">
+  <iframe class="code-frame" id="sanctFrame" title="Fab’s Sanctuary"></iframe>
+</section>
 <section id="screen-code" class="screen" aria-label="Fox Blocks">
   <iframe class="code-frame" id="codeFrame" title="Fox Blocks"></iframe>
 </section>
@@ -2243,6 +2247,17 @@ function fabOpenCode(project){
 }
 window.fabCodeBack = function(){ showScreen(window.fabCodeFrom || 'screen-games'); return true; };
 document.addEventListener('click', e => { const b = e.target.closest('[data-code-open]'); if(b) fabOpenCode(b.dataset.codeOpen || null); });
+/* Fab's Sanctuary (sanctuary.html): a first draft, opened from Games. It fills the window like Fox Blocks; Back comes here. */
+function fabOpenSanct(){
+  const was = (document.querySelector('.screen.active') || {}).id || 'screen-games';
+  window.fabSanctFrom = FAB_HUBS.includes(was) ? was : 'screen-games';
+  const who = typeof fabLearnerCode === 'function' ? fabLearnerCode() : '';
+  showScreen('screen-sanct');
+  document.getElementById('sanctFrame').src = 'sanctuary.html?embed=1&back=' + (window.fabSanctFrom === 'screen-games' ? 'games' : 'app') + (who ? '&learner=' + encodeURIComponent(who) : '');
+  return true;
+}
+window.fabSanctBack = function(){ showScreen(window.fabSanctFrom || 'screen-games'); return true; };
+document.addEventListener('click', e => { const b = e.target.closest('[data-sanct-open]'); if(b) fabOpenSanct(); });
 /* Fab Fox World asks for the whole window; the frame simply fills it (no browser permission needed). */
 function fabWorldFull(on){
   const fr = document.querySelector('.game-frame[data-game="world"]'); if(!fr) return false;
@@ -2345,8 +2360,9 @@ function showScreen(id){
   const was = (document.querySelector('.screen.active') || {}).id;
   if(id === 'screen-world' && ['screen-hub', 'screen-games', 'screen-learn', 'screen-wellbeing', 'screen-eyfs'].includes(was)) window.fabWorldFrom = was;
   $$('.screen').forEach(s => s.classList.toggle('active', s.id === id));
-  document.body.classList.toggle('in-code', id === 'screen-code');
+  document.body.classList.toggle('in-code', id === 'screen-code' || id === 'screen-sanct');
   if(id !== 'screen-code'){ const cf = document.getElementById('codeFrame'); if(cf && cf.getAttribute('src')) cf.removeAttribute('src'); }
+  if(id !== 'screen-sanct'){ const sf = document.getElementById('sanctFrame'); if(sf && sf.getAttribute('src')) sf.removeAttribute('src'); }
   // Battleships shows two full boards at once — give it more breathing room than the
   // article-width column other screens use, so the boards can sit side by side instead
   // of wrapping to stacked. Scoped to this one screen; nothing else is affected.
@@ -8687,6 +8703,7 @@ if(!Live.start()) learnDeepLink();
 <script src="icons.js"></script>
 <script src="bigscreen.js"></script>
 <script src="theme.js"></script>
+<script src="paws.js"></script>
 <link rel="stylesheet" href="typescale.css">
 </body>
 </html>
