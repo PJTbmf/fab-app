@@ -400,7 +400,8 @@ body.pw-drawer-open .pw-child.has-board .pw-drawer-back{ display:block; position
 @media (max-width:1100px) and (min-width:821px){ .pw-child.has-board{ grid-template-columns:minmax(0, .88fr) minmax(0, 1.12fr); } }
 
 /* Home: the four hubs side by side in one row (two by two on narrow screens) */
-.category-grid{ grid-template-columns:repeat(4, minmax(0, 1fr)); max-width:1240px; }
+/* six cards since 27 Nov (the STEM Den and the Make More FAB Studio have their own): three in a row, two rows */
+.category-grid{ grid-template-columns:repeat(3, minmax(0, 1fr)); max-width:980px; }
 @media (max-width:900px){ .category-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); } }
 @media (max-width:480px){ .category-grid{ grid-template-columns:1fr; } }
 /* fraction bars in a question: always full width (they collapsed to a thin line inside the centred teaching column) */

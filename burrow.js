@@ -74,13 +74,22 @@
     if(!o || typeof o !== 'object' || !CODE_RE.test(code)) return false;
     const items = arr(o.a).slice(0, 6).map(r => { r = arr(r); const p = packById(String(r[0] || '')), po = pathOf(p); if(!po) return null;
       const s = r[1] == null || r[1] === '' ? null : Math.max(0, Math.min(po.s.steps.length - 1, Number(r[1]) || 0));
-      return { p:p.id, s, d:/^\d{4}-\d\d-\d\d$/.test(String(r[2] || '')) ? String(r[2]) : '', n:String(r[3] || '').replace(/[<>]/g, '').slice(0, 80) }; }).filter(Boolean);
+      return { p:p.id, s, d:/^\d{4}-\d\d-\d\d$/.test(String(r[2] || '')) ? String(r[2]) : '', n:String(r[3] || '').replace(/[<>]/g, '').slice(0, 80), th:clean(r[4], 30) }; }).filter(Boolean);
     const free = arr(o.f).slice(0, 8).map(String).filter(id => pathOf(packById(id)));
     const extras = arr(o.x).slice(0, 4).map(r => { r = arr(r); const a = String(r[0] || ''); return { a:actOf(a) ? a : '', t:clean(r[1], 60), n:clean(r[2], 80), th:clean(r[3], 30), d:/^\d{4}-\d\d-\d\d$/.test(String(r[4] || '')) ? String(r[4]) : '' }; }).filter(extraOK);
+    /* a well done from the teacher, in their own words (the Teachers' area) */
+    const praise = arr(cur0(code).praise).concat(arr(o.k).slice(0, 3).map(r => ({ t:clean(arr(r)[0], 60), d:today() })).filter(x => x.t));
     const t = Number(o.t) || 0, cur = read(code);
     if(cur.t && cur.t >= t) return true;
-    ls.set(KEY(code), { t, items, free, extras }); return true;
+    if(o.m){ /* a class link adds to what the child already has; it never takes work away */
+      const its = cur.items.slice(), exs = cur.extras.slice(), fr = arr(cur.free).slice();
+      items.forEach(n => { if(!its.some(x => x.p === n.p && x.s === n.s)) its.push(n); });
+      extras.forEach(n => { if(!exs.some(x => x.a === n.a && x.t === n.t && x.th === n.th)) exs.push(n); });
+      free.forEach(id => { if(!fr.includes(id)) fr.push(id); });
+      ls.set(KEY(code), { t, items:its.slice(-10), free:fr.slice(-8), extras:exs.slice(-10), praise:praise.slice(-5) }); return true; }
+    ls.set(KEY(code), { t, items, free, extras, praise:praise.slice(-5) }); return true;
   }
+  function cur0(code){ return ls.json(KEY(code), null) || {}; }
   function progress(code, pack){
     const po = pathOf(pack); if(!po) return null;
     let saved = null; try{ saved = store.getJSON(`bmf_progress_${pack.id}_${code}`, null); }catch(e){}
@@ -174,7 +183,7 @@
     const rows = list.map(it => { const S = statusOf(code, it); if(!S.po) return '';
       const stepName = it.s != null ? `Step ${it.s + 1}: ${S.po.s.steps[it.s].name}` : 'Your own step';
       return `<li class="bw-item ${S.done ? 'done' : ''}"><span class="bw-emoji" aria-hidden="true">${h(S.pack.emoji || '📘')}</span>
-        <div class="bw-what"><b>${h(S.pack.title)}</b><span>${h(stepName)}</span>${it.n ? `<em>Your teacher says: ${h(it.n)}</em>` : ''}</div>
+        <div class="bw-what">${it.th ? `<span class="bw-theme">${h(it.th)}</span>` : ''}<b>${h(S.pack.title)}</b><span>${h(stepName)}</span>${it.n ? `<em>Your teacher says: ${h(it.n)}</em>` : ''}</div>
         ${S.done ? '<span class="bw-status">⭐ Done</span>' : ''}
         <button type="button" class="btn ${S.done ? 'soft small' : 'leaf'}" data-bwgo="${it.i}">${S.done ? 'Do more' : S.started ? 'Carry on ➡️' : 'Start ➡️'}</button></li>`; }).join('');
     const xs = todaysExtras(code);
@@ -193,12 +202,14 @@
     const card = (p, sub, label) => `<button type="button" class="bw-card" data-bwopen="${h(p.id)}"><span class="bw-emoji" aria-hidden="true">${h(p.emoji || '📘')}</span><b>${h(p.title)}</b>${sub}<span class="bw-cta">${label}</span></button>`;
     const free = arr(b.free).map(packById).filter(Boolean);
     let certs = []; try{ certs = FabCheck.Store.all().filter(r => r.passed && r.code === code).slice(-8).reverse(); }catch(e){}
-    return `<div class="me-card bw-shelf" id="bwToday"><h3>📌 Today</h3>${say}${rows || xrows ? `<ol class="bw-list">${rows}${xrows}</ol>` : ''}</div>
+    const pr = arr(b.praise).slice(-3).reverse();
+    const praiseHTML = pr.length ? `<div class="me-card bw-shelf bw-praise" id="bwPraise"><h3 class="bw-h">${ic('star', '⭐')} Well done from your teacher</h3><ul>${pr.map(x => `<li>${h(x.t)}</li>`).join('')}</ul></div>` : '';
+    return `${praiseHTML}<div class="me-card bw-shelf" id="bwToday"><h3>📌 Today</h3>${say}${rows || xrows ? `<ol class="bw-list">${rows}${xrows}</ol>` : ''}</div>
       ${inProg.length ? `<div class="me-card bw-shelf" id="bwPaths"><h3>🗺️ My flightpaths</h3><div class="bw-cards">${inProg.map(x => card(x.p,
         `<span class="bw-bar" role="img" aria-label="${x.pr.secured.length} of ${x.pr.n} steps secure"><i style="width:${Math.round(100 * x.pr.secured.length / x.pr.n)}%"></i></span><small>On step ${x.pr.step + 1} · ${x.pr.secured.length} of ${x.pr.n} secure</small>`, 'Carry on ➡️')).join('')}</div></div>` : ''}
       ${free.length ? `<div class="me-card bw-shelf" id="bwFree"><h3>🎈 Free choice</h3><p class="hint">Your teacher has opened these for any time you like.</p><div class="bw-cards">${free.map(p => card(p, `<small>${h(p.subject || '')} · ${h(p.years || '')}</small>`, 'Open ➡️')).join('')}</div></div>` : ''}
       ${certs.length ? `<div class="me-card bw-shelf" id="bwCerts"><h3>🏅 My checkpoints</h3><div class="me-tre">${certs.map(r => `<span>🏅 ${h(r.title)}</span>`).join('')}</div></div>` : ''}
-      ${homeOn() ? madeHTML(code) + `<p class="bw-teach" id="bwTeach"><button type="button" class="btn small soft" data-bwmore>For teachers: every flightpath and lesson</button></p>` : ''}`;
+      ${homeOn() ? madeHTML(code) + `<p class="bw-teach" id="bwTeach"><button type="button" class="btn small soft" data-bwmore>For teachers</button></p>` : ''}`;
   }
   function wire(box, code){
     box.querySelectorAll('[data-bwgo]').forEach(b => b.addEventListener('click', () => { snd('ding'); go(code, Number(b.dataset.bwgo)); }));
@@ -208,18 +219,23 @@
     box.querySelectorAll('[data-bwmade]').forEach(b => b.addEventListener('click', () => { snd('tick'); openMade(code, b.dataset.bwmade, b.dataset.id || ''); }));
     /* the teacher's door: two taps, so a child does not land in the whole list by accident */
     box.querySelectorAll('[data-bwmore]').forEach(b => b.addEventListener('click', () => { snd('tick');
-      if(Date.now() - teachArm > 6000){ teachArm = Date.now(); b.textContent = 'Teachers: tap again to open the full list'; b.classList.add('amber'); setTimeout(() => { if(b.isConnected && Date.now() - teachArm >= 6000){ b.textContent = 'For teachers: every flightpath and lesson'; b.classList.remove('amber'); } }, 6100); return; }
-      teachArm = 0; learnAll = true; showScreen('screen-learn'); try{ learnRenderList(); }catch(e){} }));
+      if(Date.now() - teachArm > 6000){ teachArm = Date.now(); b.textContent = 'Teachers: tap again to open the Teachers’ area'; b.classList.add('amber'); setTimeout(() => { if(b.isConnected && Date.now() - teachArm >= 6000){ b.textContent = 'For teachers'; b.classList.remove('amber'); } }, 6100); return; }
+      teachArm = 0; if(window.FabTeach) FabTeach.open(); else openAll(); }));
   }
+
+  /* the whole list of flightpaths and lessons: the teachers' view */
+  function openAll(){ learnAll = true; showScreen('screen-learn'); try{ learnRenderList(); }catch(e){} }
 
   /* ---------- staff: set work and make the link ---------- */
   const F = { code:'', rows:[{ p:'', s:0, d:'', n:'' }], free:[], extras:[], link:'', msg:'', cls:true, home:true, init:false };
   /* one link per child: who they are, class mode (their code and Help in the top bar, sounds start off), the draft Burrow home, and the work */
   function linkFor(code, rows, free, opt){
-    const a = rows.filter(r => r.p).map(r => [r.p, r.s == null ? null : Number(r.s), r.d || '', (r.n || '').trim().slice(0, 80)]);
+    const a = rows.filter(r => r.p).map(r => { const row = [r.p, r.s == null ? null : Number(r.s), r.d || '', (r.n || '').trim().slice(0, 80)]; if(r.th) row.push(clean(r.th, 30)); return row; });
     opt = opt || {};
     const x = arr(opt.extras).map(e => ({ a:actOf(e.a) ? e.a : '', t:clean(e.t, 60), n:clean(e.n, 80), th:clean(e.th, 30), d:e.d || '' })).filter(extraOK).slice(0, 4).map(e => [e.a, e.t, e.n, e.th, e.d]);
     const o = { t:Date.now(), a, f:free }; if(x.length) o.x = x;
+    const k = clean(opt.praise, 60); if(k) o.k = [[k]];
+    if(opt.merge || k) o.m = 1;
     return location.origin + location.pathname + '?learner=' + encodeURIComponent(code) + (opt.cls ? '&class=1&quiet=1' : '') + (opt.home ? '&home=burrow' : '') + '&burrow=' + enc(o);
   }
   function staffHTML(){
@@ -322,6 +338,7 @@
 .bw-sub{margin:14px 0 2px}.bw-xrow{border:2px dashed #e6d8b8}
 .bw-ideas{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-weight:700;font-size:.95rem}
 .bw-xic{display:grid;place-items:center;width:52px;height:52px;flex:none;background:#FFD483;border:2.5px solid #2B1A12;border-radius:12px;font-size:1.6rem}.bw-xic svg{width:38px;height:38px}
+.bw-praise ul{margin:6px 0 0;padding-left:1.3em;text-align:left}.bw-praise li{font-weight:700;margin:3px 0}
 .bw-theme{align-self:flex-start;background:#CFE7F2;border:2px solid #2B1A12;border-radius:999px;padding:1px 10px;font-size:.85rem;font-weight:700}
 .bw-opts{display:grid;gap:6px;margin:8px 0}.bw-opts label{display:flex;gap:10px;align-items:flex-start;background:#fffdf6;border-radius:12px;padding:8px 10px}.bw-opts input{width:22px;height:22px;flex:none;margin-top:2px}
 .bw-h{display:flex;align-items:center;gap:8px}.bw-h svg{width:1.6em;height:1.6em;flex:none}
@@ -335,7 +352,8 @@
 `;
   const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
 
-  window.FabBurrow = { shelvesHTML, wire, staffHTML, staffWire, read, apply, enc, dec, linkFor, progress, form:F, home:homeOn, made, acts:ACTS, themes:THEMES };
+  window.FabBurrow = { shelvesHTML, wire, staffHTML, staffWire, read, apply, enc, dec, linkFor, progress, form:F, home:homeOn, made, acts:ACTS, themes:THEMES,
+    paths:pathPacks, pathOf, packById, status:statusOf, extraTitle, openAll, today, codeRe:CODE_RE };
 
   /* the Learning Hub's door leads to the Burrow for a signed-in child; the teacher's button opens the full list */
   function hookHome(){
