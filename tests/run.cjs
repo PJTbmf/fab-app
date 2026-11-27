@@ -1087,7 +1087,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     const names = await fr.evaluate(() => WORLD.PLACES.map(p => p.n));
     assert(names.includes('Fab’s den') && !names.some(n => /treehouse/i.test(n)), 'Fab’s home is called Fab’s den: ' + names[0]);
     await fr.waitForFunction(() => WORLD.placeArt(), null, { timeout:8000 });
-    const dock = await fr.evaluate(() => [...document.querySelectorAll('.dock .ib')].map(b => ({ svg:!!b.querySelector('i svg'), emoji:/\p{Extended_Pictographic}/u.test(b.querySelector('i').textContent), w:b.getBoundingClientRect().width, icon:b.querySelector('i svg').getBoundingClientRect().width })));
+    const dock = await fr.evaluate(() => [...document.querySelectorAll('.dock .ib')].filter(b => !b.hidden).map(b => ({ svg:!!b.querySelector('i svg'), emoji:/\p{Extended_Pictographic}/u.test(b.querySelector('i').textContent), w:b.getBoundingClientRect().width, icon:b.querySelector('i svg').getBoundingClientRect().width })));
     assert(dock.length >= 5 && dock.every(d => d.svg && !d.emoji && d.icon > d.w * .5), 'the dock icons are drawn, not emoji, and fill their buttons: ' + JSON.stringify(dock));
     /* the map */
     await fr.evaluate(() => document.getElementById('mapBtn').click());
@@ -2089,6 +2089,101 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(r.basket === 30 && r.moved === 10 && r.after === 'true||false', 'the 10 berries moved into the sanctuary leave Fab’s basket and the thank-you berry arrives when it closes: ' + JSON.stringify(r));
     assert(r.mis === 'sanct:1/1:den:true sanctweek:1/7:den:true sanctsave:0/1:den:true', 'three sanctuary missions read the sanctuary’s save and have drawn icons: ' + r.mis);
     await page.evaluate(() => showScreen('screen-hub'));
+  });
+
+  /* ---------- Round 28: several children at once (one Pencil Web Viewer each) ---------- */
+  async function classPage(q){
+    const ap = await browser.newPage(); const url = '/index.html' + (q || '');
+    ap.on('pageerror', e => errors.push(`${url}: ${e.message}`));
+    ap.on('console', m => { if(m.type() === 'error' && !/^Failed to load resource/.test(m.text())) errors.push(`${url}: console: ${m.text()}`); });
+    await ap.setViewportSize({ width:1366, height:768 }); await ap.goto(base + url); await ap.waitForFunction(() => window.FabClass); await ap.waitForTimeout(300);
+    return ap;
+  }
+  const classClean = () => { ['fab-class', 'fab-quiet-set', 'fab-help-class-t1', 'fab-energy-class-t1', 'fab-help-class-t2', 'fab-energy-class-t2', 'fabsanct-v1-class-t1', 'fabcode-v1-class-t1'].forEach(k => localStorage.removeItem(k)); localStorage.setItem('bmf_sound', 'on'); };
+  await test('Several children: a class link signs the viewer in as that Fab code, turns on class mode and starts with sounds off; energy today is kept per code and day; the help hand shows a big banner with the code', async () => {
+    const ap = await classPage('?learner=class-t1&class=1&quiet=1');
+    const r = await ap.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
+      out.mode = [fabLearnerCode(), localStorage.getItem('fab-class'), localStorage.getItem('bmf_sound'), Sound.enabled, document.body.classList.contains('fab-classmode')].join('|');
+      const tag = document.getElementById('fabTag'); out.tag = !tag.hidden && /class-t1/.test(tag.textContent) && tag.parentNode.tagName === 'HEADER';
+      out.row = [...document.querySelectorAll('#fabEnergy [data-energy]')].map(b => b.dataset.energy).join() + '|' + /You can change this any time/.test(document.getElementById('fabEnergy').textContent);
+      document.querySelector('#fabEnergy [data-energy="low"]').click(); await wait(100);
+      const e = JSON.parse(localStorage.getItem('fab-energy-class-t1')); out.energy = e.v + '|' + (e.d === new Date().toISOString().slice(0, 10) || /^\d{4}-\d\d-\d\d$/.test(e.d)) + '|' + FabClass.energy('class-t1') + '|' + FabClass.energy('class-t2') + '|' + !!document.querySelector('#fabTag .fh-e');
+      localStorage.setItem('fab-energy-class-t2', JSON.stringify({ d:'2020-01-01', v:'low' })); out.old = FabClass.energy('class-t2');
+      out.imp = FabImpact.read('class-t1').some(x => x.k === 'energy' && x.v === 'low');
+      document.getElementById('fabTagHelp').click(); await wait(100);
+      const b = document.getElementById('fabHand'); out.up = [!b.hidden, /class-t1 would like help/.test(b.textContent), !!localStorage.getItem('fab-help-class-t1'), document.getElementById('fabTagHelp').getAttribute('aria-pressed')].join('|');
+      const r1 = b.getBoundingClientRect(); out.top = r1.top < 40 && getComputedStyle(b).position === 'fixed';
+      document.getElementById('fabHandDown').click(); await wait(100); out.down = b.hidden && !localStorage.getItem('fab-help-class-t1');
+      showScreen('screen-world'); await wait(100); out.world = document.getElementById('fabTag').hidden; showScreen('screen-hub');
+      return out; });
+    await ap.close();
+    assert(r.mode === 'class-t1|1|off|false|true' && r.tag, 'the link signs in as the code, turns on class mode, starts quiet, and the code and Help sit in the top bar: ' + JSON.stringify(r));
+    assert(r.row === 'lots,some,low|true' && /^low\|true\|low\|\|true$/.test(r.energy) && r.old === '' && r.imp, 'energy today is kept for this code and today only, and noted in the soft impact log: ' + JSON.stringify(r));
+    assert(r.up === 'true|true|true|true' && r.top && r.down && r.world, 'Help raises a big banner with the code at the top; it goes down again; the tag hides inside Fab Fox World: ' + JSON.stringify(r));
+  });
+  await test('A 1:1 link can open on a hub: ?start=eyfs opens the EYFS Hub, and an unknown start stays on the menu', async () => {
+    const ap = await classPage('?learner=class-t1&start=eyfs');
+    const a = await ap.evaluate(() => [document.getElementById('screen-eyfs').classList.contains('active'), document.getElementById('screen-hub').classList.contains('active'), fabLearnerCode()].join('|'));
+    await ap.close();
+    const bp = await classPage('?learner=class-t1&start=nowhere');
+    const b = await bp.evaluate(() => document.getElementById('screen-hub').classList.contains('active'));
+    await bp.close();
+    assert(a === 'true|false|class-t1' && b, 'start=eyfs opens the EYFS Hub as that code; anything else stays on the menu: ' + a + ' ' + b);
+  });
+  await test('Several children: Help and low energy reach Fab Fox World, Fox Blocks and Fab’s Sanctuary', async () => {
+    const ap = await classPage('?learner=class-t1&class=1');
+    const r = await ap.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
+      const d = new Date(), t = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      localStorage.setItem('fab-energy-class-t1', JSON.stringify({ d:t, v:'low' }));
+      localStorage.setItem('fabsanct-v1-class-t1', JSON.stringify({ v:1, started:true, box:20, homes:{ e:'hedgehog' }, names:{ hedgehog:'Acorn' } }));
+      showScreen('screen-games'); fabOpenCode('bush'); let n = 0, W = null;
+      while(!((W = document.getElementById('codeFrame').contentWindow) && W.document.querySelector('.fc-help [data-a="next"]')) && n++ < 80) await wait(100);
+      out.code = [...W.document.querySelectorAll('.fc-help .fc-b')].map(b => (b.dataset.a || '') + (b.classList.contains('gold') ? '*' : '')).join() + '|' + /Taking it gently today/.test(W.document.getElementById('fcBrief').textContent);
+      W.document.querySelector('[data-a="help"]').click(); await wait(200);
+      out.codeHelp = !!localStorage.getItem('fab-help-class-t1') && !document.getElementById('fabHand').hidden && /Hand up/.test(W.document.querySelector('[data-a="help"]').textContent);
+      fabHelp(false); await wait(150); out.codeDown = !/Hand up/.test(W.document.querySelector('[data-a="help"]').textContent);
+      showScreen('screen-games'); fabOpenSanct(); n = 0;
+      while(!((W = document.getElementById('sanctFrame').contentWindow) && W.FabSanct) && n++ < 80) await wait(100);
+      await wait(150);
+      out.sanct = [W.document.getElementById('snHelp').hidden, [...W.document.querySelectorAll('#snSide .sn-acts [data-a]')].slice(0, 2).map(b => b.dataset.a).join(), /Taking it gently today/.test(W.document.getElementById('snSide').textContent)].join('|');
+      W.document.getElementById('snHelp').click(); await wait(200); out.sanctHelp = !!localStorage.getItem('fab-help-class-t1') && /Hand up/.test(W.document.getElementById('snHelp').textContent); fabHelp(false);
+      W.FabSanct.open(); out.workout = W.document.querySelector('[data-a="workout"]').classList.contains('gold');
+      showScreen('screen-hub');
+      return out; });
+    await ap.close();
+    assert(r.code === 'next*,way,help|true' && r.codeHelp && r.codeDown, 'Fox Blocks: on a low-energy day the gold “Add the next block for me” comes first, Dad says so, and Help raises the hand in the app: ' + JSON.stringify(r));
+    assert(r.sanct === 'false|rounds,day|true' && r.sanctHelp && r.workout, 'the sanctuary: “Do the rounds for me” comes first, “Work it out for me” is gold, and Help works: ' + JSON.stringify(r));
+  });
+  await test('Several children: Fab Fox World shows Help in class mode, raises the hand, and says “take it gently” once on a low-energy day', async () => {
+    const ap = await classPage('?learner=class-t2&class=1');
+    const r = await ap.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
+      const d = new Date(), t = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      localStorage.setItem('fab-energy-class-t2', JSON.stringify({ d:t, v:'low' }));
+      showScreen('screen-world'); try{ fabGameMount('screen-world'); }catch(e){}
+      let n = 0, W = null; while(!((W = document.querySelector('.game-frame[data-game="world"]').contentWindow) && W.WORLD) && n++ < 150) await wait(100);
+      await wait(2200); const b = W.document.getElementById('helpBtn');
+      out.btn = [!!b, b && b.hidden, /Take it gently today/.test(W.document.getElementById('cheer').textContent), W.WORLD.S().lowSaid === t].join('|');
+      b.click(); await wait(200); out.up = [!!localStorage.getItem('fab-help-class-t2'), b.getAttribute('aria-pressed'), !document.getElementById('fabHand').hidden, /class-t2 would like help/.test(document.getElementById('fabHand').textContent)].join('|');
+      b.click(); await wait(200); out.down = !localStorage.getItem('fab-help-class-t2') && b.getAttribute('aria-pressed') === 'false';
+      localStorage.removeItem('fab-class'); W.helpPaint(); out.off = b.hidden;
+      showScreen('screen-hub'); return out; });
+    await ap.close();
+    assert(r.btn === 'true|false|true|true', 'Help shows in the world’s bottom row in class mode, and the low-energy line shows once: ' + JSON.stringify(r));
+    assert(r.up === 'true|true|true|true' && r.down && r.off, 'Help in the world raises and lowers the hand; with class mode off it hides: ' + JSON.stringify(r));
+  });
+  await test('For staff: “Today’s class in Pencil Spaces” makes one link per Fab code, refuses names, and gives the board set-up steps', async () => {
+    const r = await page.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
+      showScreen('screen-staff'); await wait(200);
+      const ta = document.getElementById('clCodes'); ta.value = 'otter-482, robin-317\nBen'; ta.dispatchEvent(new Event('change')); await wait(100);
+      out.links = [...document.querySelectorAll('.cl-links input')].map(i => i.value.replace(location.origin + location.pathname, '')).join(' ');
+      out.bad = /Not a Fab code: ben/.test(document.getElementById('clClass').textContent);
+      document.getElementById('clQuiet').click(); await wait(100);
+      out.noQuiet = [...document.querySelectorAll('.cl-links input')].every(i => !/quiet=1/.test(i.value) && /class=1/.test(i.value));
+      out.steps = document.querySelectorAll('#clClass ol li').length + '|' + /Always available/.test(document.getElementById('clClass').textContent);
+      document.getElementById('clQuiet').click(); FabClass.form.text = ''; showScreen('screen-hub');
+      return out; });
+    assert(r.links === '?learner=otter-482&class=1&quiet=1 ?learner=robin-317&class=1&quiet=1' && r.bad && r.noQuiet && r.steps === '4|true', JSON.stringify(r));
+    await page.evaluate(classClean);
   });
 
   await test('no console errors anywhere', async () => { assert(!errors.length, errors.slice(0, 10).join('\n')); });
