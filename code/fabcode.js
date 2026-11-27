@@ -75,6 +75,7 @@
     bin:P('M10 12.5h20l-1.8 21H11.8z', CREAM) + P('M6.5 12.5h27M15.5 12V7h9v5M16.5 18v10M23.5 18v10'),
     eye:P('M3.5 20C9 10.5 31 10.5 36.5 20 31 29.5 9 29.5 3.5 20z', CREAM) + `<circle cx="20" cy="20" r="5" fill="${INK}"/>`,
     plus:P('M7 9.5h26v21H7z', CREAM) + P('M20 14v12M14 20h12'),
+    hand:'<g transform="scale(.625)"><path d="M22 60C15 54 10 46 10 38V31C10 26 17 25 18 30L19 36V15C19 10 26 10 26 15V31V10C26 5 33 5 33 10V31V13C33 8 40 8 40 13V33V19C40 14 47 14 47 19V40C47 51 41 59 33 61Z" fill="#F0B913" stroke="#2B1A12" stroke-width="4.8" stroke-linejoin="round" stroke-linecap="round"/></g>',
     next:P(ARROW, CREAM),
     tick:P('M7 21l8.5 9L33 10'),
     star:P('M20 4.5l4.7 9.8 10.6 1.4-7.8 7.5 2 10.6L20 28.6l-9.5 5.2 2-10.6-7.8-7.5 10.6-1.4z', GOLD),
@@ -187,6 +188,16 @@
     try{ const q = clean(new URLSearchParams(location.search).get('learner')); if(q) return q; }catch(e){}
     try{ return clean(localStorage.getItem('fab-me')); }catch(e){ return ''; } })();
   const KEY = 'fabcode-v1-' + (who || 'local');
+  /* Several children at once (classroom.js in the app, 27 Nov): class mode's help hand, and energy today.
+     On a low-energy day "Add the next block for me" comes first, in gold. */
+  const dayNow = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  const lowToday = () => { try{ const e = JSON.parse(localStorage.getItem('fab-energy-' + (who || 'local')) || 'null'); return !!e && e.d === dayNow() && e.v === 'low'; }catch(e){ return false; } };
+  const helpHost = () => { let w = window; for(let i = 0; i < 5 && w; i++){ try{ if(typeof w.fabHelp === 'function') return w; }catch(e){} if(w === w.parent) break; w = w.parent; } return null; };
+  const handUp = () => { try{ return !!localStorage.getItem('fab-help-' + (who || 'local')); }catch(e){ return false; } };
+  const helpBtn = () => { let on = false; try{ on = localStorage.getItem('fab-class') === '1'; }catch(e){} if(!on || !helpHost()) return ''; const up = handUp();
+    return btn('hand', up ? 'Hand up: tap to put it down' : 'I’d like help', up ? 'peach' : '', `data-a="help" aria-pressed="${up}"`); };
+  function paintHelp(){ const b = document.querySelector('[data-a="help"]'); if(b){ const t = document.createElement('div'); t.innerHTML = helpBtn(); if(t.firstElementChild) b.replaceWith(t.firstElementChild); else b.remove(); } }
+  window.addEventListener('storage', e => { if(e.key && (e.key.indexOf('fab-help-') === 0 || e.key === 'fab-class')) paintHelp(); });
   let SAVE = { done:{}, code:{} };
   try{ const j = JSON.parse(localStorage.getItem(KEY) || 'null'); if(j && typeof j === 'object') SAVE = { done:j.done || {}, code:j.code || {} }; }catch(e){}
   const store = () => { try{ localStorage.setItem(KEY, JSON.stringify(SAVE)); }catch(e){} };
@@ -537,10 +548,11 @@
   function edited(){ if(RUN.on) return; if(tipNow){ panel(null); } lit(null); if(LV && LV.events && (Object.keys(EVT).length || EVNOTE)){ EVT = {}; EVNOTE = ''; controls(); } }
   function brief(){
     const L = LV, dance = !L.goal, show = L.goal ? 'Show me the way' : L.kind === 'goal' || L.events ? 'Show me how' : 'Show me the dance';
-    $('fcBrief').innerHTML = `<div class="fc-say"><span class="fc-who dad" role="img" aria-label="Dad"></span><div class="fc-bubble"><b>Dad says</b>${esc(L.say)}</div></div>
+    const low = lowToday(), wayB = btn('eye', show, 'sky', 'data-a="way"'), nextB = btn('plus', low ? 'Add the next block for me' : 'Tired? Add the next block for me', low ? 'gold' : 'leaf', 'data-a="next"');
+    $('fcBrief').innerHTML = `<div class="fc-say"><span class="fc-who dad" role="img" aria-label="Dad"></span><div class="fc-bubble"><b>Dad says</b>${esc(L.say)}${low ? ' Taking it gently today? Tap “Add the next block for me” whenever you like.' : ''}</div></div>
       <div id="fcPanel"></div>
       <ol class="fc-steps">${L.steps.map(s => `<li>${s}</li>`).join('')}</ol>
-      <div class="fc-help">${btn('eye', show, 'sky', 'data-a="way"')}${btn('plus', 'Tired? Add the next block for me', 'leaf', 'data-a="next"')}</div>`;
+      <div class="fc-help">${low ? nextB + wayB : wayB + nextB}${helpBtn()}</div>`;
   }
   function panel(kind, data){
     const el = $('fcPanel'); if(!el) return; tipNow = kind; $('fcBrief').classList.toggle('won', kind === 'win'); $('fcBrief').classList.toggle('tipped', kind === 'tip');
@@ -648,6 +660,7 @@
     else if(a === 'stop'){ RUN.stop = true; }
     else if(a === 'reset'){ resetFab(); lit(null); panel(null); EVT = {}; EVNOTE = ''; controls(); }
     else if(a === 'clear'){ if(clearArmed){ clearArmed = 0; setProgram(LV.begin || []); resetFab(); panel(null); live(LV.begin ? 'Back to the starting blocks.' : 'Blocks cleared.'); } else { clearArmed = 1; setTimeout(() => { if(clearArmed){ clearArmed = 0; if(!RUN.on && LV) controls(); } }, 3500); } controls(); }
+    else if(a === 'help'){ const w = helpHost(); if(w){ try{ w.fabHelp(); }catch(e){} setTimeout(paintHelp, 30); } }
     else if(a === 'way') showWay();
     else if(a === 'next') addNext();
     else if(a === 'nextlevel'){ saveCode(); open(PJ.id, LI + 1); }
