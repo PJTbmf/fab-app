@@ -20,7 +20,7 @@
   root.classList.toggle('embed', EMBED);
   /* Where Back goes when Fox Blocks sits inside something else: Fab Fox World (the default), the Games section or the Learning Hub */
   const BACKTO = (() => { try{ return new URLSearchParams(location.search).get('back') || 'world'; }catch(e){ return 'world'; } })();
-  const BACKLABEL = { world:'Back to Fab Fox World', games:'Back to Games', learn:'Back to the Learning Hub', app:'Back to the Fab App' }[BACKTO] || 'Back';
+  const BACKLABEL = { world:'Back to Fab Fox World', games:'Back to Games', stem:'Back to the STEM Den', learn:'Back to the Learning Hub', app:'Back to the Fab App' }[BACKTO] || 'Back';
   /* Light or dark: the child's choice, shared with Fab Fox World on this device */
   const THEMEKEY = 'fab-theme';
   const themeNow = () => { try{ return localStorage.getItem(THEMEKEY) === 'dark' ? 'dark' : 'light'; }catch(e){ return 'light'; } };
