@@ -3,7 +3,11 @@
    Setting work needs no server: the staff page makes a Burrow link for one Fab code, with the work inside the link.
    Pasted into that child's Pencil Spaces Web Viewer, it fills their Burrow on that device.
    Fab codes only. No names. Everything stays on the device. Draft for BMF to check (privacy notice, DPIA).
-   Loaded after me.js and checkpoint.js. */
+   Loaded after me.js and checkpoint.js.
+   DRAFT, 27 Nov 2026 (only with a test link, ?home=burrow, until Patrick has reviewed it): the Burrow as the child's home.
+   The Learning Hub opens on the Burrow; set work comes first and the full list sits behind "More to explore";
+   a "Things I made" shelf gathers posters, Explorer makes, dances, pictures, builds and the sanctuary;
+   one link per child can carry the work, class mode and this draft together. ?home=0 turns the draft off for that viewer. */
 (function(){
   'use strict';
   const h = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
@@ -40,7 +44,7 @@
     if(!saved || !saved.state || (saved.rev || 1) !== (pack.rev || 1)) return null;
     const st = saved.state[po.i], kid = st && st.kids && st.kids['learner:' + code];
     if(!kid) return null;
-    return { step:Number(kid.step) || 0, secured:arr(kid.secured), n:po.s.steps.length, saved:saved.saved || 0 };
+    return { step:Number(kid.step) || 0, secured:arr(kid.secured), n:po.s.steps.length, saved:saved.saved || 0, kid };
   }
   function statusOf(code, it){
     const pack = packById(it.p), po = pathOf(pack), pr = progress(code, pack);
@@ -66,6 +70,53 @@
     openPack(pack, first ? it.s : null);
   }
 
+  /* ---------- draft: the Burrow as home ---------- */
+  const raw = { get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }, json(k, f){ try{ const v = JSON.parse(localStorage.getItem(k)); return v == null ? f : v; }catch(e){ return f; } } };
+  (() => { let q; try{ q = new URLSearchParams(location.search); }catch(e){ return; } const v = q.get('home');
+    try{ if(v === 'burrow') localStorage.setItem('fab-home', 'burrow'); else if(v === '0') localStorage.removeItem('fab-home'); }catch(e){} })();
+  const homeOn = () => raw.get('fab-home') === 'burrow';
+  let learnAll = false;   /* true after "More to explore", until the child is back in the Burrow or on the menu */
+  const ic = (name, emoji) => { try{ if(window.FabIcon && FabIcon.names.includes(name)) return FabIcon.svg(name); }catch(e){} return `<span aria-hidden="true">${emoji}</span>`; };
+
+  /* Things I made: what this Fab code has finished or kept, read from what the app already saves on this device */
+  function made(code){
+    const out = [];
+    pathPacks().forEach(p => { const pr = progress(code, p); if(!pr || !pr.secured.length || !window.FabFlightPoster || !window.FabProud) return;
+      out.push({ k:'poster', id:p.id, ic:ic('star', '⭐'), t:p.title, s:pr.secured.length === 1 ? '1 step climbed' : pr.secured.length + ' steps climbed', b:'See my poster' }); });
+    try{ const mk = raw.json('fab-make-' + code, {}), X = window.FabExplore;
+      if(X) X.order.forEach(id => { const m = mk[id], w = X.worlds[id]; if(!m || !w) return;
+        const rep = m.rep || {}, wrote = !!(rep.intro || rep.dyk || arr(rep.s).some(x => x && x.t)), drew = !!(m.png || (m.art && /[1-9]/.test(m.art)));
+        if(!wrote && !drew) return;
+        const bits = []; if(drew) bits.push(String((w.make.art && w.make.art.noun) || 'My design')); if(wrote) bits.push('my report');
+        out.push({ k:'explore', id, pic:m.png || '', ic:ic('compass', '🧭'), t:w.n, s:bits.join(' and ').replace(/^./, c => c.toUpperCase()), b:'Open' }); }); }catch(e){}
+    arr(raw.json('fabcode-makes-' + code, [])).filter(d => d && d.k === 'dance').slice(0, 3).forEach(d =>
+      out.push({ k:'dance', id:String(d.t), pic:d.pic || '', ic:ic('code', '💃'), t:'My dance', s:(Number(d.n) || 0) + ' blocks in Fox Blocks', b:'Watch it' }));
+    const W = raw.json('fabworld-v2-' + code, null) || {}, pics = arr(W.makes).filter(m => m && m.d), shows = arr(W.shows).length || (W.onShow ? 1 : 0);
+    if(pics.length) out.push({ k:'studio', id:'', pic:pics[0].d, ic:ic('canvas', '🎨'), t:'My pictures', s:pics.length === 1 ? '1 picture from the Studio' : pics.length + ' pictures from the Studio', b:'Open the Studio' });
+    if(shows) out.push({ k:'builds', id:'', ic:ic('toolbox', '🧰'), t:'My builds', s:shows === 1 ? '1 build on the show bench' : shows + ' builds on the show bench', b:'Go and see' });
+    const sn = raw.json('fabsanct-v1-' + code, null);
+    if(sn && (Number(sn.day) || Object.keys(sn.homes || {}).length)){ const n = Object.keys(sn.homes || {}).length;
+      out.push({ k:'sanct', id:'', ic:ic('hedgehog', '🦔'), t:'Fab’s Sanctuary', s:(n === 1 ? '1 animal has a home' : n + ' animals have a home') + (Number(sn.day) ? ' · day ' + Number(sn.day) : ''), b:'Open' }); }
+    return out;
+  }
+  function madeHTML(code){
+    const list = made(code);
+    return `<div class="me-card bw-shelf" id="bwMade"><h3 class="bw-h">${ic('picture', '🖼️')} Things I made</h3>
+      ${list.length ? `<div class="bw-made">${list.map(m => `<button type="button" class="bw-mcard" data-bwmade="${h(m.k)}" data-id="${h(m.id)}">
+        ${m.pic ? `<img src="${h(m.pic)}" alt="">` : `<span class="bw-mic">${m.ic}</span>`}<b>${h(m.t)}</b><small>${h(m.s)}</small><span class="bw-cta">${h(m.b)}</span></button>`).join('')}</div>`
+        : '<p class="bw-none">Nothing here yet. Posters, dances, pictures and builds you make will wait for you here.</p>'}</div>`;
+  }
+  function openMade(code, k, id){
+    if(k === 'poster'){ const p = packById(id), po = pathOf(p), pr = progress(code, p); if(!po || !pr) return;
+      if(FabFlightPoster.open(po.s, pr.kid, p)){ const b = document.querySelector('.fp-layer [data-fp="close"]'); if(b && b.lastChild && b.lastChild.nodeType === 3) b.lastChild.textContent = 'Back to my Burrow'; } }
+    else if(k === 'explore'){ try{ FabExplore.open('screen-me', id); }catch(e){} }
+    else if(k === 'dance'){ window.fabCodeFrom = 'screen-me'; showScreen('screen-code');
+      document.getElementById('codeFrame').src = 'code.html?embed=1&back=app&learner=' + encodeURIComponent(code) + '&project=dance&play=' + encodeURIComponent(id); }
+    else if(k === 'studio'){ window.fabWorldOpen = 'studio'; showScreen('screen-world'); }
+    else if(k === 'builds') showScreen('screen-world');
+    else if(k === 'sanct'){ try{ fabOpenSanct(); window.fabSanctFrom = 'screen-me'; }catch(e){} }
+  }
+
   /* ---------- the child's shelves ---------- */
   function shelvesHTML(code){
     const list = todays(code), b = read(code);
@@ -87,18 +138,23 @@
       ${inProg.length ? `<div class="me-card bw-shelf" id="bwPaths"><h3>🗺️ My flightpaths</h3><div class="bw-cards">${inProg.map(x => card(x.p,
         `<span class="bw-bar" role="img" aria-label="${x.pr.secured.length} of ${x.pr.n} steps secure"><i style="width:${Math.round(100 * x.pr.secured.length / x.pr.n)}%"></i></span><small>On step ${x.pr.step + 1} · ${x.pr.secured.length} of ${x.pr.n} secure</small>`, 'Carry on ➡️')).join('')}</div></div>` : ''}
       ${free.length ? `<div class="me-card bw-shelf" id="bwFree"><h3>🎈 Free choice</h3><p class="hint">Your teacher has opened these for any time you like.</p><div class="bw-cards">${free.map(p => card(p, `<small>${h(p.subject || '')} · ${h(p.years || '')}</small>`, 'Open ➡️')).join('')}</div></div>` : ''}
-      ${certs.length ? `<div class="me-card bw-shelf" id="bwCerts"><h3>🏅 My checkpoints</h3><div class="me-tre">${certs.map(r => `<span>🏅 ${h(r.title)}</span>`).join('')}</div></div>` : ''}`;
+      ${certs.length ? `<div class="me-card bw-shelf" id="bwCerts"><h3>🏅 My checkpoints</h3><div class="me-tre">${certs.map(r => `<span>🏅 ${h(r.title)}</span>`).join('')}</div></div>` : ''}
+      ${homeOn() ? madeHTML(code) + `<div class="me-card bw-shelf bw-more" id="bwMore"><h3 class="bw-h">${ic('door', '🚪')} More to explore</h3><p>Every flightpath and lesson lives in the Learning Hub. You can look any time.</p><button type="button" class="btn soft" data-bwmore>${ic('books', '📚')} <span>Open the Learning Hub</span></button></div>` : ''}`;
   }
   function wire(box, code){
     box.querySelectorAll('[data-bwgo]').forEach(b => b.addEventListener('click', () => { snd('ding'); go(code, Number(b.dataset.bwgo)); }));
     box.querySelectorAll('[data-bwopen]').forEach(b => b.addEventListener('click', () => { const p = packById(b.dataset.bwopen); if(!p) return; snd('tick'); openPack(p, null); }));
+    box.querySelectorAll('[data-bwmade]').forEach(b => b.addEventListener('click', () => { snd('tick'); openMade(code, b.dataset.bwmade, b.dataset.id || ''); }));
+    box.querySelectorAll('[data-bwmore]').forEach(b => b.addEventListener('click', () => { snd('tick'); learnAll = true; showScreen('screen-learn'); try{ learnRenderList(); }catch(e){} }));
   }
 
   /* ---------- staff: set work and make the link ---------- */
-  const F = { code:'', rows:[{ p:'', s:0, d:'', n:'' }], free:[], link:'', msg:'' };
-  function linkFor(code, rows, free){
+  const F = { code:'', rows:[{ p:'', s:0, d:'', n:'' }], free:[], link:'', msg:'', cls:true, home:true };
+  /* one link per child: who they are, class mode (their code and Help in the top bar, sounds start off), the draft Burrow home, and the work */
+  function linkFor(code, rows, free, opt){
     const a = rows.filter(r => r.p).map(r => [r.p, r.s == null ? null : Number(r.s), r.d || '', (r.n || '').trim().slice(0, 80)]);
-    return location.origin + location.pathname + '?learner=' + encodeURIComponent(code) + '&burrow=' + enc({ t:Date.now(), a, f:free });
+    opt = opt || {};
+    return location.origin + location.pathname + '?learner=' + encodeURIComponent(code) + (opt.cls ? '&class=1&quiet=1' : '') + (opt.home ? '&home=burrow' : '') + '&burrow=' + enc({ t:Date.now(), a, f:free });
   }
   function staffHTML(){
     const P = pathPacks();
@@ -116,6 +172,8 @@
       ${F.rows.map(row).join('')}
       <div class="st-row">${F.rows.length < 4 ? '<button type="button" class="btn small soft" id="bwAdd">➕ Add another piece of work</button>' : ''}</div>
       <details class="bw-freepick" ${F.free.length ? 'open' : ''}><summary><b>Free choice</b>: flightpaths this child may open at any time</summary><div class="bw-chips">${P.map(p => `<label><input type="checkbox" data-bwfree="${h(p.id)}" ${F.free.includes(p.id) ? 'checked' : ''}> ${h((p.emoji || '') + ' ' + p.title + (p.years ? ' (' + p.years + ')' : ''))}</label>`).join('')}</div></details>
+      <div class="bw-opts"><label><input type="checkbox" id="bwCls" ${F.cls ? 'checked' : ''}> <span><b>Class link</b>: the child’s code and a Help button show in the top bar, and sounds start off</span></label>
+        ${homeOn() ? `<label><input type="checkbox" id="bwHome" ${F.home ? 'checked' : ''}> <span><b>Draft:</b> the Learning Hub opens on the Burrow for this child</span></label>` : ''}</div>
       <div class="st-row"><button type="button" class="btn leaf" id="bwMake">🔗 Make the Burrow link</button></div>
       <p class="learn-msg" id="bwMsg" aria-live="polite">${h(F.msg)}</p>
       ${F.link ? `<div class="st-codes"><div><input readonly id="bwLink" value="${h(F.link)}" aria-label="Burrow link for ${h(F.code)}"><button type="button" class="btn small soft" id="bwCopy">Copy link</button></div></div>` : ''}
@@ -136,10 +194,12 @@
     card.querySelectorAll('[data-bwdel]').forEach(b => b.addEventListener('click', () => { F.rows.splice(Number(b.dataset.bwdel), 1); F.link = ''; snd('tick'); redraw(); }));
     const add = card.querySelector('#bwAdd'); if(add) add.addEventListener('click', () => { const P = pathPacks(); F.rows.push({ p:P[0] ? P[0].id : '', s:0, d:F.rows[0].d || today(), n:'' }); F.link = ''; snd('tick'); redraw(); });
     card.querySelectorAll('[data-bwfree]').forEach(c => c.addEventListener('change', () => { const id = c.dataset.bwfree; F.free = c.checked ? F.free.concat(id).slice(0, 8) : F.free.filter(x => x !== id); F.link = ''; }));
+    const cls = card.querySelector('#bwCls'); if(cls) cls.addEventListener('change', () => { F.cls = cls.checked; F.link = ''; });
+    const hm = card.querySelector('#bwHome'); if(hm) hm.addEventListener('change', () => { F.home = hm.checked; F.link = ''; });
     card.querySelector('#bwMake').addEventListener('click', () => {
       F.code = String(code.value || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20);
       if(!CODE_RE.test(F.code)){ F.link = ''; F.msg = 'Type a Fab code first: an animal, a dash and three numbers, like otter-482. Never a name.'; snd('gentle'); redraw(); return; }
-      F.link = linkFor(F.code, F.rows, F.free); F.msg = 'Link ready for ' + F.code + '. It holds the work, the day and your note, and nothing else.'; snd('ding'); redraw();
+      F.link = linkFor(F.code, F.rows, F.free, { cls:F.cls, home:F.home && homeOn() }); F.msg = 'Link ready for ' + F.code + '. It holds the work, the day and your note, and nothing else.'; snd('ding'); redraw();
     });
     const cp = card.querySelector('#bwCopy');
     if(cp) cp.addEventListener('click', () => { const i = card.querySelector('#bwLink'); try{ navigator.clipboard.writeText(i.value); cp.textContent = 'Copied ✓'; }catch(e){ i.select(); cp.textContent = 'Press Ctrl+C'; } });
@@ -175,10 +235,32 @@
 .bw-row select,.bw-row input{font:1rem var(--body,Aleo),Georgia,serif;padding:8px 10px;border-radius:12px;border:2px solid #e6d8b8;background:#fff;color:var(--ink,#2B1A12);min-height:46px;max-width:100%}
 .bw-freepick{margin:6px 0}.bw-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px;margin-top:8px}
 .bw-chips label{background:#fff;border-radius:12px;padding:8px 10px;display:flex;gap:8px;align-items:center}
+.bw-opts{display:grid;gap:6px;margin:8px 0}.bw-opts label{display:flex;gap:10px;align-items:flex-start;background:#fffdf6;border-radius:12px;padding:8px 10px}.bw-opts input{width:22px;height:22px;flex:none;margin-top:2px}
+.bw-h{display:flex;align-items:center;gap:8px}.bw-h svg{width:1.6em;height:1.6em;flex:none}
+.bw-made{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.bw-mcard{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;background:#FFF6E6;border:3px solid #2B1A12;border-radius:16px 18px 15px 19px;padding:10px 12px 12px;font:inherit;color:#2B1A12;cursor:pointer;min-height:150px;box-shadow:none}
+.bw-mcard:hover,.bw-mcard:focus-visible{background:#FFD483;outline:none}
+.bw-mcard img{width:100%;height:92px;object-fit:cover;border:2.5px solid #2B1A12;border-radius:10px;background:#fff}
+.bw-mic{display:grid;place-items:center;width:100%;height:92px;background:#FFD483;border:2.5px solid #2B1A12;border-radius:10px;font-size:2.6rem}.bw-mic svg{width:64px;height:64px}
+.bw-mcard b{font-size:1.05rem;line-height:1.25}.bw-mcard small{opacity:.85;line-height:1.3}.bw-mcard .bw-cta{margin-top:auto;font-style:italic}
+.bw-more .btn{display:inline-flex;align-items:center;gap:8px}.bw-more .btn svg{width:1.5em;height:1.5em;flex:none}
 `;
   const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
 
-  window.FabBurrow = { shelvesHTML, wire, staffHTML, staffWire, read, apply, enc, dec, linkFor, progress, form:F };
+  window.FabBurrow = { shelvesHTML, wire, staffHTML, staffWire, read, apply, enc, dec, linkFor, progress, form:F, home:homeOn, made };
+
+  /* draft: with the Burrow as home, the Learning Hub's door leads to the Burrow for a signed-in child. "More to explore" opens the full list. */
+  function hookHome(){
+    const base = window.showScreen; if(typeof base !== 'function' || base._bw) return;
+    const w = function(id){
+      if(id === 'screen-me' || id === 'screen-hub') learnAll = false;
+      /* go through the newest showScreen, so every script that listens for the Burrow opening hears about it */
+      if(id === 'screen-learn' && homeOn() && !learnAll && typeof fabLearnerCode === 'function' && fabLearnerCode() && document.getElementById('screen-me')) return window.showScreen('screen-me');
+      return base.apply(this, arguments);
+    };
+    w._bw = true; window.showScreen = w;
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hookHome); else hookHome();
 
   /* open the Burrow once the page (and me.js, which builds the screen) is ready */
   function openHome(n){ if(document.getElementById('screen-me')){ try{ showScreen('screen-me'); }catch(e){} } else if((n || 0) < 100) setTimeout(() => openHome((n || 0) + 1), 30); }

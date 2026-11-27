@@ -185,18 +185,19 @@
     const likes = ls.json('fab-likes-' + code, []), me = colourOf(code);
     const nTre = Object.keys(col).length, stage = cub.has ? (cub.name ? h(cub.name) + ' is ' : 'Your cub is ') + STAGE[Math.max(0, Math.min(2, (cub.care || 0) >= 25 ? 2 : (cub.care || 0) >= 8 ? 1 : 0))] : 'An egg is waiting by the treehouse';
     const fromUrl = (() => { try{ return !!new URLSearchParams(location.search).get('learner'); }catch(e){ return false; } })();
+    const home = !!(window.FabBurrow && FabBurrow.home && FabBurrow.home());   /* draft: the Burrow as the child's home (burrow.js) */
     box.innerHTML = `
       <div class="me-card me-hello" style="--me:${h(me)}"><div class="me-ava" aria-hidden="true">${animalOf(code)}</div>
         <div><h2>Hello, ${h(code)}!</h2><p>This is your Burrow. Your work, your flightpaths and the things you make all live here.</p></div></div>
       ${window.FabBurrow ? FabBurrow.shelvesHTML(code) : ''}
       <div class="me-grid">
-        <button class="tile me-tile" data-me="learn"><span class="emoji">📚</span><h3>${pack ? 'Carry on learning' : 'Learning'}</h3><p>${pack ? h((pack.emoji || '📘') + ' ' + pack.title) : 'Pick a lesson in the Learning Hub'}</p></button>
+        ${home ? '' : `<button class="tile me-tile" data-me="learn"><span class="emoji">📚</span><h3>${pack ? 'Carry on learning' : 'Learning'}</h3><p>${pack ? h((pack.emoji || '📘') + ' ' + pack.title) : 'Pick a lesson in the Learning Hub'}</p></button>`}
         <button class="tile me-tile" data-me="world"><span class="emoji">🌍</span><h3>Fab Fox World</h3><p>⭐ ${Number(W.spk) || 0} stars · ${stage}</p></button>
         <button class="tile me-tile" data-me="studio"><span class="emoji">🎨</span><h3>Make More FAB Studio</h3><p>${makes.length ? makes.length + ' ' + (makes.length === 1 ? 'picture' : 'pictures') + ' made by you' : 'Make, create, discover and explore'}</p></button>
         <button class="tile me-tile" data-me="hello"><span class="emoji">👋</span><h3>Today's hello</h3><p>Say hello and share how you are</p></button>
       </div>
       <div class="me-card"><h3>🧺 My treasure</h3>${nTre ? `<div class="me-tre">${Object.keys(col).map(e => `<span>${h(e)} ×${Number(col[e]) || 0}</span>`).join('')}</div>` : '<p>No treasure yet. Win it in Learning and games, or find it in Fab Fox World.</p>'}</div>
-      ${makes.length ? `<div class="me-card"><h3>🖼️ My art</h3><div class="me-art">${makes.slice(0, 8).map(m => `<img src="${h(m.d)}" alt="A picture you made">`).join('')}</div></div>` : ''}
+      ${makes.length && !home ? `<div class="me-card"><h3>🖼️ My art</h3><div class="me-art">${makes.slice(0, 8).map(m => `<img src="${h(m.d)}" alt="A picture you made">`).join('')}</div></div>` : ''}
       <div class="me-card"><h3>💛 Things I love</h3><p class="hint">Pick up to three. They help your teacher choose things you will enjoy.</p><div class="me-likes">${LIKES.map(l => `<button type="button" data-melike="${l}" class="${likes.indexOf(l) >= 0 ? 'on' : ''}" aria-pressed="${likes.indexOf(l) >= 0}">${l}</button>`).join('')}</div></div>
       ${window.speechSynthesis ? `<div class="me-card"><h3>🗣️ My reading voice</h3>${voicePickerHTML()}</div>` : ''}
       <div class="me-card"><h3>🎨 My colour</h3><div class="me-cols">${COLOURS.map(c => `<button type="button" data-mecol="${c}" class="${c === me ? 'on' : ''}" style="background:${c}" aria-label="Choose this colour"></button>`).join('')}</div></div>
