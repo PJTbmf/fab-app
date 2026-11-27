@@ -2130,6 +2130,25 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await bp.close();
     assert(a === 'true|false|class-t1' && b, 'start=eyfs opens the EYFS Hub as that code; anything else stays on the menu: ' + a + ' ' + b);
   });
+  await test('A child who picked the wrong step can change it from My flightpath, keeping their stars (27 Nov feedback)', async () => {
+    const ap = await classPage('?learner=class-t1');
+    const r = await ap.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
+      const p = BUILT_IN_PACKS.find(x => x.id === 'christmas-flightpath'); learnOpen(p); learnGo(1); await wait(150);
+      document.querySelector('[data-pwpick="0"]').click(); await wait(150);
+      const ks = Learn.state[1].kids, me = Object.keys(ks)[0], kid = ks[me]; kid.done = 4; out.first = kid.step;
+      document.querySelector('[data-pwdrawer]').click(); await wait(100);
+      out.open = document.body.classList.contains('pw-drawer-open');
+      out.hint = /Tap any step/.test(document.querySelector('#pwDrawer').textContent);
+      out.enabled = [...document.querySelectorAll('#pwDrawer [data-pwpick]')].length > 0 && [...document.querySelectorAll('#pwDrawer .pw-rung')].every(b => !b.disabled);
+      const head = [...document.querySelectorAll('#pwDrawer [data-pwstage]')].find(b => /Christmas Carol/.test(b.textContent)); head.click(); await wait(100);
+      document.querySelector('#pwDrawer [data-pwpick="6"]').click(); await wait(150);
+      const k2 = Learn.state[1].kids[me];
+      out.now = k2.step + '|' + /Dickens/.test(document.querySelector('.pw-stephead').textContent) + '|' + k2.done + '|' + document.body.classList.contains('pw-drawer-open');
+      return out; });
+    await ap.close();
+    assert(r.first === 0 && r.open && r.hint && r.enabled, 'My flightpath lists every step, tappable, with a hint: ' + JSON.stringify(r));
+    assert(r.now === '6|true|4|false', 'tapping another step moves there, keeps the stars and closes the drawer: ' + JSON.stringify(r));
+  });
   await test('Several children: Help and low energy reach Fab Fox World, Fox Blocks and Fab’s Sanctuary', async () => {
     const ap = await classPage('?learner=class-t1&class=1');
     const r = await ap.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
