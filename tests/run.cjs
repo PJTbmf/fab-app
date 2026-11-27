@@ -758,7 +758,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); localStorage.removeItem('fab-explore-real'); localStorage.removeItem('fab-explore-roam'); }catch(e){} showScreen('screen-learn'); });
     await page.locator('#learnTimeBtn').click();
     assert(/Explorer Worlds/.test(await page.locator('#tmTitle').innerText()), 'it is called Explorer Worlds');
-    assert(await page.locator('.tm-era').count() === 6 && await page.locator('.tm-era:not(.soon)').count() === 4, 'six worlds, four open');
+    assert(await page.locator('.tm-era').count() === 7 && await page.locator('.tm-era:not(.soon)').count() === 5, 'seven worlds, five open');
     const doors = await page.locator('.tm-door').allInnerTexts();
     assert(doors.length === 3 && /Time Machine/.test(doors[0]) && /Rocket/.test(doors[1]) && /Submarine/.test(doors[2]), 'three ways to travel: ' + doors.join(' | '));
     await page.locator('[data-tm="era"][data-id="rome"]').click();
@@ -808,8 +808,8 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
   await test('Explorer Worlds: Ancient Egypt, the Victorians and the Space Station each play through to a stamp, kindly', async () => {
     await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); }catch(e){} window.fabOpenExplore('screen-learn'); });
     const all = await page.evaluate(() => FabExplore.order.map(id => { const w = FabExplore.worlds[id]; return { id, door:w.door, n:w.n, spots:w.spots.map(s => ({ id:s.id, snd:s.snd, ok:FabExplore.sounds.has(s.snd), words:(s.t + ' ' + s.k).split(/\s+/).length })), find:w.find, sort:w.sort.items.map(x => [x.id, x.a]), match:w.match.items.map(x => x.id), qs:w.who.qs.map(q => q.id), text:JSON.stringify([w.hello, w.spots, w.sort, w.match, w.who.hello, w.who.qs, w.real]), teach:w.teach.join(' ') }; }));
-    assert(all.map(w => w.id).join() === 'rome,egypt,victorian,space', 'four worlds in order: ' + all.map(w => w.id).join());
-    assert(all.find(w => w.id === 'space').door === 'space' && all.filter(w => w.door === 'past').length === 3, 'the Space Station is reached by rocket, the others by time machine');
+    assert(all.map(w => w.id).join() === 'rome,egypt,greece,victorian,space', 'five worlds in order: ' + all.map(w => w.id).join());
+    assert(all.find(w => w.id === 'space').door === 'space' && all.filter(w => w.door === 'past').length === 4, 'the Space Station is reached by rocket, the others by time machine');
     for(const w of all){
       assert(w.spots.length >= 9 && w.spots.every(s => s.ok), w.id + ': every stop has a sound');
       assert(w.spots.every(s => s.words <= 60), w.id + ': each stop is a short read');
@@ -883,7 +883,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     /* voices: each guide asks for a fitting voice, and the picker finds one when the device has it */
     const v = await page.evaluate(() => { const list = [{ name:'Microsoft George - English (United Kingdom)', lang:'en-GB' }, { name:'Microsoft Hazel - English (United Kingdom)', lang:'en-GB' }, { name:'Google UK English Female', lang:'en-GB' }, { name:'Google UK English Male', lang:'en-GB' }, { name:'Google US English', lang:'en-US' }, { name:'Google français', lang:'fr-FR' }];
       const P = FabExplore.say.pick; return { voices:FabExplore.order.map(id => FabExplore.worlds[id].who.voice), f:P('f', list).name, m:P('m', list).name, g:P('g', list).name, onlyMale:P('f', [list[0]]).name, pf:FabExplore.say.pitch({ name:'Microsoft George' }, 'f'), none:P('f', []) }; });
-    assert(v.voices.join() === 'm,m,g,f', 'Marcus and Nakht are men, Ada is a girl, Zara is a woman: ' + v.voices.join());
+    assert(v.voices.join() === 'm,m,g,g,f', 'Marcus and Nakht are men, Phoebe and Ada are girls, Zara is a woman: ' + v.voices.join());
     assert(/Female|Hazel/.test(v.f) && /Male|George/.test(v.m) && !/Female|Hazel/.test(v.m) && /Female|Hazel/.test(v.g), 'the picker matches voices: ' + JSON.stringify(v));
     assert(v.onlyMale && v.pf > 1.1 && v.none === null, 'with only a man’s voice on the device, Zara’s is pitched higher');
     /* pause and carry on */
@@ -891,7 +891,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     const say = page.locator('[data-tm="say"]');
     assert(/Read it to me/.test(await say.innerText()), 'Read it to me');
     /* recorded British voices: one stored line for every stop and answer, matched to the exact words */
-    const rec = await page.evaluate(() => { const F = window.FAB_VOICE || {}, H = FabExplore.say.hash, miss = []; FabExplore.order.forEach(id => { const w = FabExplore.worlds[id]; w.spots.forEach(s => { if(F[id + '-spot-' + s.id] !== H(s.n + '. ' + s.t + ' ' + s.k)) miss.push(id + '-spot-' + s.id); }); w.who.qs.forEach(m => { if(F[id + '-ans-' + m.id] !== H(m.a)) miss.push(id + '-ans-' + m.id); }); if(!F[id + '-ans-miss'] || !F[id + '-mk-model']) miss.push(id + '-extra'); }); return { n:Object.keys(F).length, miss }; });
+    const rec = await page.evaluate(() => { const F = window.FAB_VOICE || {}, H = FabExplore.say.hash, miss = []; /* Ancient Greece is a first draft (27 Nov) and still uses the device voice */ FabExplore.order.filter(id => id !== 'greece').forEach(id => { const w = FabExplore.worlds[id]; w.spots.forEach(s => { if(F[id + '-spot-' + s.id] !== H(s.n + '. ' + s.t + ' ' + s.k)) miss.push(id + '-spot-' + s.id); }); w.who.qs.forEach(m => { if(F[id + '-ans-' + m.id] !== H(m.a)) miss.push(id + '-ans-' + m.id); }); if(!F[id + '-ans-miss'] || !F[id + '-mk-model']) miss.push(id + '-extra'); }); return { n:Object.keys(F).length, miss }; });
     assert(rec.n === 74 && !rec.miss.length, 'a recorded line for every stop, answer and model report: ' + rec.n + ' ' + rec.miss.join());
     const got = await page.evaluate(async () => { const out = []; for(const f of ['rome-spot-bakery', 'egypt-ans-eat', 'victorian-ans-miss', 'space-mk-model']){ const r = await fetch('explore/voice/' + f + '.mp3'); out.push(r.status + ':' + ((await r.blob()).size > 8000)); } return out.join(); });
     assert(got === '200:true,200:true,200:true,200:true', 'the sound files are in the app: ' + got);
@@ -923,7 +923,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     const wipe = () => page.evaluate(() => { try{ Object.keys(localStorage).filter(k => /^fab-make-|^fab-passport-/.test(k)).forEach(k => localStorage.removeItem(k)); }catch(e){} });
     await wipe(); await page.evaluate(() => { window.speechSynthesis.speak = function(){}; });
     const data = await page.evaluate(() => FabExplore.order.map(id => { const m = FabExplore.worlds[id].make; return { id, order:m.order.items.map(x => x.id), n:m.order.items.length, art:[m.art.W, m.art.H, m.art.sym, m.art.pal.length, m.art.tips.length], model:FabMake.modelGrid(m.art), quiz:m.quiz.map(q => q.a), rep:[m.report.intro.length, m.report.model.secs.length], text:JSON.stringify(m) }; }));
-    assert(data.length === 4 && data.every(d => d.n >= 6 && d.art[3] >= 7 && d.art[4] === 3 && d.quiz.length === 6 && d.rep.join() === '3,2'), 'every world has the full set: ' + JSON.stringify(data.map(d => [d.id, d.n, d.art, d.quiz.length, d.rep])));
+    assert(data.length === 5 && data.every(d => d.n >= 6 && d.art[3] >= 7 && d.art[4] === 3 && d.quiz.length === 6 && d.rep.join() === '3,2'), 'every world has the full set: ' + JSON.stringify(data.map(d => [d.id, d.n, d.art, d.quiz.length, d.rep])));
     for(const d of data){
       assert(!/\b(died|dead|deaths?|kill\w*|graves?|tombs?|mummy|mummies|wars?|blood\w*|battle\w*|rebel\w*)\b/i.test(d.text) && !/\b(color|center|favorite|jewelry)\b/.test(d.text), d.id + ': gentle wording and British spelling');
       assert(d.quiz.filter(Boolean).length === 3, d.id + ': three facts and three fibs');
@@ -1032,7 +1032,9 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
   await test('Explorer Worlds media: sounds made in the app, credited photos, and real views that stay off until tapped', async () => {
     await page.evaluate(() => { try{ localStorage.removeItem('fab-passport-local'); localStorage.removeItem('fab-explore-real'); localStorage.removeItem('fab-explore-roam'); }catch(e){} window.fabOpenExplore('screen-learn', 'egypt'); });
     const media = await page.evaluate(() => FabExplore.order.map(id => { const w = FabExplore.worlds[id]; return { id, photos:w.spots.filter(s => s.photo).map(s => Object.assign({ spot:s.id }, s.photo)), real:(w.real || []).map(r => ({ id:r.id, pano:r.pano, t:r.t, url:FabExplore.svUrl(r) })) }; }));
-    for(const m of media){
+    /* Ancient Greece is a first draft (27 Nov): no photographs or real views yet, and its teachers' note says so */
+    assert(/no photographs or real views/.test(await page.evaluate(() => FabExplore.worlds.greece.teach.join(' '))), 'Ancient Greece tells teachers it has no photographs or real views yet');
+    for(const m of media.filter(x => x.id !== 'greece')){
       assert(m.photos.length >= 4, m.id + ': at least four real photographs, got ' + m.photos.length);
       for(const ph of m.photos){
         assert(/^explore\/[a-z0-9-]+\.jpg$/.test(ph.src), m.id + '/' + ph.spot + ': the photo is stored in the app, not hot-linked: ' + ph.src);
@@ -2243,31 +2245,60 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(r.go === 'screen-time|victorian|screen-me' && r.studio === 'screen-world|studio', 'Start opens the activity, and Back will come home to the Burrow: ' + JSON.stringify(r));
     assert(r.done === 'true|true|true|true' && /^true\|challenge,studio:Anti-Bullying Week,explore:victorian$/.test(r.all), '“I did it” marks it done, notes it in the soft impact log, and all done is celebrated: ' + JSON.stringify(r));
   });
-  await test('Teachers’ area: a door on the landing page; a class of Fab codes; quick assign adds to each child’s Burrow; a well done; progress and a certificate on the child’s viewer', async () => {
+  await test('Teachers’ area: four cards like the landing page; a class of Fab codes; assign by kind, subject and key stage; booklets; a well done; the ideas bank; progress and a certificate on the child’s viewer', async () => {
     const tp = await browser.newPage(); await tp.setViewportSize({ width:1366, height:900 }); await tp.goto(base + '/index.html'); await tp.waitForFunction(() => window.FabTeach && document.getElementById('teachDoor')); await tp.waitForTimeout(300);
     const t = await tp.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {}, on = () => document.querySelector('.screen.active').id;
       const set = (id, v, ev) => { const el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event(ev || 'input', { bubbles:true })); };
+      const tap = async q => { document.querySelector(q).click(); await wait(160); };
+      const body = () => document.getElementById('teachBody'), title = () => document.querySelector('#screen-teach .screen-title').textContent;
       out.cards = [...document.querySelectorAll('#screen-hub .category-tile h2')].map(h => h.textContent).join('|');
       document.getElementById('teachDoor').click(); await wait(300); out.door = on();
-      document.getElementById('tcMake').click(); await wait(150); out.none = document.getElementById('tcMsg').textContent;
-      document.getElementById('tcNew').click(); await wait(150); set('tcEn', 'Adventurers'); set('tcEc', 'test-501\nSam\ntest-502');
-      document.getElementById('tcSave').click(); await wait(150); out.bad = document.querySelector('.tc-edit .learn-msg').textContent;
-      set('tcEc', 'test-501\ntest-502'); document.getElementById('tcSave').click(); await wait(200);
+      out.tiles = [...document.querySelectorAll('#teachBody .tc-tile')].map(b => b.querySelector('h2').textContent + (b.querySelector('.emoji svg') ? '' : '?')).join('|') + '|' + title();
+      await tap('#tcGoAssign'); out.assign = body().dataset.view + '|' + title();
+      await tap('#tcMake'); out.none = document.getElementById('tcMsg').textContent;
+      await tap('#tcWho [data-tcview="classes"]'); out.clsView = body().dataset.view;
+      await tap('#tcNew'); set('tcEn', 'Adventurers'); set('tcEc', 'test-501\nSam\ntest-502');
+      await tap('#tcSave'); out.bad = document.querySelector('.tc-edit .learn-msg').textContent;
+      set('tcEc', 'test-501\ntest-502'); await tap('#tcSave');
       out.cls = document.querySelector('.tc-list li').textContent.replace(/\s+/g, ' ') + '|' + localStorage.getItem('fab-teach-classes');
+      await tap('#screen-teach .btn-back'); out.backHome = on() + '|' + body().dataset.view;
+      await tap('#tcGoAssign');
       const links = async () => { document.getElementById('tcMake').click(); await wait(200); return [...document.querySelectorAll('#tcAssign .cl-links input')].map(i => i.value); };
-      set('tcWhat', 'a:explore:victorian', 'change'); await wait(150); set('tcLabel', 'Autumn 1'); out.topic = await links(); await wait(5);
-      set('tcWhat', 'p:christmas-flightpath', 'change'); await wait(150); out.steps = document.getElementById('tcStep').options[0].textContent; set('tcLabel', 'Autumn 2'); out.path = await links(); await wait(5);
-      set('tcWhat', 'k', 'change'); await wait(150); document.getElementById('tcMake').click(); await wait(150); out.kNone = document.getElementById('tcMsg').textContent;
+      const picks = () => document.querySelectorAll('#tcPicks .tc-pick').length, pressed = q => [...document.querySelectorAll(q + ' [aria-pressed="true"]')].map(b => b.textContent.trim()).join();
+      /* a flightpath: the class's usual key stage is offered first, and any other is one tap away */
+      await tap('[data-tckind="p"]'); out.usual = pressed('#tcStages') + '|' + picks() + '|' + /Adventurers usually work in Lower KS2/.test(body().textContent);
+      await tap('[data-tcst="ks1"]'); out.ks1 = picks(); await tap('[data-tcsub="Phonics"]'); out.phonics = [...document.querySelectorAll('#tcPicks .tc-pick b')].map(b => b.textContent).join();
+      await tap('[data-tcsub="Science"]'); await tap('[data-tcst="eyfs"]'); out.nothing = !document.getElementById('tcPicks') && /Nothing matches/.test(document.getElementById('tcNone').textContent);
+      await tap('[data-tcsub="all"]'); await tap('[data-tcst="all"]'); out.all = picks() + '|' + !document.getElementById('tcWhat');
+      /* a whole topic */
+      await tap('[data-tckind="t"]'); out.topics = [...document.querySelectorAll('#tcPicks .tc-pick b')].map(b => b.textContent).join('|'); await tap('[data-tcpick="victorian"]'); set('tcLabel', 'Autumn 1'); out.topic = await links(); await wait(5);
+      await tap('[data-tckind="p"]'); await tap('[data-tcst="all"]'); await tap('[data-tcpick="christmas-flightpath"]'); out.steps = document.getElementById('tcStep').options[0].textContent; set('tcLabel', 'Autumn 2'); out.path = await links(); await wait(5);
+      /* a booklet: the teacher keeps a list of titles; one part is set at a time */
+      await tap('[data-tckind="b"]'); out.noBk = picks() + '|' + [...document.querySelectorAll('#tcPicks .tc-tag')].map(x => x.textContent).join(); await tap('#tcMake'); out.bkNone = document.getElementById('tcMsg').textContent;
+      await tap('#tcBadd'); await tap('#tcBsave'); out.bkBlank = document.querySelector('.tc-bform .learn-msg').textContent;
+      set('tcBt', '<Place value>: Year 1'); await tap('#tcBsave'); out.bk = localStorage.getItem('fab-teach-booklets') + '|' + document.querySelector('#tcPicks .tc-pick.on').textContent.replace(/\s+/g, ' ').trim();
+      set('tcPart', 'Pages 4 and 5'); out.booklet = await links(); await wait(5);
+      await tap('[data-tckind="k"]'); await tap('#tcMake'); out.kNone = document.getElementById('tcMsg').textContent;
       set('tcText', 'Super effort this <i>week</i>'); out.praise = await links();
-      out.log = document.querySelectorAll('.tc-log tbody tr').length + '|' + document.querySelector('.tc-log tbody tr').textContent;
+      FabTeach.go('progress'); await wait(150); out.log = document.querySelectorAll('.tc-log tbody tr').length + '|' + [...document.querySelectorAll('.tc-log tbody tr')].map(r => r.textContent).join(' ; ');
       out.empty = /No child has used this browser yet/.test(document.getElementById('tcProgress').textContent);
-      document.getElementById('tcStaff').click(); await wait(300); out.staff = on(); document.querySelector('#screen-staff .btn-back').click(); await wait(200); out.staffBack = on();
+      /* suggest a resource: into the ideas bank, with nothing sent until the teacher sends it */
+      FabTeach.go('suggest'); await wait(150); await tap('#tcIsave'); out.iNone = document.getElementById('tcImsg').textContent;
+      set('tcIw', '=A Year 1 <b>place value</b> booklet'); set('tcIsub', 'Maths', 'change'); set('tcIst', 'KS1', 'change'); set('tcIy', 'After a long gap'); await tap('#tcIsave');
+      out.idea = JSON.stringify(FabTeach.ideas().map(x => [x.w, x.k, x.sub, x.st, x.y])) + '|' + document.querySelectorAll('.tc-ideas li').length + '|' + !document.querySelector('.tc-ideas b b');
+      out.mail = decodeURIComponent(document.getElementById('tcImail').getAttribute('href'));
+      await tap('#tcIclear'); out.clear1 = FabTeach.ideas().length; await tap('#tcIclear'); out.clear2 = FabTeach.ideas().length;
+      FabTeach.go('home'); await wait(150);
+      document.getElementById('tcStaff').click(); await wait(300); out.staff = on(); document.querySelector('#screen-staff .btn-back').click(); await wait(200); out.staffBack = on() + '|' + body().dataset.view;
       return out; });
     await tp.close();
-    assert(t.cards === 'EYFS Hub|Games|Wellbeing Hub|Learning Hub|STEM Den|Make More FAB Studio' && t.door === 'screen-teach', 'six cards, and one tap opens the Teachers’ area on a teacher’s own browser: ' + JSON.stringify(t.cards) + t.door);
-    assert(/Add a class|Type a Fab code/.test(t.none) && /Not a Fab code: sam/.test(t.bad) && /Adventurers ?2 children: test-501, test-502/.test(t.cls) && !/sam/i.test(t.cls.split('|')[1]), 'a class is a name and Fab codes; a name is refused: ' + JSON.stringify([t.none, t.bad, t.cls]));
-    assert(t.topic.length === 2 && /\?learner=test-501&class=1&quiet=1&burrow=[A-Za-z0-9_-]+$/.test(t.topic[0]) && /learner=test-502/.test(t.topic[1]) && t.path.length === 2 && /own step/.test(t.steps), 'one link per child: ' + JSON.stringify(t.topic));
-    assert(/what the well done is for/i.test(t.kNone) && t.praise.length === 2 && /^3\|/.test(t.log) && /Adventurers/.test(t.log) && t.empty && t.staff === 'screen-staff' && t.staffBack === 'screen-teach', 'a well done needs words; what was set is listed; the older staff page comes back here: ' + JSON.stringify([t.kNone, t.log, t.empty, t.staff, t.staffBack]));
+    assert(t.cards === 'EYFS Hub|Games|Wellbeing Hub|Learning Hub|STEM Den|Make More FAB Studio' && t.door === 'screen-teach' && t.tiles === 'Assign a task|View task progress|Suggest a resource|Print achievements|Teachers’ area' && t.assign === 'assign|Assign a task', 'six cards; one tap opens the Teachers’ area on a teacher’s own browser, set out as four drawn cards: ' + JSON.stringify([t.cards, t.door, t.tiles, t.assign]));
+    assert(/Type a Fab code/.test(t.none) && t.clsView === 'classes' && /Not a Fab code: sam/.test(t.bad) && /Adventurers ?2 children: test-501, test-502 · usually Lower KS2/.test(t.cls) && !/sam/i.test(t.cls.split('|')[1]) && t.backHome === 'screen-teach|home', 'a class is a name and Fab codes; a name is refused; Back returns to the four cards: ' + JSON.stringify([t.none, t.bad, t.cls, t.backHome]));
+    assert(t.usual === 'Lower KS2|14|true' && t.ks1 === 12 && t.phonics === 'Phonics flightpath' && t.nothing && t.all === '19|true', 'flightpaths are sorted by subject and key stage, with the class’s usual stage first and never forced: ' + JSON.stringify([t.usual, t.ks1, t.phonics, t.nothing, t.all]));
+    assert(t.topics === 'the Victorians|Ancient Egypt|Ancient Greece|the Romans|the Space Station' && t.topic.length === 2 && /\?learner=test-501&class=1&quiet=1&burrow=[A-Za-z0-9_-]+$/.test(t.topic[0]) && /learner=test-502/.test(t.topic[1]) && t.path.length === 2 && /own step/.test(t.steps), 'one link per child: ' + JSON.stringify([t.topics, t.topic]));
+    assert(/^9\|In the app,In the app(,On the board){7}$/.test(t.noBk) && /Choose a booklet first/.test(t.bkNone) && /title first/.test(t.bkBlank) && /^\[\{"t":"Place value: Year 1","sub":"Maths","st":"ks1"\}\]\|Place value: Year 1 ?Maths · KS1 ?My own list$/.test(t.bk) && t.booklet.length === 2, 'the class’s usual stage shows BMF’s booklets first; a teacher can add a title of their own, and its subject and stage are read from the title when left empty: ' + JSON.stringify([t.noBk, t.bkNone, t.bkBlank, t.bk]));
+    assert(/what the well done is for/i.test(t.kNone) && t.praise.length === 2 && /^4\|/.test(t.log) && /Adventurers/.test(t.log) && /Booklet: Place value: Year 1: Pages 4 and 5/.test(t.log) && t.empty && t.staff === 'screen-staff' && t.staffBack === 'screen-teach|home', 'a well done needs words; what was set is listed; the older staff page comes back here: ' + JSON.stringify([t.kNone, t.log, t.empty, t.staff, t.staffBack]));
+    assert(/what would help first/i.test(t.iNone) && t.idea === '[["=A Year 1 bplace value/b booklet","A booklet","Maths","KS1","After a long gap"]]|1|true' && /^mailto:teacher@bemorefab\.co\.uk\?subject=Fab App ideas bank: 1 idea&body=Ideas bank from the Fab App\n\n1\. =A Year 1/.test(t.mail) && t.clear1 === 1 && t.clear2 === 0, 'an idea is kept as plain words in this browser, the email is a draft the teacher sends, and emptying the bank takes two taps: ' + JSON.stringify([t.iNone, t.idea, t.mail, t.clear1, t.clear2]));
     const ctx = await browser.newContext(); const c = await ctx.newPage(); await c.setViewportSize({ width:1366, height:900 });
     c.on('pageerror', e => errors.push('teachers area child: ' + e.message));
     const home = () => c.waitForFunction(() => document.getElementById('screen-me') && document.getElementById('screen-me').classList.contains('active'));
@@ -2275,14 +2306,20 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     const one = await c.evaluate(() => [...document.querySelectorAll('#bwToday .bw-item')].map(li => (li.querySelector('.bw-theme') ? '[' + li.querySelector('.bw-theme').textContent + '] ' : '') + li.querySelector('b').textContent).join(' ; '));
     await c.goto(t.path[0]); await home(); await c.waitForTimeout(300);
     const two = await c.evaluate(() => [...document.querySelectorAll('#bwToday .bw-item')].map(li => (li.querySelector('.bw-theme') ? '[' + li.querySelector('.bw-theme').textContent + '] ' : '') + li.querySelector('b').textContent).join(' ; '));
+    await c.goto(t.booklet[0]); await home(); await c.waitForTimeout(300);
+    const three = await c.evaluate(() => { const li = [...document.querySelectorAll('#bwToday .bw-item')].find(x => /Place value/.test(x.textContent)); return document.querySelectorAll('#bwToday .bw-item').length + '|' + li.textContent.replace(/\s+/g, ' ').trim() + '|' + !li.querySelector('[data-bwxgo]') + '|' + !!li.querySelector('.bw-xic svg') + '|' + !li.querySelector('b b'); });
     await c.goto(t.praise[0]); await home(); await c.waitForTimeout(300);
     const r = await c.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {}, on = () => document.querySelector('.screen.active').id;
       out.praise = document.getElementById('bwPraise').textContent.replace(/\s+/g, ' ').trim() + '|' + !document.querySelector('#bwPraise i');
       out.kept = document.querySelectorAll('#bwToday .bw-item').length;
+      [...document.querySelectorAll('#bwToday .bw-item')].find(x => /Place value/.test(x.textContent)).querySelector('[data-bwxdone]').click(); await wait(300);
       showScreen('screen-hub'); await wait(250); const b = document.getElementById('teachDoor');
-      b.click(); await wait(200); out.arm = on() + '|' + /tap again/.test(b.textContent); b.click(); await wait(300); out.in = on();
+      b.click(); await wait(200); out.arm = on() + '|' + /tap again/.test(b.textContent); b.click(); await wait(300); out.in = on() + '|' + document.getElementById('teachBody').dataset.view;
+      document.getElementById('tcGoProgress').click(); await wait(200);
       const row = document.querySelector('#tcProgress tbody tr'); out.row = row.textContent.replace(/\s+/g, ' ');
-      row.querySelector('[data-tcopen]').click(); await wait(200);
+      out.tasks = [...document.querySelectorAll('#tcProgress .tc-tasks li')].map(li => li.textContent.replace(/\s+/g, ' ').trim()).join(' ; ');
+      document.querySelector('#screen-teach .btn-back').click(); await wait(200); document.getElementById('tcGoPrint').click(); await wait(200);
+      out.earned = [...document.querySelectorAll('#tcPrint .tc-earnlist li span')].map(x => x.textContent.replace(/\s+/g, ' ').trim()).join(' ; ');
       const own = document.getElementById('tcOwn'); own.value = 'super effort in every session'; own.dispatchEvent(new Event('input', { bubbles:true }));
       document.querySelector('[data-tcowncert]').click(); await wait(250);
       const cert = document.querySelector('.fc-cert'); out.cert = cert ? cert.textContent.replace(/\s+/g, ' ') : ''; out.name = cert ? cert.querySelector('.fc-cert-name').value : 'x';
@@ -2306,11 +2343,75 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       return out; });
     await ctx.close();
     assert(one === '[Autumn 1] Explorer Worlds: the Victorians' && two === '[Autumn 2] Christmas and winter flightpath ; [Autumn 1] Explorer Worlds: the Victorians', 'a class link adds to the child’s Today and keeps what was there: ' + JSON.stringify([one, two]));
-    assert(/^Well done from your teacher ?Super effort this .*week.*\|true$/.test(r.praise) && r.kept === 2, 'the well done shows in the Burrow as plain words, and the work stays: ' + JSON.stringify(r.praise) + r.kept);
-    assert(r.arm === 'screen-hub|true' && r.in === 'screen-teach' && /test-501/.test(r.row) && /0 of 2 done/.test(r.row), 'on a child’s viewer the door needs two taps, and the page shows that child’s progress: ' + JSON.stringify([r.arm, r.in, r.row]));
+    assert(/^3\|Autumn 2 ?Place value: Year 1: Pages 4 and 5 ?Booklet ?Your teacher will open this booklet with you\. ?I did it\|true\|true\|true$/.test(three), 'a booklet task shows in Today with a drawn picture, no Start button and “I did it”: ' + three);
+    assert(/^Well done from your teacher ?Super effort this .*week.*\|true$/.test(r.praise) && r.kept === 3, 'the well done shows in the Burrow as plain words, and the work stays: ' + JSON.stringify(r.praise) + r.kept);
+    assert(r.arm === 'screen-hub|true' && r.in === 'screen-teach|home' && /test-501/.test(r.row) && /1 of 3 done/.test(r.row) && /\[?Autumn 2\]? ?Christmas and winter flightpath, the child’s own step ?Not started yet ; .*the Victorians ?Not done yet ; .*Booklet: Place value: Year 1: Pages 4 and 5 ?Done$/.test(r.tasks) && /Place value: Year 1: Pages 4 and 5 Autumn 2$/.test(r.earned), 'on a child’s viewer the door needs two taps; progress lists each task and whether it is done; a finished booklet can be celebrated: ' + JSON.stringify([r.arm, r.in, r.row, r.tasks, r.earned]));
     assert(/Certificate of Achievement/.test(r.cert) && /for super effort in every session/.test(r.cert) && /BeMoreFab Virtual School/.test(r.cert) && r.name === '' && r.closed, 'a certificate in the teacher’s own words, with the name left empty: ' + JSON.stringify(r.cert));
     assert(r.stem === 'screen-stem|4|2' && r.cover && r.cad === 'screen-world|Design and build in 3D' && r.coverGone && r.stemBack === 'screen-stem' && r.studio === 'screen-world|Make More FAB Studio' && r.studioBack === 'screen-hub|true', 'the STEM Den has its own page; the 3D builder and the Studio open behind a cover, and Back comes home: ' + JSON.stringify(r));
     assert(r.cbn === '11|Level 1Numbers,Level 2Adding,Level 3Taking away' && r.sums === 'true|3|true' && r.animals === 'Fox · level 1,Owl · level 2,Hedgehog · level 3' && r.spot === 'true|true|true', 'colour by numbers has three levels and eleven pictures; three animals from shapes, with a shape spotter that is never “wrong”: ' + JSON.stringify([r.cbn, r.sums, r.animals, r.spot]));
+  });
+  await test('Booklets: a library beside the flightpaths; one built into the app is never marked in front of the child; the teacher reads confidence, hinge letters and draft next steps', async () => {
+    const tp = await browser.newPage(); await tp.setViewportSize({ width:1366, height:900 }); await tp.goto(base + '/index.html'); await tp.waitForFunction(() => window.FabTeach && window.FabBooklets && document.getElementById('teachDoor')); await tp.waitForTimeout(300);
+    const t = await tp.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {}, on = () => document.querySelector('.screen.active').id;
+      const set = (id, v, ev) => { const el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event(ev || 'input', { bubbles:true })); };
+      const tap = async q => { document.querySelector(q).click(); await wait(160); };
+      /* every answer in the two check-ins is worked out again here, so a typing slip cannot reach a child */
+      const calc = q => { const m = /^([\d.,]+) ([+−×÷]) ([\d.,]+)$/.exec(q), a = Number(m[1].replace(/,/g, '')), b = Number(m[3].replace(/,/g, '')); return Math.round((m[2] === '+' ? a + b : m[2] === '−' ? a - b : m[2] === '×' ? a * b : a / b) * 1000) / 1000; };
+      const bad = []; let n = 0;
+      FabBooklets.all().filter(b => b.app).forEach(b => b.pages.forEach(p => {
+        if(p.kind === 'quick') p.items.forEach(q => { n++; if(calc(q.q) !== q.a) bad.push(q.q); });
+        if(p.kind === 'levels') Object.keys(p.lv).forEach(L => p.lv[L].forEach(q => { n++; if(calc(q[0]) !== q[1]) bad.push(q[0]); }));
+        if(p.kind === 'model'){ n += 2; if(calc(p.you) !== p.a) bad.push(p.you); if(calc(p.ido) !== Number(p.col.find(r => r.ans).ans.join(''))) bad.push(p.ido); }
+        if(p.kind === 'hinge') p.items.forEach(q => { n++; const i = 'ABCD'.indexOf(q.ok); if(Number(q.opts[i].replace(/,/g, '')) !== calc(q.q) || q.why[i] !== 'Correct' || q.why.filter(w => w === 'Correct').length !== 1) bad.push(q.q); }); }));
+      out.sums = n + '|' + bad.join();
+      out.lib = FabBooklets.all().map(b => b.id + (b.app ? '*' : '')).join() + '|' + FabBooklets.all().every(b => b.t && b.about && b.st.length && (b.app ? b.pages.length && b.run.rows.length : b.parts.length));
+      FabTeach.open(); FabTeach.choose('b:L:four-ops-y34'); await wait(200); await tap('[data-tccls="one"]'); await tap('[data-tckind="b"]'); await tap('[data-tcst="all"]'); await tap('[data-tcpick="L:four-ops-y34"]'); set('tcOne', 'test-601');
+      out.about = /built into the app/.test(document.querySelector('.tc-about').textContent) + '|' + document.getElementById('tcStep').options.length;
+      await tap('#tcLook'); out.look = on() + '|' + document.querySelector('.bk-band h2').textContent + '|' + !!document.querySelector('.bk-tnote') + '|' + /only while this page is open/.test(document.querySelector('.bk-rest').textContent);
+      document.querySelector('[data-k="c1.add"][data-v="4"]').click(); await wait(100); await tap('#screen-booklet .btn-back'); out.lookBack = on() + '|' + document.getElementById('teachBody').dataset.view + '|' + Object.keys(localStorage).filter(k => /^fab-booklet-/.test(k)).length;
+      document.getElementById('tcMake').click(); await wait(200); out.app = document.querySelector('#tcAssign .cl-links input').value; await wait(5);
+      await tap('[data-tcpick="L:victorian-work"]'); out.care = /With care:/.test(document.querySelector('.tc-about').textContent);
+      await tap('[data-tcpick="L:number-toolkit"]'); out.parts = document.querySelectorAll('#tcParts option').length + '|' + /on the board/.test(document.querySelector('.tc-about').textContent) + '|' + !document.getElementById('tcLook');
+      set('tcPart', 'Page 4: Counting On'); document.getElementById('tcMake').click(); await wait(200); out.board = document.querySelector('#tcAssign .cl-links input').value;
+      return out; });
+    await tp.close();
+    assert(/^9[0-9]\|$/.test(t.sums) || /^[1-9]\d\|$/.test(t.sums), 'every sum in the check-ins has the right answer, and each hinge question has exactly one right letter: ' + t.sums);
+    assert(t.lib === 'four-ops-y34*,four-ops-y56*,number-toolkit,year4-challenge,victorian-schools,victorian-work,rex-duck,warm-up-3,maths-cards-3|true', 'the library lists BMF’s booklets; two are built into the app: ' + t.lib);
+    assert(t.about === 'true|9' && t.look === 'screen-booklet|Four Operations Check-In|true|true' && t.lookBack === 'screen-teach|assign|0' && t.care && t.parts === '9|true|true', 'a teacher can look inside (nothing is kept), sees a note where care is needed, and picks a part of a booklet that is opened on the board: ' + JSON.stringify(t));
+    const ctx = await browser.newContext(); const c = await ctx.newPage(); await c.setViewportSize({ width:1366, height:900 });
+    c.on('pageerror', e => errors.push('booklets child: ' + e.message));
+    const home = () => c.waitForFunction(() => document.getElementById('screen-me') && document.getElementById('screen-me').classList.contains('active'));
+    await c.goto(t.app); await home(); await c.waitForTimeout(300); await c.goto(t.board); await home(); await c.waitForTimeout(300);
+    const r = await c.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {}, on = () => document.querySelector('.screen.active').id;
+      const rows = () => [...document.querySelectorAll('#bwToday .bw-item')].map(li => li.textContent.replace(/\s+/g, ' ').trim() + (li.querySelector('[data-bwxgo]') ? ' +start' : '')).join(' ; ');
+      const type = (k, v) => { const e = document.querySelector('input[data-k="' + k + '"]'); e.value = v; e.dispatchEvent(new Event('input', { bubbles:true })); };
+      const pick = async (k, v) => { document.querySelector('button[data-k="' + k + '"][data-v="' + v + '"]').click(); await wait(80); };
+      const next = async () => { document.querySelector('.bk-nav .btn.leaf').click(); await wait(150); };
+      out.rows = rows();
+      document.querySelector('#bwToday [data-bwxgo]').click(); await wait(300); out.open = on() + '|' + document.querySelector('.bk-count').textContent + '|' + !document.querySelector('.bk-tnote');
+      await pick('c1.add', 5); await pick('c1.sub', 2); await pick('c1.mul', 3); await pick('c1.div', 2); await next();
+      type('q.A', '69'); type('q.B', '412'); type('q.C', '53'); type('q.D', '257'); type('q.E', '24'); type('q.F', '96'); type('q.G', '7'); await next();
+      await pick('h.add', 'C'); await pick('h.sub', 'C'); out.plain = !document.querySelector('#bookletBody .bk-yes, #bookletBody .bk-no') && !/✓|✗|correct|wrong|score/i.test(document.getElementById('bookletBody').textContent);
+      document.querySelector('[data-bkstop]').click(); await wait(300); out.stop = on() + '|' + /Not|I did it/.test(rows());
+      document.querySelector('#bwToday [data-bwxgo]').click(); await wait(300); out.resume = document.querySelector('.bk-count').textContent + '|' + document.querySelector('button[data-k="h.add"].on').dataset.v; await next();
+      await pick('h.mul', 'D'); await pick('h.div', 'B'); await next(); type('m1', 'Pip forgot to <b>carry</b>'); await next();
+      await pick('lv', 'Spicy'); type('lv.Spicy.0', '513'); type('lv.Spicy.1', '300'); await pick('lv', 'Mild'); out.levels = document.querySelectorAll('.bk-lvq .bk-q').length + '|' + document.querySelector('.bk-lv.on').textContent; await pick('lv', 'Spicy'); out.keptLv = document.querySelector('input[data-k="lv.Spicy.0"]').value; await next();
+      await pick('asn.0', 'never'); await pick('asn.1', 'always'); await next();
+      await pick('c8.add', 4); await pick('c8.sub', 4); type('x.can', 'take away with exchanging'); type('x.help', 'dividing'); await next();
+      out.end = /whole booklet/.test(document.getElementById('bookletBody').textContent) + '|' + JSON.parse(localStorage.getItem('fab-booklet-four-ops-y34-test-601')).a.done;
+      document.querySelector('[data-bkstop]').click(); await wait(300); out.back = on(); out.after = rows();
+      FabTeach.open(); FabTeach.go('progress'); await wait(250); const A = document.getElementById('tcAfl');
+      out.afl = [...A.querySelectorAll('.bk-atable tbody tr')].map(tr => [...tr.children].map(td => td.textContent.replace(/\s+/g, ' ').trim()).join('/')).join(' ; ');
+      out.next = [...A.querySelectorAll('.bk-next li i')].map(x => x.textContent).join(' ');
+      out.words = /“Pip forgot to bcarry\/b”/.test(A.textContent.replace(/<|>/g, '')) + '|' + !A.querySelector('.bk-two b b') + '|' + /Chose Spicy: 1 right of 2 answered/.test(A.textContent) + '|' + /adds? two odd numbers.*never ✓/i.test(A.textContent) + '|' + /bigger\. always \(it is sometimes\)/.test(A.textContent) + '|' + /“dividing”/.test(A.textContent);
+      out.tasks = [...document.querySelectorAll('#tcProgress .tc-tasks li')].map(li => li.textContent.replace(/\s+/g, ' ').trim()).join(' ; ');
+      return out; });
+    await ctx.close();
+    assert(/^Booklet: Four Operations Check-In \(Y3\/4\) ?Start ➡️ ?I did it \+start ; Page 4: Counting On ?Booklet: My Number Toolkit: tools to add and take away ?Your teacher will open this booklet with you\. ?I did it$/.test(r.rows), 'Today lists a booklet in the app with Start, and a booklet on the board with no Start: ' + r.rows);
+    assert(r.open === 'screen-booklet|Page 1 of 8|true' && r.plain && /^screen-me\|/.test(r.stop) && r.resume === 'Page 3 of 8|C' && r.levels === '4|Mild' && r.keptLv === '513', 'the child answers without ticks, crosses or a score, can stop on any page and comes back to the same place, and can move between challenge levels: ' + JSON.stringify(r));
+    assert(r.end === 'true|1' && r.back === 'screen-me' && /Four Operations Check-In \(Y3\/4\) ?⭐ Done/.test(r.after), 'finishing the booklet marks the task done in the Burrow: ' + r.end + r.back + r.after);
+    assert(/Adding\/5\/✓\/✗\/C Carried to tens, not to hundreds\/4 ▼\/Developing ; .*Subtracting\/2\/✓\/✓\/C ✓ Correct\/4 ▲\/Secure ; .*Multiplying\/3\/✓\/✓\/D ✓ Correct\/–\/Secure ; .*Dividing\/2\/✗\/–\/B ✓ Correct\/–\/Developing$/.test(r.afl), 'the teacher sees confidence before and after, easier and harder questions, and what each hinge letter means: ' + r.afl);
+    assert(r.next === 'Confident at the start but not yet right. Right answers but low confidence. Slips only on the harder questions. Slips on × and ÷ facts. A hinge letter that is not the right one.' && r.words === 'true|true|true|true|true|true' && /Booklet: Four Operations Check-In \(Y3\/4\) ?Done ; .*Booklet: My Number Toolkit: tools to add and take away: Page 4: Counting On ?Not done yet/.test(r.tasks), 'draft next steps follow BMF’s own guide, the child’s words stay plain words, and the tasks are listed: ' + JSON.stringify([r.next, r.words, r.tasks]));
   });
   await test('Several children: Help and low energy reach Fab Fox World, Fox Blocks and Fab’s Sanctuary', async () => {
     const ap = await classPage('?learner=class-t1&class=1');
