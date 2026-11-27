@@ -35,6 +35,7 @@
     { id:'', n:'No app activity (paper, the board or talking)', ic:'pencil', e:'✏️' },
     { id:'explore:victorian', n:'Explorer Worlds: the Victorians', ic:'compass', e:'🧭' },
     { id:'explore:egypt', n:'Explorer Worlds: Ancient Egypt', ic:'compass', e:'🧭' },
+    { id:'explore:greece', n:'Explorer Worlds: Ancient Greece', ic:'compass', e:'🧭' },
     { id:'explore:rome', n:'Explorer Worlds: the Romans', ic:'compass', e:'🧭' },
     { id:'explore:space', n:'Explorer Worlds: the Space Station', ic:'rocket', e:'🚀' },
     { id:'code:bush', n:'Fox Blocks: To the bramble bush', ic:'code', e:'🧩' },
@@ -45,9 +46,13 @@
     { id:'studio', n:'Make More FAB Studio', ic:'canvas', e:'🎨' },
     { id:'world', n:'Fab Fox World', ic:'fox', e:'🦊' },
     { id:'canvas', n:'Canvas: draw, write, add pictures', ic:'picture', e:'📋' },
-    { id:'music', n:'Music: the keyboard or the beat maker', ic:'piano', e:'🎹' }
+    { id:'music', n:'Music: the keyboard or the beat maker', ic:'piano', e:'🎹' },
+    /* a booklet (Patrick, 27 Nov: "being able to assign booklet activities as opposed to relying on flightpaths alone"). The teacher
+       opens the booklet on the board; the app lists the part to do and the child taps "I did it". Nothing opens in the app. */
+    { id:'booklet', n:'Booklet', ic:'books', e:'📚', show:'Your teacher will open this booklet with you.' }
   ];
-  const actOf = id => ACTS.find(a => a.id === id) || null;
+  /* a booklet from the library travels as 'bk:<id>' or 'bk:<id>:<page>' (booklets.js): one rebuilt as pages opens in the app, the others are opened on the board */
+  const actOf = id => ACTS.find(a => a.id === id) || (String(id || '').indexOf('bk:') === 0 && window.FabBooklets ? FabBooklets.act(id) : null);
   /* theme weeks: a few gentle starters a teacher can tap (drafts for a teacher to check and change) */
   const THEMES = {
     'Anti-Bullying Week': [['studio', 'Make a kindness poster'], ['world', 'Pop a bubble and pick a kind thing to do today'], ['', 'Tell your teacher about a good friend']],
@@ -58,8 +63,9 @@
   function extraOK(x){ return !!(x && (x.t || (x.a && actOf(x.a)))); }
   function extraTitle(x){ const a = actOf(x.a); return x.t || (a ? a.n : ''); }
   function openAct(code, id){
-    const [k, v] = String(id || '').split(':');
+    const [k, v, pg] = String(id || '').split(':');
     try{
+      if(k === 'bk'){ FabBooklets.open(v, pg || null, { code, back:'screen-me' }); return; }
       if(k === 'explore') FabExplore.open('screen-me', v);
       else if(k === 'code'){ window.fabCodeFrom = 'screen-me'; showScreen('screen-code'); document.getElementById('codeFrame').src = 'code.html?embed=1&back=app&learner=' + encodeURIComponent(code) + '&project=' + encodeURIComponent(v); }
       else if(k === 'sanct'){ fabOpenSanct(); window.fabSanctFrom = 'screen-me'; }
@@ -76,7 +82,7 @@
       const s = r[1] == null || r[1] === '' ? null : Math.max(0, Math.min(po.s.steps.length - 1, Number(r[1]) || 0));
       return { p:p.id, s, d:/^\d{4}-\d\d-\d\d$/.test(String(r[2] || '')) ? String(r[2]) : '', n:String(r[3] || '').replace(/[<>]/g, '').slice(0, 80), th:clean(r[4], 30) }; }).filter(Boolean);
     const free = arr(o.f).slice(0, 8).map(String).filter(id => pathOf(packById(id)));
-    const extras = arr(o.x).slice(0, 4).map(r => { r = arr(r); const a = String(r[0] || ''); return { a:actOf(a) ? a : '', t:clean(r[1], 60), n:clean(r[2], 80), th:clean(r[3], 30), d:/^\d{4}-\d\d-\d\d$/.test(String(r[4] || '')) ? String(r[4]) : '' }; }).filter(extraOK);
+    const extras = arr(o.x).slice(0, 4).map(r => { r = arr(r); const a = String(r[0] || ''); return { a:actOf(a) ? a : '', t:clean(r[1], a === 'booklet' || a.indexOf('bk:') === 0 ? 80 : 60), n:clean(r[2], 80), th:clean(r[3], 30), d:/^\d{4}-\d\d-\d\d$/.test(String(r[4] || '')) ? String(r[4]) : '' }; }).filter(extraOK);
     /* a well done from the teacher, in their own words (the Teachers' area) */
     const praise = arr(cur0(code).praise).concat(arr(o.k).slice(0, 3).map(r => ({ t:clean(arr(r)[0], 60), d:today() })).filter(x => x.t));
     const t = Number(o.t) || 0, cur = read(code);
@@ -111,6 +117,9 @@
     try{ FabImpact.log('setwork', x.a || 'challenge', x.th ? { step:x.th } : null); }catch(e){}
     try{ fabWorldAward(1); }catch(e){}
   }
+
+  /* a booklet finished in the app marks its task done, as "I did it" would */
+  function actDone(code, id){ const i = read(code).extras.findIndex(x => !x.dn && String(x.a || '').indexOf(id) === 0); if(i >= 0) extraDone(code, i); }
 
   function openPack(pack, startStep){
     const po = pathOf(pack);
@@ -189,9 +198,9 @@
     const xs = todaysExtras(code);
     const xrows = xs.map(x => { const a = actOf(x.a) || ACTS[0];
       return `<li class="bw-item bw-x ${x.dn ? 'done' : ''}"><span class="bw-xic" aria-hidden="true">${ic(a.ic, a.e)}</span>
-        <div class="bw-what">${x.th ? `<span class="bw-theme">${h(x.th)}</span>` : ''}<b>${h(extraTitle(x))}</b>${x.t && x.a ? `<span>${h(a.n)}</span>` : ''}${x.n ? `<em>Your teacher says: ${h(x.n)}</em>` : ''}</div>
+        <div class="bw-what">${x.th ? `<span class="bw-theme">${h(x.th)}</span>` : ''}<b>${h(extraTitle(x))}</b>${x.t && x.a ? `<span>${h(a.n)}</span>` : ''}${a.show ? `<span class="bw-show">${h(a.show)}</span>` : ''}${x.n ? `<em>Your teacher says: ${h(x.n)}</em>` : ''}</div>
         ${x.dn ? '<span class="bw-status">⭐ Done</span>' : ''}
-        ${x.a ? `<button type="button" class="btn ${x.dn ? 'soft small' : 'leaf'}" data-bwxgo="${x.i}">${x.dn ? 'Do more' : 'Start ➡️'}</button>` : ''}
+        ${x.a && !a.show ? `<button type="button" class="btn ${x.dn ? 'soft small' : 'leaf'}" data-bwxgo="${x.i}">${x.dn ? 'Do more' : 'Start ➡️'}</button>` : ''}
         ${x.dn ? '' : `<button type="button" class="btn soft small" data-bwxdone="${x.i}">I did it</button>`}</li>`; }).join('');
     const total = list.length + xs.length;
     const nDone = list.filter(it => statusOf(code, it).done).length + xs.filter(x => x.dn).length, all = total && nDone === total;
@@ -232,7 +241,7 @@
   function linkFor(code, rows, free, opt){
     const a = rows.filter(r => r.p).map(r => { const row = [r.p, r.s == null ? null : Number(r.s), r.d || '', (r.n || '').trim().slice(0, 80)]; if(r.th) row.push(clean(r.th, 30)); return row; });
     opt = opt || {};
-    const x = arr(opt.extras).map(e => ({ a:actOf(e.a) ? e.a : '', t:clean(e.t, 60), n:clean(e.n, 80), th:clean(e.th, 30), d:e.d || '' })).filter(extraOK).slice(0, 4).map(e => [e.a, e.t, e.n, e.th, e.d]);
+    const x = arr(opt.extras).map(e => ({ a:actOf(e.a) ? e.a : '', t:clean(e.t, e.a === 'booklet' || String(e.a).indexOf('bk:') === 0 ? 80 : 60), n:clean(e.n, 80), th:clean(e.th, 30), d:e.d || '' })).filter(extraOK).slice(0, 4).map(e => [e.a, e.t, e.n, e.th, e.d]);
     const o = { t:Date.now(), a, f:free }; if(x.length) o.x = x;
     const k = clean(opt.praise, 60); if(k) o.k = [[k]];
     if(opt.merge || k) o.m = 1;
@@ -339,6 +348,7 @@
 .bw-ideas{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-weight:700;font-size:.95rem}
 .bw-xic{display:grid;place-items:center;width:52px;height:52px;flex:none;background:#FFD483;border:2.5px solid #2B1A12;border-radius:12px;font-size:1.6rem}.bw-xic svg{width:38px;height:38px}
 .bw-praise ul{margin:6px 0 0;padding-left:1.3em;text-align:left}.bw-praise li{font-weight:700;margin:3px 0}
+.bw-show{font-style:italic;opacity:.85}
 .bw-theme{align-self:flex-start;background:#CFE7F2;border:2px solid #2B1A12;border-radius:999px;padding:1px 10px;font-size:.85rem;font-weight:700}
 .bw-opts{display:grid;gap:6px;margin:8px 0}.bw-opts label{display:flex;gap:10px;align-items:flex-start;background:#fffdf6;border-radius:12px;padding:8px 10px}.bw-opts input{width:22px;height:22px;flex:none;margin-top:2px}
 .bw-h{display:flex;align-items:center;gap:8px}.bw-h svg{width:1.6em;height:1.6em;flex:none}
@@ -352,7 +362,7 @@
 `;
   const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
 
-  window.FabBurrow = { shelvesHTML, wire, staffHTML, staffWire, read, apply, enc, dec, linkFor, progress, form:F, home:homeOn, made, acts:ACTS, themes:THEMES,
+  window.FabBurrow = { shelvesHTML, wire, staffHTML, staffWire, read, apply, enc, dec, linkFor, progress, form:F, home:homeOn, made, acts:ACTS, act:actOf, actDone, themes:THEMES,
     paths:pathPacks, pathOf, packById, status:statusOf, extraTitle, openAll, today, codeRe:CODE_RE };
 
   /* the Learning Hub's door leads to the Burrow for a signed-in child; the teacher's button opens the full list */

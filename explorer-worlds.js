@@ -147,6 +147,127 @@
   });
 
   /* =====================================================================
+     ANCIENT GREECE: a day in Athens, about 2,400 years ago (27 Nov 2026; Patrick asked for a Greeks topic to set for a class)
+     Every fact is a draft for a teacher to check. No photographs or Street View yet.
+     ===================================================================== */
+  function greece(){
+    const col = (x, top, hgt, w) => `<rect x="${x}" y="${top}" width="${w}" height="${hgt}" fill="#f6efe0" stroke="${INK}" stroke-width="2.5"/><path d="M${x + w * .34} ${top + 3} v${hgt - 6} M${x + w * .66} ${top + 3} v${hgt - 6}" stroke="#d8ccb4" stroke-width="2"/><rect x="${x - 4}" y="${top - 8}" width="${w + 8}" height="9" fill="#efe4cf" stroke="${INK}" stroke-width="2.5"/>`;
+    const pot = (x, y, s, band) => `<g transform="translate(${x},${y}) scale(${s})"><path d="M-12 -86 h24 l-3 16 q26 16 22 46 q-3 20 -17 24 h-28 q-14 -4 -17 -24 q-4 -30 22 -46 Z" fill="#d9703a" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><rect x="-21" y="-40" width="42" height="13" fill="#2b1a12"/>${band || ''}<path d="M-11 -80 q-22 4 -18 30 M11 -80 q22 4 18 30" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round"/><rect x="-14" y="-90" width="28" height="7" rx="2" fill="#2b1a12"/></g>`;
+    let temple = `<rect x="196" y="322" width="296" height="12" fill="#e6dac2" stroke="${INK}" stroke-width="2.5"/><rect x="186" y="334" width="316" height="12" fill="#dccfb4" stroke="${INK}" stroke-width="2.5"/>`;
+    for(let i = 0; i < 8; i++) temple += col(210 + i * 36.5, 246, 76, 17);
+    temple += `<rect x="200" y="220" width="288" height="18" fill="#f6efe0" stroke="${INK}" stroke-width="2.5"/><rect x="200" y="226" width="288" height="6" fill="#3f6ea8"/><polygon points="194,220 344,166 494,220" fill="#f6efe0" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><polygon points="226,214 344,176 462,214" fill="#c9553c" stroke="${INK}" stroke-width="2"/><circle cx="344" cy="200" r="8" fill="#e7b43a" stroke="${INK}" stroke-width="2"/>`;
+    let olives = ''; [[-44, -150], [-10, -176], [30, -160], [56, -128], [-58, -118], [8, -132], [-24, -108], [38, -104]].forEach(([dx, dy]) => { olives += `<ellipse cx="${620 + dx}" cy="${640 + dy}" rx="5" ry="7" fill="#3d4a2a"/>`; });
+    let seats = ''; for(let i = 0; i < 5; i++) seats += `<path d="M${742 + i * 16} ${430 + i * 30} Q872 ${486 + i * 36} ${1002 - i * 16} ${430 + i * 30}" stroke="${INK}" stroke-width="21" fill="none" stroke-linecap="round"/><path d="M${742 + i * 16} ${430 + i * 30} Q872 ${486 + i * 36} ${1002 - i * 16} ${430 + i * 30}" stroke="${i % 2 ? '#e3d6ba' : '#efe4cf'}" stroke-width="16" fill="none" stroke-linecap="round"/>`;
+    let stoa = `<polygon points="1228,372 1512,372 1496,330 1244,330" fill="#c9553c" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><rect x="1240" y="372" width="260" height="232" fill="#e9dcc2" stroke="${INK}" stroke-width="3"/><rect x="1240" y="372" width="260" height="14" fill="#3f6ea8" stroke="${INK}" stroke-width="2"/>`;
+    for(let i = 0; i < 6; i++) stoa += col(1250 + i * 46, 398, 204, 16);
+    let waves = ''; [[2000, 660], [2120, 720], [2260, 680], [2040, 760], [2320, 750], [2200, 640]].forEach(([x, y]) => { waves += `<path d="M${x} ${y} q12 -7 24 0 t24 0 t24 0" stroke="#d6eef8" stroke-width="3" fill="none" opacity=".8" stroke-linecap="round"/>`; });
+    let paving = ''; for(let x = 1040; x < 1700; x += 66) paving += `<path d="M${x} 664 v136" stroke="#cdbb8e" stroke-width="2"/>`;
+    const runner = (x, c) => `<g transform="translate(${x},652) rotate(8)">${person(0, 0, .62, c, '#d9a67a', '#3a2414', '')}</g>`;
+    return wrap('A day in Athens in Ancient Greece: a white temple on a hill, an olive tree, a theatre with curved stone seats, a stall of painted pots, a market square, a silver coin with an owl, a wax tablet and a lyre, runners on a track and a sailing ship in the harbour', `
+  <defs><linearGradient id="grSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fcdf0"/><stop offset="1" stop-color="#fdf2d2"/></linearGradient>
+  <linearGradient id="grSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#63b8dd"/><stop offset="1" stop-color="#3a86b4"/></linearGradient></defs>
+  <rect width="2400" height="620" fill="url(#grSky)"/>
+  <circle cx="1720" cy="110" r="76" fill="#ffe9a8" opacity=".6"/><circle cx="1720" cy="110" r="46" fill="#ffd66b"/>
+  <g class="tm-drift" fill="#fff" opacity=".85"><ellipse cx="900" cy="110" rx="100" ry="24"/><ellipse cx="970" cy="92" rx="56" ry="20"/><ellipse cx="2120" cy="150" rx="90" ry="22"/><ellipse cx="80" cy="130" rx="80" ry="20"/></g>
+  <path d="M0 560 Q500 470 900 540 T1700 520 T2400 540 V620 H0 Z" fill="#c8d2b0"/>
+  <path d="M2180 548 q60 -44 130 -6 q40 -22 90 6 v20 h-220 Z" fill="#b5c49e"/>
+
+  <g id="grHill"><path d="M0 620 Q80 380 230 346 H470 Q590 390 690 620 Z" fill="#cfc79a" stroke="#a79c68" stroke-width="3"/><path d="M120 620 q60 -150 150 -250" stroke="#e8dcb4" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="2 22"/>${temple}</g>
+
+  <rect x="0" y="602" width="1980" height="198" fill="#e8d8ae"/><rect x="1040" y="660" width="660" height="140" fill="#dccb9c"/>${paving}<path d="M1040 664 H1700" stroke="#cdbb8e" stroke-width="3"/>
+
+  <g id="grOlive"><path d="M612 640 q-10 -40 6 -70 q-18 -20 -8 -44 M622 640 q14 -44 0 -70 q20 -18 14 -40" stroke="#7a5a3a" stroke-width="13" fill="none" stroke-linecap="round"/>
+    <g class="tm-sway"><ellipse cx="620" cy="500" rx="86" ry="56" fill="#8fa66b" stroke="#6b8250" stroke-width="3"/><ellipse cx="566" cy="528" rx="44" ry="30" fill="#9db478" stroke="#6b8250" stroke-width="3"/><ellipse cx="676" cy="526" rx="46" ry="30" fill="#9db478" stroke="#6b8250" stroke-width="3"/><ellipse cx="624" cy="466" rx="50" ry="30" fill="#a9bf86" stroke="#6b8250" stroke-width="2.5"/>${olives}</g>
+    <path d="M664 650 q0 -22 22 -22 q22 0 22 22 Z" fill="#c99a5a" stroke="${INK}" stroke-width="3"/><ellipse cx="686" cy="630" rx="22" ry="6" fill="#3d4a2a" stroke="${INK}" stroke-width="2"/></g>
+
+  <g id="grTheatre"><path d="M706 620 Q872 300 1038 620 Z" fill="#bcc59a" stroke="#98a274" stroke-width="3"/>${seats}
+    <ellipse cx="872" cy="640" rx="78" ry="20" fill="#f1e6c8" stroke="${INK}" stroke-width="3"/>
+    ${person(848, 648, .56, '#c9553c', '#d9a67a', '#3a2414', `<ellipse cx="0" cy="-92" rx="14" ry="17" fill="#fff6e0" stroke="${INK}" stroke-width="2.5"/><path d="M-6 -86 q6 6 12 0" fill="none" stroke="${INK}" stroke-width="2.5"/><circle cx="-5" cy="-96" r="2.5" fill="${INK}"/><circle cx="5" cy="-96" r="2.5" fill="${INK}"/>`)}
+    ${person(898, 648, .56, '#3f6ea8', '#b9774a', '#1d1410', `<ellipse cx="0" cy="-92" rx="14" ry="17" fill="#fff6e0" stroke="${INK}" stroke-width="2.5"/><path d="M-6 -82 q6 -6 12 0" fill="none" stroke="${INK}" stroke-width="2.5"/><circle cx="-5" cy="-96" r="2.5" fill="${INK}"/><circle cx="5" cy="-96" r="2.5" fill="${INK}"/>`)}</g>
+
+  <g id="grPots"><path d="M1056 470 v182 M1200 470 v182" stroke="#8a5a2c" stroke-width="7"/><path d="M1040 470 q88 -30 176 0 l-10 32 q-78 -22 -156 0 Z" fill="#f4ecdc" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M1084 462 l-6 34 M1128 456 v34 M1172 462 l6 34" stroke="#c9553c" stroke-width="7"/>
+    <rect x="1062" y="604" width="134" height="12" rx="3" fill="#a9743f" stroke="${INK}" stroke-width="3"/><path d="M1072 616 v36 M1186 616 v36" stroke="${INK}" stroke-width="5"/>
+    ${pot(1090, 604, .62)}${pot(1130, 604, .8, '<path d="M-14 -16 l7 -8 l7 8 l7 -8 l7 8" stroke="#2b1a12" stroke-width="3" fill="none"/>')}${pot(1172, 604, .56)}${pot(1226, 652, .9, '<circle cx="0" cy="-10" r="7" fill="#2b1a12"/>')}</g>
+
+  ${person(1000, 652, .78, '#f4ecdc', '#d9a67a', '#3a2414', `<circle cx="0" cy="-116" r="9" fill="#3a2414" stroke="${INK}" stroke-width="2"/><path d="M-13 -102 q13 -8 26 0" stroke="#3f6ea8" stroke-width="4" fill="none"/><circle cx="-13" cy="-68" r="3.5" fill="#e7b43a"/><circle cx="13" cy="-68" r="3.5" fill="#e7b43a"/><path d="M-19 -36 h38" stroke="#c9553c" stroke-width="4"/>`)}
+
+  <g id="grAgora">${stoa}
+    <rect x="1290" y="596" width="150" height="12" rx="3" fill="#a9743f" stroke="${INK}" stroke-width="3"/><path d="M1300 608 v44 M1430 608 v44" stroke="${INK}" stroke-width="5"/>
+    <path d="M1296 596 q4 -24 26 -24 q22 0 26 24 Z" fill="#c99a5a" stroke="${INK}" stroke-width="2.5"/><circle cx="1312" cy="580" r="6" fill="#6a3d7a"/><circle cx="1324" cy="576" r="6" fill="#7a4a8a"/><circle cx="1334" cy="582" r="6" fill="#6a3d7a"/>
+    <ellipse cx="1376" cy="590" rx="20" ry="8" fill="#e3c14e" stroke="${INK}" stroke-width="2.5"/><ellipse cx="1376" cy="584" rx="14" ry="6" fill="#f0d98a" stroke="${INK}" stroke-width="2"/>
+    ${person(1268, 652, .8, '#3f6ea8', '#b9774a', '#1d1410', `<path d="M-17 -72 l34 40" stroke="#e7b43a" stroke-width="5"/>`)}</g>
+
+  <g id="grCoin"><circle cx="1420" cy="574" r="24" fill="#cfd3d8" stroke="${INK}" stroke-width="3"/><circle cx="1420" cy="574" r="18" fill="none" stroke="#9aa0a8" stroke-width="2"/><ellipse cx="1420" cy="580" rx="9" ry="11" fill="#9aa0a8"/><circle cx="1415" cy="570" r="4.5" fill="#fff" stroke="${INK}" stroke-width="1.5"/><circle cx="1425" cy="570" r="4.5" fill="#fff" stroke="${INK}" stroke-width="1.5"/><circle cx="1415" cy="570" r="1.6" fill="${INK}"/><circle cx="1425" cy="570" r="1.6" fill="${INK}"/><path d="M1418 575 l2 4 l2 -4 Z" fill="#e7b43a"/></g>
+
+  <g id="grSchool"><rect x="1536" y="626" width="150" height="12" rx="3" fill="#b9b0a0" stroke="${INK}" stroke-width="3"/><path d="M1548 638 v16 M1674 638 v16" stroke="${INK}" stroke-width="5"/>
+    <g transform="rotate(-7 1582 596)"><rect x="1546" y="566" width="74" height="58" rx="3" fill="#3a2f28" stroke="#a9743f" stroke-width="7"/><text x="1583" y="604" text-anchor="middle" font-family="Georgia, serif" font-size="24" fill="#f4e9c8">ΑΒΓ</text></g><line x1="1626" y1="622" x2="1654" y2="608" stroke="#8a5a2c" stroke-width="4" stroke-linecap="round"/>
+    <path d="M1650 624 q-14 -50 4 -74 M1690 624 q14 -50 -4 -74" stroke="#a9743f" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M1650 556 h40" stroke="${INK}" stroke-width="5" stroke-linecap="round"/><path d="M1660 558 v60 M1670 558 v62 M1680 558 v60" stroke="#f4e9c8" stroke-width="2"/><ellipse cx="1670" cy="622" rx="22" ry="9" fill="#a9743f" stroke="${INK}" stroke-width="3"/></g>
+
+  <g id="grTrack"><rect x="1722" y="640" width="230" height="40" fill="#f1e6c8" stroke="#cdbb8e" stroke-width="3"/><path d="M1740 640 v40" stroke="#fff" stroke-width="6"/><path d="M1722 660 h230" stroke="#cdbb8e" stroke-width="2" stroke-dasharray="10 10"/>
+    ${runner(1790, '#f4ecdc')}${runner(1846, '#c9553c')}${runner(1900, '#3f6ea8')}
+    <rect x="1930" y="560" width="14" height="80" fill="#f6efe0" stroke="${INK}" stroke-width="2.5"/><rect x="1924" y="552" width="26" height="9" fill="#efe4cf" stroke="${INK}" stroke-width="2.5"/><ellipse cx="1937" cy="540" rx="15" ry="11" fill="none" stroke="#6b8250" stroke-width="6"/></g>
+
+  <path d="M1980 602 q-22 60 0 198 H2400 V584 Q2200 566 1980 602 Z" fill="url(#grSea)"/>${waves}
+  <rect x="1962" y="596" width="40" height="204" fill="#cdbb8e" stroke="#a79c68" stroke-width="3"/>
+  <g id="grShip" class="tm-float"><path d="M2060 640 q110 46 230 0 q12 -18 30 -34 q-4 40 -34 68 q-112 30 -222 0 q-14 -14 -4 -34 Z" fill="#8a5a2c" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M2066 656 q112 30 222 0" stroke="#c9553c" stroke-width="5" fill="none"/>
+    <circle cx="2282" cy="650" r="8" fill="#fff" stroke="${INK}" stroke-width="2.5"/><circle cx="2284" cy="650" r="3" fill="${INK}"/>
+    <line x1="2176" y1="646" x2="2176" y2="470" stroke="${INK}" stroke-width="6"/><path d="M2110 486 h132 q10 54 -6 100 h-120 q-16 -46 -6 -100 Z" fill="#f6efe0" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M2112 520 h128 M2108 552 h136" stroke="#c9553c" stroke-width="7"/>
+    ${pot(2120, 652, .36)}${pot(2146, 654, .36)}${pot(2210, 654, .36)}</g>`);
+  }
+  X.add({ id:'greece', door:'past', e:'🏺', n:'Ancient Greece', when:'About 2,400 years ago', stamp:'ATHENAI', where:'the town', next:'Next through the town ➡️',
+    aria:'A day in Athens in Ancient Greece',
+    hello:{ h:'Welcome to Athens!', t:'This is a busy Greek city about 2,400 years ago. Tap a glowing circle to look closer, and use the arrows to walk through the town.' },
+    scene:greece,
+    spots:[
+      { id:'temple', snd:'chisel', x:344, y:262, e:'🏛️', n:'The temple on the hill', t:'High on the hill stands a great temple called the Parthenon. It was built for Athena, the goddess this city is named after. It is made of white marble.', k:'The hill is called the Acropolis. That means “high city”.' },
+      { id:'olive', snd:'wind', x:620, y:500, e:'🫒', n:'The olive tree', t:'Olive trees grow all over Greece. People eat the olives and press them to make olive oil.', k:'Olive oil is used for cooking, for burning in lamps and for keeping skin clean and soft.' },
+      { id:'theatre', snd:'harp', x:872, y:500, e:'🎭', n:'The theatre', t:'This is a theatre, with stone seats cut into the hillside. The actors wear masks, so that even people at the very back can tell who is who.', k:'Our word “theatre” comes from a Greek word. The curved seats help everyone to hear.' },
+      { id:'pots', snd:'tink', x:1130, y:548, e:'🏺', n:'The painted pots', t:'Potters shape these pots from orange clay and paint them with pictures in black. The pictures show stories, animals and everyday life.', k:'A tall jar with two handles is called an amphora. It holds olive oil.' },
+      { id:'agora', snd:'steps', x:1370, y:440, e:'🧺', n:'The agora', t:'This busy square is the agora. People come here to shop, to meet friends and to talk about how the city should be run.', k:'In Athens, citizens vote to make decisions. This is called democracy. It means “people power”.' },
+      { id:'coin', snd:'tink', x:1420, y:574, e:'🦉', n:'The owl coin', t:'This silver coin comes from Athens. It has an owl on it. The owl is the special bird of the goddess Athena.', k:'People here pay with coins. Long before coins, people swapped one thing for another.' },
+      { id:'tablet', snd:'scratch', x:1583, y:594, e:'✍️', n:'The wax tablet', t:'Children practise their letters on a wooden board covered in wax. They scratch the letters with a pointed stick called a stylus.', k:'The first two Greek letters are alpha and beta. That is where our word “alphabet” comes from!' },
+      { id:'race', snd:'steps', x:1846, y:604, e:'🏃', n:'The running track', t:'These runners are practising for the Olympic Games. The Games are held every four years at a place called Olympia.', k:'The winner does not get a gold medal. The prize is a crown made of olive leaves.' },
+      { id:'ship', snd:'splash', x:2176, y:540, e:'⛵', n:'The trading ship', t:'Greece has lots of islands, so people often travel by sea. This ship carries jars of olive oil to sell in faraway places.', k:'Many Greek ships have an eye painted on the front. People say it helps the ship to find its way.' }
+    ],
+    find:['olive', 'coin', 'ship'],
+    sort:{ h:'Then or not yet?', ask:'Which things did the Ancient Greeks have?', a:['🏺 The Greeks had it', 'about 2,400 years ago'], b:['⏳ Not invented yet', 'it came much later'], items:[
+      { id:'coins', e:'🪙', n:'coins', a:true, tip:'Athens had silver coins with an owl on them.' },
+      { id:'bike', e:'🚲', n:'a bicycle', a:false, tip:'Bicycles were invented about 200 years ago.' },
+      { id:'plays', e:'🎭', n:'plays at the theatre', a:true, tip:'The Greeks loved going to the theatre.' },
+      { id:'tomato', e:'🍅', n:'tomatoes', a:false, tip:'No tomatoes yet! They came to Europe from far across the sea, about 500 years ago.' },
+      { id:'alphabet', e:'🔤', n:'an alphabet', a:true, tip:'The Greek alphabet has 24 letters.' },
+      { id:'telescope', e:'🔭', n:'a telescope', a:false, tip:'Telescopes were invented about 400 years ago.' },
+      { id:'lamp', e:'🪔', n:'oil lamps', a:true, tip:'Little clay lamps burned olive oil.' },
+      { id:'book', e:'📖', n:'a printed book', a:false, tip:'No printed books yet. The Greeks wrote on scrolls.' }
+    ] },
+    match:{ h:'What is it for?', ask:'Match each Greek thing to its job.', pick:'Tap a Greek thing, then tap its job.', items:[
+      { id:'amphora', e:'🏺', n:'an amphora', use:'storing olive oil' },
+      { id:'tablet', e:'✍️', n:'a wax tablet', use:'practising writing' },
+      { id:'mask', e:'🎭', n:'a mask', use:'acting in a play' },
+      { id:'lyre', e:'🎵', n:'a lyre', use:'playing music' }
+    ] },
+    who:{ n:'Phoebe', voice:'g', role:'a potter’s daughter in Athens', at:[1000, 520], spot:'pots', hello:{ h:'Chaire! That means hello.', t:'I’m Phoebe and I’m ten. My family makes pots. Tap a question and I’ll tell you about my city.' },
+      note:'Phoebe is a made-up girl. Her answers come from what we know about life in Ancient Athens.',
+      face:face({ alt:'Phoebe, a girl from Ancient Athens', top:'#f4ecdc', skin:'#d9a67a', hair:`<path d="M26 56 q0 -48 34 -48 q34 0 34 48 q-12 -24 -34 -24 q-22 0 -34 24 Z" fill="#3a2414" stroke="${INK}" stroke-width="3"/><circle cx="60" cy="8" r="11" fill="#3a2414" stroke="${INK}" stroke-width="3"/><path d="M29 42 q31 -18 62 0" fill="none" stroke="#3f6ea8" stroke-width="5"/>`, extra:`<circle cx="36" cy="104" r="5" fill="#e7b43a" stroke="${INK}" stroke-width="2"/><circle cx="84" cy="104" r="5" fill="#e7b43a" stroke="${INK}" stroke-width="2"/>` }),
+      qs:[
+        { id:'job', q:'What does your family do?', a:'We make pots. My father shapes the clay on a wheel. When the pots are dry, we paint pictures on them. I help to mix the clay and carry the pots to our stall.' },
+        { id:'school', q:'Do you go to school?', a:'My brother goes to school. He learns reading, writing, counting, music and sport. Most girls learn at home. My mother teaches me to weave cloth, and I have learned my letters too.' },
+        { id:'eat', q:'What do you eat?', a:'Bread, olives, figs, cheese and fish. We dip our bread in olive oil. On special days there are honey cakes!' },
+        { id:'play', q:'What games do you play?', a:'We play knucklebones. You throw five little pieces in the air and try to catch them on the back of your hand. I also have a spinning top, a hoop and a yo-yo.' },
+        { id:'wear', q:'What do you wear?', a:'A tunic called a chiton. It is one big piece of cloth, pinned at the shoulders and tied with a belt. In summer we go barefoot or wear sandals.' },
+        { id:'athena', q:'Why is your city called Athens?', a:'It is named after the goddess Athena. The story says she gave the city its first olive tree, and the people chose her as their special goddess.' },
+        { id:'games', q:'Have you seen the Olympic Games?', a:'No, Olympia is many days’ walk from here. But everyone talks about the runners! The first race was one length of the track, about 190 metres.' }
+      ] },
+    teach:[
+      '<b>Curriculum.</b> Supports KS2 history: Ancient Greece, a study of Greek life and achievements and their influence on the western world. Check the wording against the National Curriculum programme of study.',
+      '<b>Kept gentle.</b> This town leaves out battles and soldiers. It does not say that many people in Athens were enslaved, or that only free men who were citizens could vote, and it touches only lightly on how different life was for girls. These matter for a full picture, so plan them as teacher-led.',
+      '<b>When is this?</b> The scene is set in Athens about 430 BC, soon after the Parthenon was finished. Every date and fact here is a draft for a teacher to check. There are no photographs or real views for this world yet.'
+    ],
+    packs:[{ id:'history-flightpath-y34', step:5, label:'History flightpath: Ancient Greece' }],
+    real:[]
+  });
+
+  /* =====================================================================
      THE VICTORIANS: a British street in 1897
      ===================================================================== */
   function victorian(){
