@@ -65,7 +65,7 @@
       <span class="fw-cub" style="left:12.5%;top:22%">🦊</span><span class="fab-char fab fw-fab"></span>
       <span class="fw-zl" style="left:2%">Fab Meadow</span><span class="fw-zl" style="left:45%">Rainbow Hill</span><span class="fw-zl" style="left:74%">Starlight Woods</span></div>
       <div class="fw-panel"><h2>Fab Fox World</h2><p><b>Hello, friend!</b> ${cub ? `Explore, play and look after ${esc(cub)}.` : 'Explore, play games and find a cub to look after.'} Every game and lesson earns stars here.</p>
-      <div class="fw-stats"><span>⭐ ${stars} star${stars === 1 ? '' : 's'}</span><span>📜 ${done} of 13 missions</span>${cub ? `<span>🦊 ${esc(cub)}</span>` : ''}</div>
+      <div class="fw-stats"><span>⭐ ${stars} star${stars === 1 ? '' : 's'}</span><span>📜 ${done} of 17 missions</span>${cub ? `<span>🦊 ${esc(cub)}</span>` : ''}</div>
       <button type="button" class="fw-go" tabindex="-1">▶ Play in Fab Fox World</button></div>`;
   }
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
