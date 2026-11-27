@@ -103,6 +103,15 @@ body.in-world main{ max-width:none; }
 .category-tile{ padding-top:26px; padding-bottom:26px; }
 .category-tile .emoji{ font-size:2.6rem; }
 .door-tile .emoji img{ height:1.75em; width:auto; display:block; margin:-.2em auto -.15em; }
+.stem-pic{ height:1.5em; width:auto; vertical-align:-.35em; }
+.stem-h{ font-family:var(--headline); font-weight:400; color:#C93C00; font-size:1.5rem; margin:18px 0 4px; text-align:center; }
+.stem-grid{ max-width:1040px; margin-left:auto; margin-right:auto; }
+.stem-grid .tile{ position:relative; padding-top:34px; }
+.stem-grid .tile .badge{ position:absolute; top:10px; left:50%; transform:translateX(-50%); white-space:nowrap; margin:0; }
+/* a place that lives inside Fab Fox World's code opens behind this cover, so the child goes straight to it and never sees the world on the way */
+#doorCover{ position:fixed; inset:0; z-index:9500; background:#FFD483; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; font-family:var(--headline); color:#2B1A12; font-size:2rem; text-align:center; padding:20px; }
+#doorCover img{ height:150px; width:auto; }
+#doorCover small{ font-family:var(--body,Aleo),Georgia,serif; font-size:1.1rem; }
 .category-tile h2{ font-size:1.5rem; }
 .tile{
   background:var(--white); border:3px solid var(--cream-deep); border-radius:var(--radius);
@@ -1173,10 +1182,31 @@ body.bd-dock .lp-stage, body.bd-dock .lp-nav, body.bd-dock .lp-tips{ max-width:n
     <button class="tile category-tile" data-go="screen-games"><span class="emoji">🎲</span><h2>Games</h2><p>Board, word and party games to play together</p></button>
     <button class="tile category-tile" data-go="screen-wellbeing"><span class="emoji">🌈</span><h2>Wellbeing Hub</h2><p>Affirmations, breathing and kind thoughts</p></button>
     <button class="tile learn-tile category-tile" data-go="screen-learn"><span class="badge">Years 1–6</span><span class="emoji">📚</span><h2>Learning Hub</h2><p>English, maths and topic lessons, with a place to stop if you're tired</p></button>
-    <button class="tile category-tile door-tile" data-door="stem" id="hubStem"><span class="emoji"><img src="world/stemden.png" alt=""></span><h2>STEM Den</h2><p>Code with Fox Blocks and build in 3D with Dad</p></button>
+    <button class="tile category-tile door-tile" data-go="screen-stem" id="hubStem"><span class="emoji"><img src="world/stemden.png" alt=""></span><h2>STEM Den</h2><p>Code with Fox Blocks and build in 3D with Dad</p></button>
     <button class="tile category-tile door-tile" data-door="studio" id="hubStudio"><span class="emoji" data-fi="canvas"></span><h2>Make More FAB Studio</h2><p>Draw, make and create. Pick what you feel like today</p></button>
   </div>
   <div class="fab-family" aria-hidden="true"><span class="fab-char mum"></span><span class="fab-char dad"></span><span class="fab-char doc"></span><span class="fab-char nurse"></span><span class="fab-char yellow"></span><span class="fab-char green"></span><span class="fab-char bell"></span><span class="fab-char elder"></span><span class="fab-char lark"></span></div>
+</section>
+
+<!-- ================= THE STEM DEN (27 Nov: a page of its own; Fox Blocks opens straight from here, with no trip through Fab Fox World) ================= -->
+<section id="screen-stem" class="screen" aria-label="STEM Den">
+  <div class="screen-top">
+    <button class="btn-back" data-go="screen-hub">← Back</button>
+    <h1 class="screen-title"><img class="stem-pic" src="world/stemden.png" alt=""> STEM Den</h1>
+  </div>
+  <div class="fab-say"><span class="fab-char dad" role="img" aria-label="Dad"></span><div class="bubble"><b>What shall we work out today?</b>Pick one. You can stop whenever you like.</div></div>
+  <h2 class="stem-h">Fox Blocks: write code for Fab</h2>
+  <div class="hub-grid stem-grid">
+    <button class="tile" data-code-open="bush" id="stemBush"><span class="badge">Years 1–4</span><span class="emoji" data-fi="code"></span><h2>To the bramble bush</h2><p>Give Fab code to walk to the ripe berries</p></button>
+    <button class="tile" data-code-open="dance" id="stemDance"><span class="badge">Years 1–3</span><span class="emoji" data-fi="fox"></span><h2>Fab’s dance</h2><p>Make Fab hop, spin and wiggle</p></button>
+    <button class="tile" data-code-open="tap" id="stemTap"><span class="badge">Years 2–3</span><span class="emoji" data-fi="wave"></span><h2>Tap and play</h2><p>Make things happen when you tap</p></button>
+    <button class="tile" data-code-open="goal" id="stemGoal"><span class="badge">Years 4–6</span><span class="emoji" data-fi="target"></span><h2>Score a goal</h2><p>Teach Fab to look before he moves</p></button>
+  </div>
+  <h2 class="stem-h">Design and build</h2>
+  <div class="hub-grid stem-grid">
+    <button class="tile" data-door="cadb" id="stemBuild"><span class="emoji" data-fi="toolbox"></span><h2>Build it in 3D</h2><p>Plan a house, a bridge or a rocket with blocks, then spin it round</p></button>
+    <button class="tile" data-door="cadd" id="stemDraw"><span class="emoji" data-fi="pencil"></span><h2>Draw it in 3D</h2><p>Join the dots and watch your shape pop out of the page</p></button>
+  </div>
 </section>
 
 <!-- ================= GAMES ================= -->
@@ -1194,7 +1224,6 @@ body.bd-dock .lp-stage, body.bd-dock .lp-nav, body.bd-dock .lp-tips{ max-width:n
     <button class="tile" data-go="screen-rainbow"><span class="emoji" data-fi="rainbow"></span><h2>Rainbow Words</h2><p>Guess the word before the clouds cover the sun</p></button>
     <button class="tile" data-go="screen-battleships2"><span class="emoji" data-fi="ship"></span><h2>Battleships</h2><p>Hide your fleet, then hunt for theirs — Gentle to Tricky</p></button>
     <button class="tile" data-go="screen-world"><span class="emoji" data-fi="globe"></span><h2>Fab Fox World</h2><p>Build, collect and grow a cosy world with all the foxes</p></button>
-    <button class="tile" data-code-open="" id="gamesCodeBtn"><span class="emoji" data-fi="code"></span><h2>Fox Blocks</h2><p>Snap code blocks together, press Go, and Fab does what they say</p></button>
     <button class="tile" data-sanct-open="" id="gamesSanctBtn"><span class="emoji" data-fi="hedgehog"></span><h2>Fab’s Sanctuary</h2><p>Give animals a home, open the gate to visitors and look after the money</p></button>
     <button class="tile" data-go="screen-pairs"><span class="emoji" data-fi="cards"></span><h2>Fab Fox Pairs</h2><p>Turn cards, remember, and match — times tables, words and more</p></button>
     <button class="tile" data-go="screen-invaders"><span class="emoji" data-fi="rocket"></span><h2>Fab Fox Space Mission</h2><p>A gentle space game: sparkle grumpy clouds into rainbows. Times tables and number bonds too</p></button>
@@ -2231,7 +2260,7 @@ function fabOverlayGame(key){
   o.querySelector('#fabOverlayBack').focus();
 }
 /* Fab Fox World fills the window. It has its own Leave button (back to the place it was opened from) and its own sound switch. */
-const FAB_HUBS = ['screen-hub', 'screen-games', 'screen-learn', 'screen-wellbeing', 'screen-eyfs'];
+const FAB_HUBS = ['screen-hub', 'screen-games', 'screen-learn', 'screen-wellbeing', 'screen-eyfs', 'screen-stem'];
 window.fabWorldFill = true;
 function fabLeaveWorld(){ try{ fabWorldFull(false); }catch(e){} showScreen(window.fabWorldFrom || 'screen-hub'); }
 function fabSoundToggle(){ try{ soundBtn.click(); }catch(e){} return !!(window.Sound && Sound.enabled); }
@@ -2244,7 +2273,7 @@ function fabOpenCode(project){
   const was = (document.querySelector('.screen.active') || {}).id || 'screen-games';
   window.fabCodeFrom = FAB_HUBS.includes(was) ? was : 'screen-games';
   const who = typeof fabLearnerCode === 'function' ? fabLearnerCode() : '';
-  const back = window.fabCodeFrom === 'screen-learn' ? 'learn' : window.fabCodeFrom === 'screen-games' ? 'games' : 'app';
+  const back = window.fabCodeFrom === 'screen-learn' ? 'learn' : window.fabCodeFrom === 'screen-games' ? 'games' : window.fabCodeFrom === 'screen-stem' ? 'stem' : 'app';
   showScreen('screen-code');
   document.getElementById('codeFrame').src = 'code.html?embed=1&back=' + back + (who ? '&learner=' + encodeURIComponent(who) : '') + (project ? '&project=' + encodeURIComponent(project) : '');
   return true;
@@ -2297,11 +2326,19 @@ function fabMusicBeat(){
   window.fabWorldOpen = 'beat'; showScreen('screen-world');
   setTimeout(() => { try{ const wf = document.querySelector('iframe[data-game="world"]'); wf && wf.contentWindow && wf.contentWindow.postMessage('fabworld-open', '*'); }catch(e){} }, 450);
 }
+const FAB_DOORS = { stem:['stem', 'stem', 'the STEM Den'], studio:['studio', 'studiodoor', 'the Make More FAB Studio'], cadb:['cadb', 'cadb', 'Build it in 3D'], cadd:['cadd', 'cadd', 'Draw it in 3D'] };
 function fabOpenDoor(k){
-  window.fabWorldDoor = k === 'stem' ? 'stem' : 'studio';
-  window.fabWorldOpen = k === 'stem' ? 'stem' : 'studiodoor';
-  showScreen('screen-world'); window.fabWorldFrom = 'screen-hub';
+  const D = FAB_DOORS[k] || FAB_DOORS.studio, was = (document.querySelector('.screen.active') || {}).id;
+  /* the cover hides Fab Fox World until the place itself is open */
+  let cv = document.getElementById('doorCover'); if(cv) cv.remove();
+  cv = document.createElement('div'); cv.id = 'doorCover'; cv.setAttribute('role', 'status');
+  cv.innerHTML = (k === 'studio' ? '' : '<img src="world/stemden.png" alt="">') + '<span>Opening ' + D[2] + '…</span><small>One moment.</small>'; document.body.appendChild(cv);
+  window.fabWorldDoor = D[0]; window.fabWorldOpen = D[1];
+  showScreen('screen-world'); window.fabWorldFrom = FAB_HUBS.includes(was) ? was : 'screen-hub';
   setTimeout(() => { try{ const wf = document.querySelector('iframe[data-game="world"]'); wf && wf.contentWindow && wf.contentWindow.postMessage('fabworld-open', '*'); }catch(e){} }, 450);
+  const t0 = Date.now(), iv = setInterval(() => { let up = false;
+    try{ const wf = document.querySelector('iframe[data-game="world"]'); up = !!(wf && wf.contentWindow && wf.contentWindow.document.querySelector('.scene')); }catch(e){}
+    if(up || Date.now() - t0 > 9000 || !document.getElementById('screen-world').classList.contains('active')){ clearInterval(iv); setTimeout(() => cv.remove(), up ? 250 : 0); } }, 120);
 }
 function fabBeatBack(){
   const b = window.fabBeatReturn; if(!b || !window.FabMusic) return false; window.fabBeatReturn = null;
@@ -2368,8 +2405,8 @@ function fabGameDoc(html){
 }
 function showScreen(id){
   const was = (document.querySelector('.screen.active') || {}).id;
-  if(id === 'screen-world' && ['screen-hub', 'screen-games', 'screen-learn', 'screen-wellbeing', 'screen-eyfs'].includes(was)) window.fabWorldFrom = was;
-  if(id !== 'screen-world' || !(window.fabWorldOpen === 'stem' || window.fabWorldOpen === 'studiodoor')) window.fabWorldDoor = null;
+  if(id === 'screen-world' && ['screen-hub', 'screen-games', 'screen-learn', 'screen-wellbeing', 'screen-eyfs', 'screen-stem'].includes(was)) window.fabWorldFrom = was;
+  if(id !== 'screen-world' || !['stem', 'studiodoor', 'cadb', 'cadd'].includes(window.fabWorldOpen)) window.fabWorldDoor = null;
   $$('.screen').forEach(s => s.classList.toggle('active', s.id === id));
   document.body.classList.toggle('in-code', id === 'screen-code' || id === 'screen-sanct');
   if(id !== 'screen-code'){ const cf = document.getElementById('codeFrame'); if(cf && cf.getAttribute('src')) cf.removeAttribute('src'); }

@@ -8,7 +8,7 @@
 (function(){
   'use strict';
   /* the menus, Explorer Worlds' chooser and stops, and the games that are drawn as ordinary page parts (no canvas): they grow as one piece */
-  const PAGES = ['screen-hub', 'screen-games', 'screen-wellbeing', 'screen-eyfs', 'screen-hello', 'screen-goodbye', 'screen-learn', 'screen-me',
+  const PAGES = ['screen-hub', 'screen-games', 'screen-stem', 'screen-wellbeing', 'screen-eyfs', 'screen-hello', 'screen-goodbye', 'screen-learn', 'screen-me',
     'screen-time', 'screen-c4', 'screen-ttt', 'screen-bingo', 'screen-charades', 'screen-wordle', 'screen-rainbow', 'screen-checkers', 'screen-uno', 'screen-countdown', 'screen-chat', 'screen-fabfaves'];
   const root = document.documentElement;
   let now = 1;

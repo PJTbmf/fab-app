@@ -99,7 +99,7 @@
 .sound-btn{display:grid;place-items:center;padding:0}.sound-btn > .fi{width:30px;height:30px}`;
   document.head.appendChild(css);
   /* the pages that are written once */
-  const once = () => ['screen-hub', 'screen-games', 'screen-wellbeing', 'screen-eyfs', 'screen-learn'].forEach(id => { const el = document.getElementById(id); if(el) swap(el); });
+  const once = () => ['screen-hub', 'screen-games', 'screen-wellbeing', 'screen-eyfs', 'screen-learn', 'screen-stem'].forEach(id => { const el = document.getElementById(id); if(el) swap(el); });
   /* the pages that redraw themselves: swap again after each redraw */
   function watch(id){ const el = document.getElementById(id); if(!el || !window.MutationObserver) return; let due = 0; new MutationObserver(() => { if(due) return; due = requestAnimationFrame(() => { due = 0; swap(el); }); }).observe(el, { childList:true, subtree:true }); }
   const start = () => { once(); ['screen-lesson', 'screen-learn', 'screen-board', 'screen-hub'].forEach(id => { const el = document.getElementById(id); if(el) swap(el); watch(id); }); try{ if(typeof window.soundBtnPaint === 'function') window.soundBtnPaint(); }catch(e){} };
