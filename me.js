@@ -185,7 +185,7 @@
     const likes = ls.json('fab-likes-' + code, []), me = colourOf(code);
     const nTre = Object.keys(col).length, stage = cub.has ? (cub.name ? h(cub.name) + ' is ' : 'Your cub is ') + STAGE[Math.max(0, Math.min(2, (cub.care || 0) >= 25 ? 2 : (cub.care || 0) >= 8 ? 1 : 0))] : 'An egg is waiting by the treehouse';
     const fromUrl = (() => { try{ return !!new URLSearchParams(location.search).get('learner'); }catch(e){ return false; } })();
-    const home = !!(window.FabBurrow && FabBurrow.home && FabBurrow.home());   /* draft: the Burrow as the child's home (burrow.js) */
+    const home = !!(window.FabBurrow && FabBurrow.home && FabBurrow.home());   /* the Burrow is the child's home (burrow.js) */
     box.innerHTML = `
       <div class="me-card me-hello" style="--me:${h(me)}"><div class="me-ava" aria-hidden="true">${animalOf(code)}</div>
         <div><h2>Hello, ${h(code)}!</h2><p>This is your Burrow. Your work, your flightpaths and the things you make all live here.</p></div></div>

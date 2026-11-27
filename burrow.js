@@ -4,10 +4,11 @@
    Pasted into that child's Pencil Spaces Web Viewer, it fills their Burrow on that device.
    Fab codes only. No names. Everything stays on the device. Draft for BMF to check (privacy notice, DPIA).
    Loaded after me.js and checkpoint.js.
-   DRAFT, 27 Nov 2026 (only with a test link, ?home=burrow, until Patrick has reviewed it): the Burrow as the child's home.
-   The Learning Hub opens on the Burrow; set work comes first and the full list sits behind "More to explore";
-   a "Things I made" shelf gathers posters, Explorer makes, dances, pictures, builds and the sanctuary;
-   one link per child can carry the work, class mode and this draft together. ?home=0 turns the draft off for that viewer. */
+   27 Nov 2026 (Patrick, after logging in as a child): the Burrow is the child's home. For a signed-in child the Learning Hub's door
+   opens the Burrow and nothing else: they see what their teacher set, their own flightpaths and the things they made, never the
+   whole list ("children should not be swamped with every flightpath"). The whole list is the teacher's view: with no Fab code it
+   opens as before, and on a child's viewer a small "For teachers" button at the foot of the Burrow opens it (two taps).
+   ?home=0 turns this off for one viewer (the old behaviour); ?home=burrow turns it back on. */
 (function(){
   'use strict';
   const h = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
@@ -26,7 +27,48 @@
   const KEY = c => 'fab-burrow-' + c;
 
   /* ---------- what is in a Burrow ---------- */
-  function read(code){ const b = ls.json(KEY(code), null); return b && Array.isArray(b.items) ? b : { t:0, items:[], free:[] }; }
+  function read(code){ const b = ls.json(KEY(code), null); if(!(b && Array.isArray(b.items))) return { t:0, items:[], free:[], extras:[] }; if(!Array.isArray(b.extras)) b.extras = []; return b; }
+  /* Things a teacher can set besides a flightpath: an activity in the app, a challenge in their own words, or both, with a theme tag
+     (Anti-Bullying Week, Children in Need). Patrick, 27 Nov: a child sees only what is set for them. */
+  const clean = (v, n) => String(v || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, n);
+  const ACTS = [
+    { id:'', n:'No app activity (paper, the board or talking)', ic:'pencil', e:'✏️' },
+    { id:'explore:victorian', n:'Explorer Worlds: the Victorians', ic:'compass', e:'🧭' },
+    { id:'explore:egypt', n:'Explorer Worlds: Ancient Egypt', ic:'compass', e:'🧭' },
+    { id:'explore:rome', n:'Explorer Worlds: the Romans', ic:'compass', e:'🧭' },
+    { id:'explore:space', n:'Explorer Worlds: the Space Station', ic:'rocket', e:'🚀' },
+    { id:'code:bush', n:'Fox Blocks: To the bramble bush', ic:'code', e:'🧩' },
+    { id:'code:dance', n:'Fox Blocks: Fab’s dance', ic:'code', e:'🧩' },
+    { id:'code:tap', n:'Fox Blocks: Tap and play', ic:'code', e:'🧩' },
+    { id:'code:goal', n:'Fox Blocks: Score a goal', ic:'code', e:'🧩' },
+    { id:'sanct', n:'Fab’s Sanctuary', ic:'hedgehog', e:'🦔' },
+    { id:'studio', n:'Make More FAB Studio', ic:'canvas', e:'🎨' },
+    { id:'world', n:'Fab Fox World', ic:'fox', e:'🦊' },
+    { id:'canvas', n:'Canvas: draw, write, add pictures', ic:'picture', e:'📋' },
+    { id:'music', n:'Music: the keyboard or the beat maker', ic:'piano', e:'🎹' }
+  ];
+  const actOf = id => ACTS.find(a => a.id === id) || null;
+  /* theme weeks: a few gentle starters a teacher can tap (drafts for a teacher to check and change) */
+  const THEMES = {
+    'Anti-Bullying Week': [['studio', 'Make a kindness poster'], ['world', 'Pop a bubble and pick a kind thing to do today'], ['', 'Tell your teacher about a good friend']],
+    'Children in Need': [['studio', 'Make a spotty picture'], ['sanct', 'Run the sanctuary for a day and share some berries'], ['music', 'Make a cheerful beat for a fundraising day']],
+    'World Book Day': [['canvas', 'Draw your favourite book character'], ['', 'Tell your teacher about a book you love']],
+    'Safer Internet Day': [['canvas', 'Draw three ways to stay safe online']]
+  };
+  function extraOK(x){ return !!(x && (x.t || (x.a && actOf(x.a)))); }
+  function extraTitle(x){ const a = actOf(x.a); return x.t || (a ? a.n : ''); }
+  function openAct(code, id){
+    const [k, v] = String(id || '').split(':');
+    try{
+      if(k === 'explore') FabExplore.open('screen-me', v);
+      else if(k === 'code'){ window.fabCodeFrom = 'screen-me'; showScreen('screen-code'); document.getElementById('codeFrame').src = 'code.html?embed=1&back=app&learner=' + encodeURIComponent(code) + '&project=' + encodeURIComponent(v); }
+      else if(k === 'sanct'){ fabOpenSanct(); window.fabSanctFrom = 'screen-me'; }
+      else if(k === 'studio'){ window.fabWorldOpen = 'studio'; showScreen('screen-world'); }
+      else if(k === 'world') showScreen('screen-world');
+      else if(k === 'canvas') FabBoard.open({ id:'workbook', title:'My workbook', back:'screen-me' });
+      else if(k === 'music') FabMusic.open(null, { back:'screen-me' });
+    }catch(e){}
+  }
   /* work arriving in a link: checked, trimmed, and kept only if it is newer than what is there */
   function apply(code, o){
     if(!o || typeof o !== 'object' || !CODE_RE.test(code)) return false;
@@ -34,9 +76,10 @@
       const s = r[1] == null || r[1] === '' ? null : Math.max(0, Math.min(po.s.steps.length - 1, Number(r[1]) || 0));
       return { p:p.id, s, d:/^\d{4}-\d\d-\d\d$/.test(String(r[2] || '')) ? String(r[2]) : '', n:String(r[3] || '').replace(/[<>]/g, '').slice(0, 80) }; }).filter(Boolean);
     const free = arr(o.f).slice(0, 8).map(String).filter(id => pathOf(packById(id)));
+    const extras = arr(o.x).slice(0, 4).map(r => { r = arr(r); const a = String(r[0] || ''); return { a:actOf(a) ? a : '', t:clean(r[1], 60), n:clean(r[2], 80), th:clean(r[3], 30), d:/^\d{4}-\d\d-\d\d$/.test(String(r[4] || '')) ? String(r[4]) : '' }; }).filter(extraOK);
     const t = Number(o.t) || 0, cur = read(code);
     if(cur.t && cur.t >= t) return true;
-    ls.set(KEY(code), { t, items, free }); return true;
+    ls.set(KEY(code), { t, items, free, extras }); return true;
   }
   function progress(code, pack){
     const po = pathOf(pack); if(!po) return null;
@@ -52,6 +95,13 @@
     return { pack, po, pr, done, started:!!it.st || (!!pr && it.s == null) };
   }
   function todays(code){ const d = today(); return read(code).items.map((it, i) => Object.assign({ i }, it)).filter(it => !it.d || it.d <= d); }
+  function todaysExtras(code){ const d = today(); return read(code).extras.map((x, i) => Object.assign({ i }, x)).filter(x => !x.d || x.d <= d); }
+  function extraDone(code, idx){
+    const b = read(code), x = b.extras[idx]; if(!x || x.dn) return;
+    x.dn = today(); ls.set(KEY(code), b);
+    try{ FabImpact.log('setwork', x.a || 'challenge', x.th ? { step:x.th } : null); }catch(e){}
+    try{ fabWorldAward(1); }catch(e){}
+  }
 
   function openPack(pack, startStep){
     const po = pathOf(pack);
@@ -73,9 +123,10 @@
   /* ---------- draft: the Burrow as home ---------- */
   const raw = { get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }, json(k, f){ try{ const v = JSON.parse(localStorage.getItem(k)); return v == null ? f : v; }catch(e){ return f; } } };
   (() => { let q; try{ q = new URLSearchParams(location.search); }catch(e){ return; } const v = q.get('home');
-    try{ if(v === 'burrow') localStorage.setItem('fab-home', 'burrow'); else if(v === '0') localStorage.removeItem('fab-home'); }catch(e){} })();
-  const homeOn = () => raw.get('fab-home') === 'burrow';
-  let learnAll = false;   /* true after "More to explore", until the child is back in the Burrow or on the menu */
+    try{ if(v === 'burrow') localStorage.setItem('fab-home', 'burrow'); else if(v === '0') localStorage.setItem('fab-home', 'off'); }catch(e){} })();
+  const homeOn = () => raw.get('fab-home') !== 'off';
+  let learnAll = false;   /* true after the teacher's button, until the Burrow or the menu is shown again */
+  let teachArm = 0;
   const ic = (name, emoji) => { try{ if(window.FabIcon && FabIcon.names.includes(name)) return FabIcon.svg(name); }catch(e){} return `<span aria-hidden="true">${emoji}</span>`; };
 
   /* Things I made: what this Fab code has finished or kept, read from what the app already saves on this device */
@@ -126,58 +177,85 @@
         <div class="bw-what"><b>${h(S.pack.title)}</b><span>${h(stepName)}</span>${it.n ? `<em>Your teacher says: ${h(it.n)}</em>` : ''}</div>
         ${S.done ? '<span class="bw-status">⭐ Done</span>' : ''}
         <button type="button" class="btn ${S.done ? 'soft small' : 'leaf'}" data-bwgo="${it.i}">${S.done ? 'Do more' : S.started ? 'Carry on ➡️' : 'Start ➡️'}</button></li>`; }).join('');
-    const nDone = list.filter(it => statusOf(code, it).done).length, all = list.length && nDone === list.length;
-    const say = !list.length ? '<p class="bw-none">Nothing is set for today. Choose anything you like.</p>'
+    const xs = todaysExtras(code);
+    const xrows = xs.map(x => { const a = actOf(x.a) || ACTS[0];
+      return `<li class="bw-item bw-x ${x.dn ? 'done' : ''}"><span class="bw-xic" aria-hidden="true">${ic(a.ic, a.e)}</span>
+        <div class="bw-what">${x.th ? `<span class="bw-theme">${h(x.th)}</span>` : ''}<b>${h(extraTitle(x))}</b>${x.t && x.a ? `<span>${h(a.n)}</span>` : ''}${x.n ? `<em>Your teacher says: ${h(x.n)}</em>` : ''}</div>
+        ${x.dn ? '<span class="bw-status">⭐ Done</span>' : ''}
+        ${x.a ? `<button type="button" class="btn ${x.dn ? 'soft small' : 'leaf'}" data-bwxgo="${x.i}">${x.dn ? 'Do more' : 'Start ➡️'}</button>` : ''}
+        ${x.dn ? '' : `<button type="button" class="btn soft small" data-bwxdone="${x.i}">I did it</button>`}</li>`; }).join('');
+    const total = list.length + xs.length;
+    const nDone = list.filter(it => statusOf(code, it).done).length + xs.filter(x => x.dn).length, all = total && nDone === total;
+    const say = !total ? (homeOn() ? '<p class="bw-none">Nothing is set for today yet. Your teacher will choose something with you.</p>' : '<p class="bw-none">Nothing is set for today. Choose anything you like.</p>')
       : all ? '<div class="fab-say"><span class="fab-char elder" role="img" aria-label="Mr Elder, the head teacher"></span><div class="bubble"><b>All done for today. Brilliant!</b>Your stars are waiting in Fab Fox World.</div></div>'
-      : `<div class="fab-say"><span class="fab-char fab" role="img" aria-label="Fab"></span><div class="bubble"><b>${list.length === 1 ? 'One thing to do today' : list.length + ' things to do today'}</b>Start at the top. You can stop for a rest at any time.</div></div>`;
+      : `<div class="fab-say"><span class="fab-char fab" role="img" aria-label="Fab"></span><div class="bubble"><b>${total === 1 ? 'One thing to do today' : total + ' things to do today'}</b>Start at the top. You can stop for a rest at any time.</div></div>`;
     const inProg = pathPacks().map(p => ({ p, pr:progress(code, p) })).filter(x => x.pr).sort((x, y) => y.pr.saved - x.pr.saved).slice(0, 6);
     const card = (p, sub, label) => `<button type="button" class="bw-card" data-bwopen="${h(p.id)}"><span class="bw-emoji" aria-hidden="true">${h(p.emoji || '📘')}</span><b>${h(p.title)}</b>${sub}<span class="bw-cta">${label}</span></button>`;
     const free = arr(b.free).map(packById).filter(Boolean);
     let certs = []; try{ certs = FabCheck.Store.all().filter(r => r.passed && r.code === code).slice(-8).reverse(); }catch(e){}
-    return `<div class="me-card bw-shelf" id="bwToday"><h3>📌 Today</h3>${say}${rows ? `<ol class="bw-list">${rows}</ol>` : ''}</div>
+    return `<div class="me-card bw-shelf" id="bwToday"><h3>📌 Today</h3>${say}${rows || xrows ? `<ol class="bw-list">${rows}${xrows}</ol>` : ''}</div>
       ${inProg.length ? `<div class="me-card bw-shelf" id="bwPaths"><h3>🗺️ My flightpaths</h3><div class="bw-cards">${inProg.map(x => card(x.p,
         `<span class="bw-bar" role="img" aria-label="${x.pr.secured.length} of ${x.pr.n} steps secure"><i style="width:${Math.round(100 * x.pr.secured.length / x.pr.n)}%"></i></span><small>On step ${x.pr.step + 1} · ${x.pr.secured.length} of ${x.pr.n} secure</small>`, 'Carry on ➡️')).join('')}</div></div>` : ''}
       ${free.length ? `<div class="me-card bw-shelf" id="bwFree"><h3>🎈 Free choice</h3><p class="hint">Your teacher has opened these for any time you like.</p><div class="bw-cards">${free.map(p => card(p, `<small>${h(p.subject || '')} · ${h(p.years || '')}</small>`, 'Open ➡️')).join('')}</div></div>` : ''}
       ${certs.length ? `<div class="me-card bw-shelf" id="bwCerts"><h3>🏅 My checkpoints</h3><div class="me-tre">${certs.map(r => `<span>🏅 ${h(r.title)}</span>`).join('')}</div></div>` : ''}
-      ${homeOn() ? madeHTML(code) + `<div class="me-card bw-shelf bw-more" id="bwMore"><h3 class="bw-h">${ic('door', '🚪')} More to explore</h3><p>Every flightpath and lesson lives in the Learning Hub. You can look any time.</p><button type="button" class="btn soft" data-bwmore>${ic('books', '📚')} <span>Open the Learning Hub</span></button></div>` : ''}`;
+      ${homeOn() ? madeHTML(code) + `<p class="bw-teach" id="bwTeach"><button type="button" class="btn small soft" data-bwmore>For teachers: every flightpath and lesson</button></p>` : ''}`;
   }
   function wire(box, code){
     box.querySelectorAll('[data-bwgo]').forEach(b => b.addEventListener('click', () => { snd('ding'); go(code, Number(b.dataset.bwgo)); }));
     box.querySelectorAll('[data-bwopen]').forEach(b => b.addEventListener('click', () => { const p = packById(b.dataset.bwopen); if(!p) return; snd('tick'); openPack(p, null); }));
+    box.querySelectorAll('[data-bwxgo]').forEach(b => b.addEventListener('click', () => { const x = read(code).extras[Number(b.dataset.bwxgo)]; if(!x) return; snd('ding'); openAct(code, x.a); }));
+    box.querySelectorAll('[data-bwxdone]').forEach(b => b.addEventListener('click', () => { extraDone(code, Number(b.dataset.bwxdone)); snd('jingle'); try{ showScreen('screen-me'); }catch(e){} }));
     box.querySelectorAll('[data-bwmade]').forEach(b => b.addEventListener('click', () => { snd('tick'); openMade(code, b.dataset.bwmade, b.dataset.id || ''); }));
-    box.querySelectorAll('[data-bwmore]').forEach(b => b.addEventListener('click', () => { snd('tick'); learnAll = true; showScreen('screen-learn'); try{ learnRenderList(); }catch(e){} }));
+    /* the teacher's door: two taps, so a child does not land in the whole list by accident */
+    box.querySelectorAll('[data-bwmore]').forEach(b => b.addEventListener('click', () => { snd('tick');
+      if(Date.now() - teachArm > 6000){ teachArm = Date.now(); b.textContent = 'Teachers: tap again to open the full list'; b.classList.add('amber'); setTimeout(() => { if(b.isConnected && Date.now() - teachArm >= 6000){ b.textContent = 'For teachers: every flightpath and lesson'; b.classList.remove('amber'); } }, 6100); return; }
+      teachArm = 0; learnAll = true; showScreen('screen-learn'); try{ learnRenderList(); }catch(e){} }));
   }
 
   /* ---------- staff: set work and make the link ---------- */
-  const F = { code:'', rows:[{ p:'', s:0, d:'', n:'' }], free:[], link:'', msg:'', cls:true, home:true };
+  const F = { code:'', rows:[{ p:'', s:0, d:'', n:'' }], free:[], extras:[], link:'', msg:'', cls:true, home:true, init:false };
   /* one link per child: who they are, class mode (their code and Help in the top bar, sounds start off), the draft Burrow home, and the work */
   function linkFor(code, rows, free, opt){
     const a = rows.filter(r => r.p).map(r => [r.p, r.s == null ? null : Number(r.s), r.d || '', (r.n || '').trim().slice(0, 80)]);
     opt = opt || {};
-    return location.origin + location.pathname + '?learner=' + encodeURIComponent(code) + (opt.cls ? '&class=1&quiet=1' : '') + (opt.home ? '&home=burrow' : '') + '&burrow=' + enc({ t:Date.now(), a, f:free });
+    const x = arr(opt.extras).map(e => ({ a:actOf(e.a) ? e.a : '', t:clean(e.t, 60), n:clean(e.n, 80), th:clean(e.th, 30), d:e.d || '' })).filter(extraOK).slice(0, 4).map(e => [e.a, e.t, e.n, e.th, e.d]);
+    const o = { t:Date.now(), a, f:free }; if(x.length) o.x = x;
+    return location.origin + location.pathname + '?learner=' + encodeURIComponent(code) + (opt.cls ? '&class=1&quiet=1' : '') + (opt.home ? '&home=burrow' : '') + '&burrow=' + enc(o);
   }
   function staffHTML(){
     const P = pathPacks();
-    if(!F.rows[0].p && P[0]){ F.rows[0].p = P[0].id; F.rows[0].d = today(); }
+    if(!F.init && P[0]){ F.init = true; F.rows[0].p = P[0].id; F.rows[0].d = today(); }
     let known = []; try{ known = [...new Set([].concat(typeof pwCodes !== 'undefined' ? pwCodes : [], FabImpact.codes().filter(c => CODE_RE.test(c))))]; }catch(e){}
     const row = (r, i) => { const po = pathOf(packById(r.p));
-      return `<div class="bw-row" data-row="${i}"><label><span>Flightpath</span><select data-bwf="p">${P.map(p => `<option value="${h(p.id)}" ${p.id === r.p ? 'selected' : ''}>${h((p.emoji || '') + ' ' + p.title + ' (' + (p.years || '') + ')')}</option>`).join('')}</select></label>
+      return `<div class="bw-row" data-row="${i}"><label><span>Flightpath</span><select data-bwf="p"><option value="" ${r.p ? '' : 'selected'}>No flightpath</option>${P.map(p => `<option value="${h(p.id)}" ${p.id === r.p ? 'selected' : ''}>${h((p.emoji || '') + ' ' + p.title + ' (' + (p.years || '') + ')')}</option>`).join('')}</select></label>
         <label><span>Start at</span><select data-bwf="s">${po ? po.s.steps.map((s, k) => `<option value="${k}" ${Number(r.s) === k ? 'selected' : ''}>${k + 1}. ${h(s.name)}${s.year ? ' (' + h(s.year) + ')' : ''}</option>`).join('') : ''}</select></label>
         <label><span>Day</span><input type="date" data-bwf="d" value="${h(r.d || '')}"></label>
         <label class="bw-note"><span>Note for the child (optional)</span><input type="text" data-bwf="n" maxlength="80" value="${h(r.n || '')}" placeholder="Start with the 3 times table"></label>
         ${F.rows.length > 1 ? `<button type="button" class="btn small soft" data-bwdel="${i}" aria-label="Remove this piece of work">✕</button>` : ''}</div>`; };
     return `<div class="me-card" id="bwStaff"><h2>📌 Set work for a child’s Burrow</h2>
-      <p>Pick a Fab code and the work for a session. You get one link for that child. Paste it into their Pencil Spaces Web Viewer and their Burrow opens with <b>Today</b> filled in.</p>
+      <p>Pick a Fab code and the work for a session. You get one link for that child. Paste it into their Pencil Spaces Web Viewer and their Burrow opens with <b>Today</b> filled in. <b>A signed-in child sees only what you set here</b>, their own flightpaths and the things they made: the full list on this page is the teachers’ view.</p>
       <div class="bw-row"><label><span>Fab code</span><input type="text" id="bwCode" list="bwCodes" value="${h(F.code)}" placeholder="otter-482" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="20"></label><datalist id="bwCodes">${known.map(c => `<option value="${h(c)}">`).join('')}</datalist></div>
       ${F.rows.map(row).join('')}
       <div class="st-row">${F.rows.length < 4 ? '<button type="button" class="btn small soft" id="bwAdd">➕ Add another piece of work</button>' : ''}</div>
+      <h3 class="bw-sub">Activities, challenges and theme weeks</h3>
+      <p class="hint">Set an activity from the app, a challenge in your own words, or both. A theme shows as a tag on the child’s card.</p>
+      ${F.extras.map((x, i) => `<div class="bw-row bw-xrow" data-xrow="${i}">
+        <label><span>Activity in the app</span><select data-bwx="a">${ACTS.map(a => `<option value="${h(a.id)}" ${a.id === x.a ? 'selected' : ''}>${h(a.n)}</option>`).join('')}</select></label>
+        <label class="bw-note"><span>Challenge in your own words (optional)</span><input type="text" data-bwx="t" maxlength="60" value="${h(x.t || '')}" placeholder="Make a kindness poster"></label>
+        <label><span>Theme (optional)</span><input type="text" data-bwx="th" maxlength="30" list="bwThemes" value="${h(x.th || '')}" placeholder="Anti-Bullying Week"></label>
+        <label><span>Day</span><input type="date" data-bwx="d" value="${h(x.d || '')}"></label>
+        <label class="bw-note"><span>Note for the child (optional)</span><input type="text" data-bwx="n" maxlength="80" value="${h(x.n || '')}"></label>
+        <button type="button" class="btn small soft" data-bwxdel="${i}" aria-label="Remove this activity or challenge">✕</button>
+        ${THEMES[x.th] ? `<div class="bw-ideas"><span>Ideas for ${h(x.th)}:</span>${THEMES[x.th].map((t, k) => `<button type="button" class="btn small soft" data-bwidea="${i}:${k}">${h(t[1])}</button>`).join('')}</div>` : ''}</div>`).join('')}
+      <datalist id="bwThemes">${Object.keys(THEMES).map(t => `<option value="${h(t)}">`).join('')}</datalist>
+      <div class="st-row">${F.extras.length < 4 ? '<button type="button" class="btn small soft" id="bwXAdd">➕ Add an activity or a challenge</button>' : ''}</div>
       <details class="bw-freepick" ${F.free.length ? 'open' : ''}><summary><b>Free choice</b>: flightpaths this child may open at any time</summary><div class="bw-chips">${P.map(p => `<label><input type="checkbox" data-bwfree="${h(p.id)}" ${F.free.includes(p.id) ? 'checked' : ''}> ${h((p.emoji || '') + ' ' + p.title + (p.years ? ' (' + p.years + ')' : ''))}</label>`).join('')}</div></details>
       <div class="bw-opts"><label><input type="checkbox" id="bwCls" ${F.cls ? 'checked' : ''}> <span><b>Class link</b>: the child’s code and a Help button show in the top bar, and sounds start off</span></label>
-        ${homeOn() ? `<label><input type="checkbox" id="bwHome" ${F.home ? 'checked' : ''}> <span><b>Draft:</b> the Learning Hub opens on the Burrow for this child</span></label>` : ''}</div>
+</div>
       <div class="st-row"><button type="button" class="btn leaf" id="bwMake">🔗 Make the Burrow link</button></div>
       <p class="learn-msg" id="bwMsg" aria-live="polite">${h(F.msg)}</p>
       ${F.link ? `<div class="st-codes"><div><input readonly id="bwLink" value="${h(F.link)}" aria-label="Burrow link for ${h(F.code)}"><button type="button" class="btn small soft" id="bwCopy">Copy link</button></div></div>` : ''}
-      <p class="hint">Fab codes only. The note travels inside the link, so please keep names and personal details out of it. A new link replaces the work from an older one. Work with no day shows straight away; work with a day shows from that day.</p></div>`;
+      <p class="hint">Fab codes only. Notes, challenges and themes travel inside the link, so please keep names and personal details out of them. A new link replaces the work from an older one. Work with no day shows straight away; work with a day shows from that day.</p></div>`;
   }
   function staffWire(box, redraw){
     const card = box.querySelector('#bwStaff'); if(!card) return;
@@ -192,14 +270,20 @@
         else r.n = el.value.slice(0, 80); });
     });
     card.querySelectorAll('[data-bwdel]').forEach(b => b.addEventListener('click', () => { F.rows.splice(Number(b.dataset.bwdel), 1); F.link = ''; snd('tick'); redraw(); }));
+    card.querySelectorAll('[data-bwx]').forEach(el => { const i = Number(el.closest('[data-xrow]').dataset.xrow), f = el.dataset.bwx;
+      el.addEventListener(f === 'a' || f === 'd' ? 'change' : 'input', () => { const x = F.extras[i]; if(!x) return; x[f] = f === 'a' || f === 'd' ? el.value : el.value.slice(0, f === 't' ? 60 : f === 'th' ? 30 : 80); F.link = ''; });
+      if(f === 'th') el.addEventListener('change', () => redraw()); });
+    card.querySelectorAll('[data-bwxdel]').forEach(b => b.addEventListener('click', () => { F.extras.splice(Number(b.dataset.bwxdel), 1); F.link = ''; snd('tick'); redraw(); }));
+    card.querySelectorAll('[data-bwidea]').forEach(b => b.addEventListener('click', () => { const [i, k] = b.dataset.bwidea.split(':').map(Number), x = F.extras[i], t = x && THEMES[x.th] && THEMES[x.th][k]; if(!t) return; x.a = t[0]; x.t = t[1]; F.link = ''; snd('tick'); redraw(); }));
+    const xadd = card.querySelector('#bwXAdd'); if(xadd) xadd.addEventListener('click', () => { F.extras.push({ a:'', t:'', n:'', th:'', d:F.rows[0] ? F.rows[0].d || today() : today() }); F.link = ''; snd('tick'); redraw(); });
     const add = card.querySelector('#bwAdd'); if(add) add.addEventListener('click', () => { const P = pathPacks(); F.rows.push({ p:P[0] ? P[0].id : '', s:0, d:F.rows[0].d || today(), n:'' }); F.link = ''; snd('tick'); redraw(); });
     card.querySelectorAll('[data-bwfree]').forEach(c => c.addEventListener('change', () => { const id = c.dataset.bwfree; F.free = c.checked ? F.free.concat(id).slice(0, 8) : F.free.filter(x => x !== id); F.link = ''; }));
     const cls = card.querySelector('#bwCls'); if(cls) cls.addEventListener('change', () => { F.cls = cls.checked; F.link = ''; });
-    const hm = card.querySelector('#bwHome'); if(hm) hm.addEventListener('change', () => { F.home = hm.checked; F.link = ''; });
     card.querySelector('#bwMake').addEventListener('click', () => {
       F.code = String(code.value || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20);
       if(!CODE_RE.test(F.code)){ F.link = ''; F.msg = 'Type a Fab code first: an animal, a dash and three numbers, like otter-482. Never a name.'; snd('gentle'); redraw(); return; }
-      F.link = linkFor(F.code, F.rows, F.free, { cls:F.cls, home:F.home && homeOn() }); F.msg = 'Link ready for ' + F.code + '. It holds the work, the day and your note, and nothing else.'; snd('ding'); redraw();
+      if(!F.rows.some(r => r.p) && !F.extras.some(extraOK) && !F.free.length){ F.link = ''; F.msg = 'Choose a flightpath, an activity or a challenge first.'; snd('gentle'); redraw(); return; }
+      F.link = linkFor(F.code, F.rows, F.free, { cls:F.cls, extras:F.extras }); F.msg = 'Link ready for ' + F.code + '. It holds the work, the day and your note, and nothing else.'; snd('ding'); redraw();
     });
     const cp = card.querySelector('#bwCopy');
     if(cp) cp.addEventListener('click', () => { const i = card.querySelector('#bwLink'); try{ navigator.clipboard.writeText(i.value); cp.textContent = 'Copied ✓'; }catch(e){ i.select(); cp.textContent = 'Press Ctrl+C'; } });
@@ -235,6 +319,10 @@
 .bw-row select,.bw-row input{font:1rem var(--body,Aleo),Georgia,serif;padding:8px 10px;border-radius:12px;border:2px solid #e6d8b8;background:#fff;color:var(--ink,#2B1A12);min-height:46px;max-width:100%}
 .bw-freepick{margin:6px 0}.bw-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px;margin-top:8px}
 .bw-chips label{background:#fff;border-radius:12px;padding:8px 10px;display:flex;gap:8px;align-items:center}
+.bw-sub{margin:14px 0 2px}.bw-xrow{border:2px dashed #e6d8b8}
+.bw-ideas{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-weight:700;font-size:.95rem}
+.bw-xic{display:grid;place-items:center;width:52px;height:52px;flex:none;background:#FFD483;border:2.5px solid #2B1A12;border-radius:12px;font-size:1.6rem}.bw-xic svg{width:38px;height:38px}
+.bw-theme{align-self:flex-start;background:#CFE7F2;border:2px solid #2B1A12;border-radius:999px;padding:1px 10px;font-size:.85rem;font-weight:700}
 .bw-opts{display:grid;gap:6px;margin:8px 0}.bw-opts label{display:flex;gap:10px;align-items:flex-start;background:#fffdf6;border-radius:12px;padding:8px 10px}.bw-opts input{width:22px;height:22px;flex:none;margin-top:2px}
 .bw-h{display:flex;align-items:center;gap:8px}.bw-h svg{width:1.6em;height:1.6em;flex:none}
 .bw-made{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
@@ -243,13 +331,13 @@
 .bw-mcard img{width:100%;height:92px;object-fit:cover;border:2.5px solid #2B1A12;border-radius:10px;background:#fff}
 .bw-mic{display:grid;place-items:center;width:100%;height:92px;background:#FFD483;border:2.5px solid #2B1A12;border-radius:10px;font-size:2.6rem}.bw-mic svg{width:64px;height:64px}
 .bw-mcard b{font-size:1.05rem;line-height:1.25}.bw-mcard small{opacity:.85;line-height:1.3}.bw-mcard .bw-cta{margin-top:auto;font-style:italic}
-.bw-more .btn{display:inline-flex;align-items:center;gap:8px}.bw-more .btn svg{width:1.5em;height:1.5em;flex:none}
+.bw-teach{max-width:880px;margin:0 auto 14px;text-align:right}.bw-teach .btn{opacity:.8;font-size:.9rem}
 `;
   const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
 
-  window.FabBurrow = { shelvesHTML, wire, staffHTML, staffWire, read, apply, enc, dec, linkFor, progress, form:F, home:homeOn, made };
+  window.FabBurrow = { shelvesHTML, wire, staffHTML, staffWire, read, apply, enc, dec, linkFor, progress, form:F, home:homeOn, made, acts:ACTS, themes:THEMES };
 
-  /* draft: with the Burrow as home, the Learning Hub's door leads to the Burrow for a signed-in child. "More to explore" opens the full list. */
+  /* the Learning Hub's door leads to the Burrow for a signed-in child; the teacher's button opens the full list */
   function hookHome(){
     const base = window.showScreen; if(typeof base !== 'function' || base._bw) return;
     const w = function(id){
