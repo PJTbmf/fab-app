@@ -1568,18 +1568,18 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await page.setViewportSize({ width:1366, height:768 });
     const wait = ms => page.waitForTimeout(ms);
     const inside = async () => { const f = await (await page.$('#codeFrame')).contentFrame(); await f.waitForFunction(() => window.FabCode && document.getElementById('fcBack'), null, { timeout:15000 }); return f; };
-    await page.evaluate(() => { try{ localStorage.setItem('fab-me', 'fox-games-1'); }catch(e){} showScreen('screen-games'); });
-    const tile = await page.evaluate(() => { const t = document.getElementById('gamesCodeBtn'); return t ? [t.querySelector('h2').textContent, !!t.querySelector('svg'), [...document.querySelectorAll('#screen-games .tile .emoji')].filter(e => e.querySelector('svg')).length, [...document.querySelectorAll('#screen-games .tile .emoji')].length].join('|') : ''; });
-    assert(/^Fox Blocks\|true\|(\d+)\|\1$/.test(tile), 'the Games section has a Fox Blocks tile, and every tile carries a drawing: ' + tile);
-    await page.click('#gamesCodeBtn'); let f = await inside(); await wait(300);
-    let r = await page.evaluate(() => { const fr = document.getElementById('codeFrame'), b = fr.getBoundingClientRect(); return [document.querySelector('.screen.active').id, /embed=1/.test(fr.src) && /back=games/.test(fr.src) && /learner=fox-games-1/.test(fr.src), Math.round(b.width) >= innerWidth - 1 && Math.round(b.height) >= innerHeight - 1 && b.top <= 0].join('|'); });
+    await page.evaluate(() => { try{ localStorage.setItem('fab-me', 'fox-games-1'); }catch(e){} showScreen('screen-stem'); });
+    const tile = await page.evaluate(() => { const t = document.getElementById('stemBush'); return t ? [t.querySelector('h2').textContent, !!t.querySelector('svg'), [...document.querySelectorAll('#screen-stem .tile .emoji')].filter(e => e.querySelector('svg')).length, [...document.querySelectorAll('#screen-stem .tile .emoji')].length, !document.getElementById('gamesCodeBtn') && document.querySelectorAll('#screen-stem [data-code-open]').length === 4].join('|') : ''; });
+    assert(/^To the bramble bush\|true\|(\d+)\|\1\|true$/.test(tile), 'the STEM Den page has the four Fox Blocks projects, every tile carries a drawing, and Games no longer has a Fox Blocks tile: ' + tile);
+    await page.click('#stemBush'); let f = await inside(); await wait(300);
+    let r = await page.evaluate(() => { const fr = document.getElementById('codeFrame'), b = fr.getBoundingClientRect(); return [document.querySelector('.screen.active').id, /embed=1/.test(fr.src) && /back=stem/.test(fr.src) && /project=bush/.test(fr.src) && /learner=fox-games-1/.test(fr.src), Math.round(b.width) >= innerWidth - 1 && Math.round(b.height) >= innerHeight - 1 && b.top <= 0].join('|'); });
     const back1 = await f.evaluate(() => { const b = document.getElementById('fcBack'); return [b.hidden, b.textContent.trim(), !!document.querySelector('.fc-foot a')].join('|'); });
-    assert(r === 'screen-code|true|true' && back1 === 'false|Back to Games|false', 'Fox Blocks fills the window from Games, with its own “Back to Games”: ' + r + ' / ' + back1);
+    assert(r === 'screen-code|true|true' && /^false\|(All projects|Back to the STEM Den)\|false$/.test(back1), 'Fox Blocks fills the window straight from the STEM Den page, with its own Back: ' + r + ' / ' + back1);
     await f.evaluate(() => { FabCode.open('bush', 0); }); await wait(200);
     const mid = await f.evaluate(() => document.getElementById('fcBack').textContent.trim());
     await f.evaluate(() => document.getElementById('fcBack').click()); await wait(200); await f.evaluate(() => document.getElementById('fcBack').click()); await wait(300);
     r = await page.evaluate(() => document.querySelector('.screen.active').id + '|' + !document.getElementById('codeFrame').getAttribute('src'));
-    assert(mid === 'All projects' && r === 'screen-games|true', 'in a puzzle the button says “All projects”; from the projects, Back goes to Games and the frame is let go: ' + mid + ' / ' + r);
+    assert(mid === 'All projects' && r === 'screen-stem|true', 'in a puzzle the button says “All projects”; from the projects, Back goes to Games and the frame is let go: ' + mid + ' / ' + r);
     /* the Learning Hub: Computing */
     /* the full list is the teachers' view (a signed-in child's Learning Hub is their Burrow), so this part runs as a teacher's viewer */
     await page.evaluate(() => { localStorage.setItem('fab-home', 'off'); showScreen('screen-learn'); learnRenderList(); document.querySelector('#learnFilters [data-subject="Computing"]').click(); }); await wait(200);
@@ -2290,10 +2290,18 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       /* the STEM Den and the Studio open from their own cards, and Back comes home to the landing page */
       showScreen('screen-hub'); await wait(200);
       const scene = async (want) => { let n = 0, W = null, el = null; while(n++ < 120){ W = document.querySelector('iframe[data-game="world"]').contentWindow; el = W && W.document && W.document.querySelector('.scene h2'); if(el && el.textContent === want) break; await wait(100); } return { W, title:el ? el.textContent : '' }; };
-      document.getElementById('hubStem').click(); let s = await scene('The STEM Den'); out.stem = on() + '|' + s.title;
-      s.W.document.querySelector('.scene [data-m="dance"]').click(); await wait(1200); out.inCode = s.W.document.querySelector('.scene').className; s.W.closeScene(); s = await scene('The STEM Den'); out.stemAgain = s.title;
+      document.getElementById('hubStem').click(); await wait(300); out.stem = on() + '|' + document.querySelectorAll('#screen-stem [data-code-open]').length + '|' + document.querySelectorAll('#screen-stem [data-door]').length;
+      document.getElementById('stemBuild').click(); await wait(150); out.cover = !!document.getElementById('doorCover'); let s = await scene('Design and build in 3D'); out.cad = on() + '|' + s.title; await wait(600); out.coverGone = !document.getElementById('doorCover');
       s.W.document.querySelector('.scene .sx').click(); await wait(500); out.stemBack = on();
-      document.getElementById('hubStudio').click(); s = await scene('Make More FAB Studio'); out.studio = on() + '|' + s.title;
+      showScreen('screen-hub'); await wait(200); document.getElementById('hubStudio').click(); s = await scene('Make More FAB Studio'); out.studio = on() + '|' + s.title;
+      /* levels: colour by numbers has three (numbers, adding, taking away) and eleven pictures; animals from shapes has a fox, an owl and a hedgehog, each with a shape-spotter question */
+      const D = s.W.document; D.querySelector('[data-make="cbn"]').click(); await wait(300); out.cbn = D.querySelectorAll('.cbnpick [data-cbn]').length + '|' + [...D.querySelectorAll('.cbnlv .tb')].map(b => b.textContent.replace(/\s+/g, ' ').trim()).join(',');
+      D.querySelector('.cbnlv [data-lv="3"]').click(); await wait(250); D.querySelector('[data-cbn="heart"]').click(); await wait(300);
+      const keys = [...D.querySelectorAll('.tb.cbnc span')].map(x => x.textContent); out.sums = keys.every((t, k) => { const m = /^(\d+) − (\d+)$/.exec(t); return m && m[1] - m[2] === k + 1; }) + '|' + keys.length + '|' + /Work it out/.test(D.querySelector('.sc-studio').textContent);
+      s.W.mStudio('make'); await wait(250); s.W.document.querySelector('[data-make="fox"]').click(); await wait(300); const D2 = s.W.document; out.animals = [...D2.querySelectorAll('[data-animal]')].map(b => b.textContent.trim()).join(',');
+      D2.querySelector('[data-animal="hog"]').click(); await wait(300); for(let i = 0; i < 6; i++){ D2.querySelector('.sn button:last-child').click(); await wait(80); }
+      D2.querySelector('[data-spot="8"]').click(); await wait(100); const soft = D2.querySelector('.spotsay').textContent; D2.querySelector('[data-spot="10"]').click(); await wait(100); out.spot = /^Count with Fab/.test(soft) + '|' + /^Yes! Nine spikes/.test(D2.querySelector('.spotsay').textContent) + '|' + !D2.querySelector('[data-nextanimal]');
+      s.W.mStudio('make'); await wait(250);
       s.W.document.querySelector('.scene .sx').click(); await wait(500); out.studioBack = on() + '|' + (window.fabWorldDoor == null);
       return out; });
     await ctx.close();
@@ -2301,7 +2309,8 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(/^Well done from your teacher ?Super effort this .*week.*\|true$/.test(r.praise) && r.kept === 2, 'the well done shows in the Burrow as plain words, and the work stays: ' + JSON.stringify(r.praise) + r.kept);
     assert(r.arm === 'screen-hub|true' && r.in === 'screen-teach' && /test-501/.test(r.row) && /0 of 2 done/.test(r.row), 'on a child’s viewer the door needs two taps, and the page shows that child’s progress: ' + JSON.stringify([r.arm, r.in, r.row]));
     assert(/Certificate of Achievement/.test(r.cert) && /for super effort in every session/.test(r.cert) && /BeMoreFab Virtual School/.test(r.cert) && r.name === '' && r.closed, 'a certificate in the teacher’s own words, with the name left empty: ' + JSON.stringify(r.cert));
-    assert(r.stem === 'screen-world|The STEM Den' && /sc-code/.test(r.inCode) && r.stemAgain === 'The STEM Den' && r.stemBack === 'screen-hub' && r.studio === 'screen-world|Make More FAB Studio' && r.studioBack === 'screen-hub|true', 'the STEM Den and the Studio open from their cards; Back goes to the place, then to the landing page: ' + JSON.stringify(r));
+    assert(r.stem === 'screen-stem|4|2' && r.cover && r.cad === 'screen-world|Design and build in 3D' && r.coverGone && r.stemBack === 'screen-stem' && r.studio === 'screen-world|Make More FAB Studio' && r.studioBack === 'screen-hub|true', 'the STEM Den has its own page; the 3D builder and the Studio open behind a cover, and Back comes home: ' + JSON.stringify(r));
+    assert(r.cbn === '11|Level 1Numbers,Level 2Adding,Level 3Taking away' && r.sums === 'true|3|true' && r.animals === 'Fox · level 1,Owl · level 2,Hedgehog · level 3' && r.spot === 'true|true|true', 'colour by numbers has three levels and eleven pictures; three animals from shapes, with a shape spotter that is never “wrong”: ' + JSON.stringify([r.cbn, r.sums, r.animals, r.spot]));
   });
   await test('Several children: Help and low energy reach Fab Fox World, Fox Blocks and Fab’s Sanctuary', async () => {
     const ap = await classPage('?learner=class-t1&class=1');
