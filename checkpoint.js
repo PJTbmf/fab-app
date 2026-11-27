@@ -116,7 +116,7 @@
     if(!kid.chk || kid.chk.step !== kid.step) init(kid, stp);
     const k = kid.chk; stp._last = s.steps.length - 1;
     const done = k.res && k.res.passed;
-    const side = `<div class="pw-drawer-back" data-pwdrawer-close aria-hidden="true"></div><aside class="pw-side" id="pwDrawer" aria-label="My flightpath"><div class="pw-side-head"><div class="pw-side-title">My flightpath</div><button type="button" class="pw-drawer-x" data-pwdrawer-close aria-label="Close My flightpath">✕</button></div>${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside>`;
+    const side = `<div class="pw-drawer-back" data-pwdrawer-close aria-hidden="true"></div><aside class="pw-side" id="pwDrawer" aria-label="My flightpath"><div class="pw-side-head"><div class="pw-side-title">My flightpath</div><button type="button" class="pw-drawer-x" data-pwdrawer-close aria-label="Close My flightpath">✕</button></div><p class="pw-side-hint">Tap any step to go there. Your stars come with you.</p>${pwLadderHTML(s, kid, true)}${pwCollectionHTML(s, kid)}</aside>`;
     return `<div class="pw-child has-board fc-wrap"><div class="pw-main fc-main">
       <div class="pw-stephead"><span class="pw-steptag fc-tag">🚧 Checkpoint</span> ${h(c.title)}</div><button type="button" class="pw-pathbtn" data-pwdrawer aria-controls="pwDrawer">🗺️ My flightpath</button>
       ${done ? '' : `<div class="fab-say fc-you"><span class="fab-char fab" role="img" aria-label="Fab"></span><div class="bubble"><b>Your turn to show what you know</b>${h(c.task || (c.kind === 'cycle' ? 'Tap a card, then tap the circle where it goes. Follow the arrows round.' : 'Write an idea in each box, or tap the words below.'))} When you’re happy, hand it in. The next step opens when it’s done.</div></div>`}

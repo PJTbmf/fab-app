@@ -785,6 +785,7 @@ body.lp-path .lp-stage, body.lp-path .lp-nav, body.lp-path .lp-tips{ max-width:1
 .pw-side .pw-rung{ font-size:.9rem; padding:6px 10px; }
 .pw-side .pw-rung-n{ flex-basis:26px; height:26px; }
 .pw-side-title{ font-family:var(--disp); font-weight:700; color:var(--ink-soft); margin:0 0 8px; text-align:center; }
+.pw-side-hint{ margin:0 0 10px; text-align:center; font-size:.95rem; color:var(--ink-soft); }
 .pw-stephead{ font-family:var(--disp); font-weight:700; font-size:1.2rem; color:var(--ink); }
 .pw-steptag{ font-family:var(--body); font-size:.8rem; color:#fff; background:var(--flame); border-radius:999px; padding:2px 10px; margin-right:6px; vertical-align:middle; }
 .pw-sparkles{ font-size:1rem; margin:2px 0 6px; }
@@ -8188,7 +8189,7 @@ function pwChildHTML(s, st, id){
       <div class="pw-stephead"><span class="pw-steptag">Step ${kid.step + 1}</span> ${esc(stp.name)}</div><button type="button" class="pw-pathbtn" data-pwdrawer aria-controls="pwDrawer">🗺️ My flightpath</button>
       ${kid.phase === 'ido' ? pwIdoHTML(s, kid, stp) : pwReadyHTML(stp)}
       <div class="pw-flags">${kid.phase === 'ido' ? '<button class="btn small soft" data-pwact="practise">⏭️ Skip to practice</button>' : ''}<button class="btn small ${kid.help ? 'amber' : 'soft'}" data-pwact="help">${kid.help ? '✋ Your teacher knows' : "🙋 I'd like help"}</button><button class="btn small soft" data-pwact="rest">😴 I need a break</button></div>
-    </div>${pwCentreHTML(vis)}<div class="pw-drawer-back" data-pwdrawer-close aria-hidden="true"></div><aside class="pw-side" id="pwDrawer" aria-label="My flightpath"><div class="pw-side-head"><div class="pw-side-title">My flightpath</div><button type="button" class="pw-drawer-x" data-pwdrawer-close aria-label="Close My flightpath">✕</button></div>${window.FabFlightPoster ? FabFlightPoster.button(s, kid) : ''}${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside></div>`;
+    </div>${pwCentreHTML(vis)}<div class="pw-drawer-back" data-pwdrawer-close aria-hidden="true"></div><aside class="pw-side" id="pwDrawer" aria-label="My flightpath"><div class="pw-side-head"><div class="pw-side-title">My flightpath</div><button type="button" class="pw-drawer-x" data-pwdrawer-close aria-label="Close My flightpath">✕</button></div>${window.FabFlightPoster ? FabFlightPoster.button(s, kid) : ''}<p class="pw-side-hint">Tap any step to go there. Your stars come with you.</p>${pwLadderHTML(s, kid, true)}${pwCollectionHTML(s, kid)}</aside></div>`;
   }
   if(kid.offer){
     body = `<div class="pw-offer"><span class="fab-char elder" role="img" aria-label="Mr Elder, the head teacher, cheering" style="width:96px;margin:0 auto"></span><p class="pw-ask">Brilliant! Three in a row.</p>
@@ -8227,7 +8228,7 @@ function pwChildHTML(s, st, id){
         ${kid.step > 0 && !kid.offer ? '<button class="btn small soft" data-pwact="down">⬇️ An easier step</button>' : ''}
       </div>
     </div>${pwCentreHTML(vis2)}
-    <div class="pw-drawer-back" data-pwdrawer-close aria-hidden="true"></div><aside class="pw-side" id="pwDrawer" aria-label="My flightpath"><div class="pw-side-head"><div class="pw-side-title">My flightpath</div><button type="button" class="pw-drawer-x" data-pwdrawer-close aria-label="Close My flightpath">✕</button></div>${window.FabFlightPoster ? FabFlightPoster.button(s, kid) : ''}${pwLadderHTML(s, kid, false)}${pwCollectionHTML(s, kid)}</aside>
+    <div class="pw-drawer-back" data-pwdrawer-close aria-hidden="true"></div><aside class="pw-side" id="pwDrawer" aria-label="My flightpath"><div class="pw-side-head"><div class="pw-side-title">My flightpath</div><button type="button" class="pw-drawer-x" data-pwdrawer-close aria-label="Close My flightpath">✕</button></div>${window.FabFlightPoster ? FabFlightPoster.button(s, kid) : ''}<p class="pw-side-hint">Tap any step to go there. Your stars come with you.</p>${pwLadderHTML(s, kid, true)}${pwCollectionHTML(s, kid)}</aside>
   </div>`;
 }
 
@@ -8437,7 +8438,13 @@ function pwClick(t, s, st){
     if(a === 'shadecheck'){ if(!kid.q || kid.q.mode !== 'shade' || kid.phase === 'ido' || kid.phase === 'ready') return false; const n = pwToArr(kid.shade).length; kid.shade = []; pwCheck(s, kid, `${n}/${kid.q.shade.d}`); return true; }
   }
   const pick = t.closest('[data-pwpick]');
-  if(pick && !kid){ pwStart(s, st, me, Number(pick.dataset.pwpick)); pwOpenStage = null; Sound.ding(); return true; }
+  if(pick){
+    /* A child can change step from My flightpath at any time (27 Nov feedback: a child picked the wrong step and could not get out).
+       pwStart keeps their stars, secured steps and taught steps. */
+    const to = Number(pick.dataset.pwpick);
+    if(kid && to === kid.step) return false;
+    pwStart(s, st, me, to); pwOpenStage = null; Sound.ding(); return true;
+  }
   const set = t.closest('[data-pwset]');
   if(set && pwIsTeacher(st)){
     const id = set.dataset.pwset, to = Math.max(0, Math.min(s.steps.length - 1, Number(set.dataset.pwto)));
