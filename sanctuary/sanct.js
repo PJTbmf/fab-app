@@ -61,6 +61,11 @@
   const basket = () => { const w = world(); return Math.max(0, Math.floor((typeof w.spk === 'number' ? w.spk : 0) + num(PENDK) - num(SPENDK))); };
   const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
 
+  /* Several children at once (classroom.js in the app, 27 Nov): class mode's help hand, and energy today.
+     On a low-energy day "Do the rounds for me" comes first, and "Work it out for me" is gold. */
+  const dayNow = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  const lowToday = () => { try{ const e = JSON.parse(localStorage.getItem('fab-energy-' + ME) || 'null'); return !!e && e.d === dayNow() && e.v === 'low'; }catch(e){ return false; } };
+  const helpHost = () => { let w = window; for(let i = 0; i < 5 && w; i++){ try{ if(typeof w.fabHelp === 'function') return w; }catch(e){} if(w === w.parent) break; w = w.parent; } return null; };
   const fresh = () => ({ v:1, level:2, box:20, jar:0, goal:null, shared:0, day:0, homes:{}, names:{}, extras:{}, price:3, tries:[], last:null,
     week:{ inn:0, out:0, n:0 }, thanks:{ d:'', n:0 }, visitors:0, helped:0, moved:0, goalsMet:0, started:false, cele:{} });
   let S = fresh();
@@ -271,6 +276,7 @@
     flower:[0, 72, 144, 216, 288].map(a => E(20 + Math.cos(a / 57.3) * 8, 18 + Math.sin(a / 57.3) * 8, 6.5, 6.5, PINK, 2.6)).join('') + C(20, 18, 5, GOLD, 2.6) + P('M20 25v12', 'none', 3),
     sign:R(5, 7, 30, 18, 3, PAPER, 3) + P('M20 25v12', 'none', 4) + P('M10 13h20M10 19h12', 'none', 2.4),
     stop:R(4, 10, 32, 20, 5, GOLD, 3) + P('M11 20h18', 'none', 3),
+    hand:'<g transform="scale(.625)"><path d="M22 60C15 54 10 46 10 38V31C10 26 17 25 18 30L19 36V15C19 10 26 10 26 15V31V10C26 5 33 5 33 10V31V13C33 8 40 8 40 13V33V19C40 14 47 14 47 19V40C47 51 41 59 33 61Z" fill="#F0B913" stroke="#2B1A12" stroke-width="4.8" stroke-linejoin="round" stroke-linecap="round"/></g>',
     week:R(5, 8, 30, 27, 4, PAPER, 3) + P('M5 15h30M12 5v6M28 5v6', 'none', 3) + dot(13, 22, 2.4) + dot(20, 22, 2.4) + dot(27, 22, 2.4) + dot(13, 29, 2.4),
   };
   const svg = (k, cls) => `<svg viewBox="0 0 40 40" class="${cls || 'ic'}" aria-hidden="true">${ICON[k] || ''}</svg>`;
@@ -282,7 +288,10 @@
   function paintTheme(){ const d = themeNow() === 'dark'; root.classList.toggle('dark', d); document.documentElement.classList.toggle('dark', d);
     const b = $('snTheme'); b.innerHTML = svg(d ? 'sun' : 'moon') + '<span>' + (d ? 'Light' : 'Dark') + '</span>'; b.setAttribute('aria-label', d ? 'Switch to light' : 'Switch to dark'); b.setAttribute('aria-pressed', String(d)); }
   function paintSound(){ const on = soundOn(), b = $('snSound'); b.innerHTML = svg(on ? 'soundon' : 'soundoff') + '<span>' + (on ? 'Sounds on' : 'Sounds off') + '</span>'; b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', on ? 'Sounds are on. Turn them off' : 'Sounds are off. Turn them on'); }
-  window.addEventListener('storage', e => { if(e.key === SNDKEY) paintSound(); if(e.key === THEMEKEY) paintTheme(); });
+  function paintHelp(){ const b = $('snHelp'); let on = false, up = false; try{ on = localStorage.getItem('fab-class') === '1'; up = on && !!localStorage.getItem('fab-help-' + ME); }catch(e){}
+    b.hidden = !(on && helpHost()); if(b.hidden) return;
+    b.classList.toggle('peach', up); b.setAttribute('aria-pressed', String(up)); b.innerHTML = svg('hand') + '<span>' + (up ? 'Hand up' : 'I’d like help') + '</span>'; b.setAttribute('aria-label', up ? 'Your hand is up. Tap to put it down' : 'I would like help'); }
+  window.addEventListener('storage', e => { if(e.key === SNDKEY) paintSound(); if(e.key === THEMEKEY) paintTheme(); if(e.key && (e.key.indexOf('fab-help-') === 0 || e.key === 'fab-class')) paintHelp(); });
   const live = t => { $('snLive').textContent = ''; setTimeout(() => { $('snLive').textContent = t; }, 30); };
 
   function paintMoney(){
@@ -341,9 +350,13 @@
       else if(ready) line = `You have saved enough for the <b>${esc(goal.n.toLowerCase())}</b>! Tap Build and make it lovely to build it with your savings.`;
       else if(!homes.length) line = 'No animals live here yet. A hedgehog house costs 10 berries. Shall we build one?';
       else line = 'Hello again! ' + listNames(homes) + (homes.length === 1 ? ' is' : ' are') + ' happy and safe. What shall we do today?';
+      if(!first && lowToday()) line += ' Taking it gently today? <b>Do the rounds for me</b> runs a whole day in one tap.';
     }
     const acts = first ? `<button type="button" class="sn-b big gold wide" data-a="buildhomes">${svg('build')}<span>Build a home for an animal</span></button>
         <button type="button" class="sn-b wide" data-a="look">${svg('eye')}<span>Have a look around first</span></button>`
+      : lowToday() ? `<button type="button" class="sn-b big gold wide" data-a="rounds">${svg('rounds')}<span>Do the rounds for me</span></button>
+        <button type="button" class="sn-b wide leaf" data-a="day">${svg('gate')}<span>Open for the day</span></button>
+        <button type="button" class="sn-b wide" data-a="build">${svg('build')}<span>Build and make it lovely</span></button>`
       : `<button type="button" class="sn-b big gold wide" data-a="day">${svg('gate')}<span>Open for the day</span></button>
         <button type="button" class="sn-b wide leaf" data-a="rounds">${svg('rounds')}<span>Do the rounds for me</span></button>
         <button type="button" class="sn-b wide" data-a="build">${svg('build')}<span>Build and make it lovely</span></button>`;
@@ -472,9 +485,9 @@
   function qHTML(q){
     if(!q) return '';
     if(q.kind === 'tap') return `<div class="sn-q"><p class="sn-ask">${esc(q.ask)}</p><div class="sn-tap">${Array.from({ length:q.n }, (_, i) => `<button type="button" data-tap="${i}" class="${i < q.tapped ? 'paid' : ''}" aria-label="Berry ${i + 1}${i < q.tapped ? ', paid' : ''}">${BERRY}</button>`).join('')}</div>
-      <p class="sn-count" aria-live="polite">${q.tapped ? Array.from({ length:q.tapped }, (_, i) => i + 1).join(', ') : ''}</p><button type="button" class="sn-b wide leaf" data-a="workout">${svg('rounds')}<span>Pay for me</span></button></div>`;
+      <p class="sn-count" aria-live="polite">${q.tapped ? Array.from({ length:q.tapped }, (_, i) => i + 1).join(', ') : ''}</p><button type="button" class="sn-b wide ${lowToday() ? 'gold' : 'leaf'}" data-a="workout">${svg('rounds')}<span>Pay for me</span></button></div>`;
     return `<div class="sn-q"><p class="sn-ask">${esc(q.ask)}</p><div class="sn-opts">${q.opts.map(o => `<button type="button" data-pick="${o}" class="${(q.tried || []).includes(o) ? 'tried' : ''}" ${(q.tried || []).includes(o) ? 'aria-disabled="true"' : ''}>${o}</button>`).join('')}</div>
-      ${q.tip && (q.tried || []).length ? sayHTML('doc', esc(q.tip)) : ''}<button type="button" class="sn-b wide leaf" data-a="workout">${svg('rounds')}<span>Work it out for me</span></button></div>`;
+      ${q.tip && (q.tried || []).length ? sayHTML('doc', esc(q.tip)) : ''}<button type="button" class="sn-b wide ${lowToday() ? 'gold' : 'leaf'}" data-a="workout">${svg('rounds')}<span>Work it out for me</span></button></div>`;
   }
   function answer(v){
     const D = DAY, q = D && D.q; if(!q || q.kind !== 'pick') return false;
@@ -663,7 +676,8 @@
   }
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-a]'); if(!b || !root.contains(b)) return; const a = b.dataset.a, D = DAY;
-    if(a === 'sound'){ try{ localStorage.setItem(SNDKEY, soundOn() ? 'off' : 'on'); }catch(_){} paintSound(); try{ window.parent.fabSoundSync && window.parent.fabSoundSync(); }catch(_){} if(soundOn()) SFX.coin(); }
+    if(a === 'help'){ const w = helpHost(); if(w){ try{ w.fabHelp(); }catch(_){} setTimeout(paintHelp, 30); } }
+    else if(a === 'sound'){ try{ localStorage.setItem(SNDKEY, soundOn() ? 'off' : 'on'); }catch(_){} paintSound(); try{ window.parent.fabSoundSync && window.parent.fabSoundSync(); }catch(_){} if(soundOn()) SFX.coin(); }
     else if(a === 'theme'){ try{ localStorage.setItem(THEMEKEY, themeNow() === 'dark' ? 'light' : 'dark'); }catch(_){} paintTheme(); }
     else if(a === 'leave') leave();
     else if(a === 'build') buildSheet('all');
@@ -708,7 +722,7 @@
 
   /* ---------- start ---------- */
   const back = $('snBack'); back.hidden = !EMBED; back.dataset.a = 'leave'; back.innerHTML = svg('back') + '<span>' + esc(BACKLABEL) + '</span>';
-  paintTheme(); paintSound(); paintScene(); side('home'); lay(); requestAnimationFrame(lay);
+  paintTheme(); paintSound(); paintHelp(); paintScene(); side('home'); lay(); requestAnimationFrame(lay);
 
   /* for the tests */
   window.FabSanct = {

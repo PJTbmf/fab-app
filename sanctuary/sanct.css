@@ -28,7 +28,7 @@ button{font:inherit;color:inherit}
 .sn-b.gold{background:var(--gold)}.sn-b.leaf{background:var(--grass)}.sn-b.sky{background:var(--glass)}.sn-b.peach{background:var(--peach)}
 .sn-b.big{font-size:1.25em;min-height:2.9em;padding-right:1.2em}
 .sn-b.wide{width:100%;justify-content:flex-start}
-.sn-back,.sn-theme,.sn-sound{flex:none}
+.sn-back,.sn-theme,.sn-sound,.sn-help{flex:none}
 
 /* ---- the park and the panel ---- */
 .sn-main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(20em,33%);gap:.8em;padding:.8em}
@@ -164,7 +164,7 @@ img.berry{width:1.25em;height:1.25em;vertical-align:-.25em}
 .sn.tall .sn-money{order:5;flex-basis:100%;justify-content:center}
 .sn.tall .sn-title{flex:1}
 .sn.small .sn-draft{display:none}
-.sn.small .sn-theme span,.sn.small .sn-sound span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.sn.small .sn-theme span,.sn.small .sn-sound span,.sn.small .sn-help span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .sn.small .sn-jars{grid-template-columns:1fr}
 .sn.small .sn-jar{grid-template-columns:auto 1fr auto;justify-items:start;text-align:left;align-items:center}
 .sn.small .sn-jar svg{grid-row:span 2}
