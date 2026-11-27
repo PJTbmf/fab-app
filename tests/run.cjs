@@ -1581,7 +1581,8 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     r = await page.evaluate(() => document.querySelector('.screen.active').id + '|' + !document.getElementById('codeFrame').getAttribute('src'));
     assert(mid === 'All projects' && r === 'screen-games|true', 'in a puzzle the button says “All projects”; from the projects, Back goes to Games and the frame is let go: ' + mid + ' / ' + r);
     /* the Learning Hub: Computing */
-    await page.evaluate(() => { showScreen('screen-learn'); learnRenderList(); document.querySelector('#learnFilters [data-subject="Computing"]').click(); }); await wait(200);
+    /* the full list is the teachers' view (a signed-in child's Learning Hub is their Burrow), so this part runs as a teacher's viewer */
+    await page.evaluate(() => { localStorage.setItem('fab-home', 'off'); showScreen('screen-learn'); learnRenderList(); document.querySelector('#learnFilters [data-subject="Computing"]').click(); }); await wait(200);
     r = await page.evaluate(() => { const cards = [...document.querySelectorAll('#learnList .lesson-card')], note = document.querySelector('#learnList .learn-code-note');
       return { cards:cards.map(c => c.dataset.code + ':' + c.querySelector('.lc-subject').textContent + ':' + !!c.querySelector('svg')).join(','), oak:note ? [...note.querySelectorAll('a')].filter(a => /thenational\.academy\/teachers\/curriculum\/computing-primary\/units\//.test(a.href)).length : 0, ogl:note ? /Open Government Licence v3\.0/.test(note.textContent) : false, nc:note ? /Use sequence, selection and repetition in programs/.test(note.textContent) : false }; });
     assert(r.cards === 'bush:Computing · Years 1–4:true,dance:Computing · Years 1–3:true,tap:Computing · Years 2–3:true,goal:Computing · Years 4–6:true' && r.oak >= 7 && r.ogl && r.nc, 'Computing lists the four Fox Blocks projects with year groups, and a teachers’ note links them to the curriculum and to Oak’s units: ' + JSON.stringify(r));
@@ -1593,6 +1594,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await f.evaluate(() => { FabCode.home(); document.getElementById('fcBack').click(); }); await wait(300);
     const out = await page.evaluate(() => document.querySelector('.screen.active').id);
     assert(r && st === 'goal|All projects' && out === 'screen-learn', 'a Computing card opens its project, and Back comes back to the Learning Hub: ' + [r, st, out].join(' / '));
+    await page.evaluate(() => localStorage.removeItem('fab-home'));
     await page.evaluate(() => { document.querySelector('#learnYears [data-year="all"]').click(); document.querySelector('#learnFilters [data-subject="all"]').click(); try{ localStorage.removeItem('fab-me'); }catch(e){} showScreen('screen-hub'); });
     await page.setViewportSize({ width:1280, height:800 });
   });
@@ -2149,7 +2151,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(r.first === 0 && r.open && r.hint && r.enabled, 'My flightpath lists every step, tappable, with a hint: ' + JSON.stringify(r));
     assert(r.now === '6|true|4|false', 'tapping another step moves there, keeps the stars and closes the drawer: ' + JSON.stringify(r));
   });
-  await test('Draft (test link only): the Burrow as home. The Learning Hub opens on the Burrow, set work comes first, Things I made gathers the child’s makes, and More to explore opens the full list', async () => {
+  await test('The Burrow is the child’s home: for a signed-in child the Learning Hub opens the Burrow, with set work first and Things I made; the full list is the teachers’ view, two taps away', async () => {
     const seed = async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), code = fabLearnerCode();
       const p = BUILT_IN_PACKS.find(x => x.id === 'christmas-flightpath'); learnOpen(p); learnGo(1); await wait(150);
       const st0 = Learn.state[1] = Learn.state[1] || {}; pwStart(Learn.pack.screens[1], st0, pwMe(), 6); learnRender(); await wait(150);
@@ -2161,7 +2163,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       localStorage.setItem('fab-make-' + code, JSON.stringify({ victorian:{ rep:{ intro:'Victorian schools were strict.' }, art:'0120', png:pic } }));
       FabBurrow.apply(code, { t:Date.now(), a:[['christmas-flightpath', 7, '', 'Carry on with Scrooge']], f:['english-flightpath-reading'] });
       showScreen('screen-hub'); await wait(150); };
-    const ap = await classPage('?learner=test-303&class=1&home=burrow');
+    const ap = await classPage('?learner=test-303&class=1');
     await ap.evaluate(seed);
     const r = await ap.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {}, on = () => document.querySelector('.screen.active').id;
       document.querySelector('[data-go="screen-learn"]').click(); await wait(300); out.door = on();
@@ -2173,7 +2175,9 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       document.querySelector('[data-bwmade="sanct"]').click(); await wait(300); out.sanct = on() + '|' + /sanctuary\.html\?embed=1.*learner=test-303/.test(document.getElementById('sanctFrame').getAttribute('src') || ''); fabSanctBack(); await wait(200); out.sanctBack = on();
       document.querySelector('[data-bwmade="dance"]').click(); await wait(300); out.dance = on() + '|' + /project=dance&play=1764240000000/.test(document.getElementById('codeFrame').getAttribute('src') || ''); document.getElementById('codeFrame').src = 'about:blank'; fabCodeBack(); await wait(200); out.danceBack = on();
       document.querySelector('[data-bwmade="explore"]').click(); await wait(400); out.explore = on() + '|' + FabExplore.state.era + '|' + FabExplore.state.back; showScreen('screen-me'); await wait(200);
-      document.querySelector('[data-bwmore]').click(); await wait(300); out.more = on() + '|' + (document.querySelectorAll('#screen-learn [data-learn-open], #screen-learn .learn-card, #screen-learn .pack-card').length > 3 || document.getElementById('screen-learn').textContent.length > 400);
+      out.child = [!document.getElementById('bwMore'), !/More to explore/.test(document.getElementById('meBody').textContent), /^For teachers/.test(document.querySelector('#bwTeach [data-bwmore]').textContent)].join();
+      document.querySelector('[data-bwmore]').click(); await wait(200); out.arm = on() + '|' + /tap again/.test(document.querySelector('[data-bwmore]').textContent);
+      document.querySelector('[data-bwmore]').click(); await wait(300); out.more = on() + '|' + (document.getElementById('screen-learn').textContent.length > 400);
       const p = BUILT_IN_PACKS.find(x => x.id === 'science-flightpath-y34'); learnOpen(p); await wait(200); showScreen('screen-learn'); await wait(200); out.stay = on();
       showScreen('screen-hub'); await wait(100); showScreen('screen-learn'); await wait(200); out.again = on();
       out.link = FabBurrow.linkFor('test-303', [{ p:'christmas-flightpath', s:7, d:'', n:'' }], [], { cls:true, home:true });
@@ -2182,13 +2186,62 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(r.door === 'screen-me' && /^Christmas and winter flightpath\|true$/.test(r.today), 'the Learning Hub tile opens the Burrow, with the set work first: ' + JSON.stringify(r));
     assert(r.made === 'poster,explore,dance,studio,builds,sanct' && r.tidy === 'true,true,true', 'Things I made lists the poster, Explorer makes, dance, pictures, builds and sanctuary, drawn not emoji, and the Burrow does not repeat them: ' + JSON.stringify(r));
     assert(r.poster && r.sanct === 'screen-sanct|true' && r.sanctBack === 'screen-me' && r.dance === 'screen-code|true' && r.danceBack === 'screen-me' && r.explore === 'screen-time|victorian|screen-me', 'each make opens, and Back comes home to the Burrow: ' + JSON.stringify(r));
-    assert(/^screen-learn\|true$/.test(r.more) && r.stay === 'screen-learn' && r.again === 'screen-me', 'More to explore opens the full list and stays there until the child goes home: ' + JSON.stringify(r));
+    assert(r.child === 'true,true,true' && r.arm === 'screen-me|true' && /^screen-learn\|true$/.test(r.more) && r.stay === 'screen-learn' && r.again === 'screen-me', 'the child has no door to the full list; the teachers’ button needs two taps, then the list stays until the Burrow or the menu is opened: ' + JSON.stringify(r));
     assert(/\?learner=test-303&class=1&quiet=1&home=burrow&burrow=[A-Za-z0-9_-]+$/.test(r.link), 'one link carries the code, class mode, the draft and the work: ' + r.link);
-    const bp = await classPage('?learner=test-303');
+    const bp = await classPage('?learner=test-303&home=0');
     const off = await bp.evaluate(async () => { showScreen('screen-learn'); await new Promise(res => setTimeout(res, 200)); const a = document.querySelector('.screen.active').id; showScreen('screen-me'); await new Promise(res => setTimeout(res, 200));
       return a + '|' + !document.getElementById('bwMade') + '|' + !document.getElementById('bwMore') + '|' + !!document.querySelector('[data-me="learn"]') + '|' + FabBurrow.home(); });
     await bp.close();
-    assert(off === 'screen-learn|true|true|true|false', 'without the test link nothing changes: ' + off);
+    assert(off === 'screen-learn|true|true|true|false', '?home=0 gives one viewer the old behaviour: ' + off);
+    const cp = await browser.newPage(); await cp.goto(base + '/index.html'); await cp.waitForFunction(() => window.FabBurrow); await cp.waitForTimeout(300);
+    const staff = await cp.evaluate(async () => { document.querySelector('[data-go="screen-learn"]').click(); await new Promise(res => setTimeout(res, 300)); return document.querySelector('.screen.active').id + '|' + (typeof fabLearnerCode === 'function' ? fabLearnerCode() : ''); });
+    await cp.close();
+    assert(staff === 'screen-learn|', 'with no Fab code (a teacher, or the shared carpet viewer) the Learning Hub opens the full list as before: ' + staff);
+  });
+  await test('Set work: a teacher sets an activity, a challenge in their own words and a theme; the child sees only those, starts the activity, and ticks “I did it”', async () => {
+    const sp = await browser.newPage(); await sp.setViewportSize({ width:1366, height:900 }); await sp.goto(base + '/index.html'); await sp.waitForFunction(() => window.FabBurrow && document.getElementById('staffLink')); await sp.waitForTimeout(300);
+    const made = await sp.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
+      showScreen('screen-staff'); await wait(300);
+      const card = () => document.getElementById('bwStaff'), set = (el, v, ev) => { el.value = v; el.dispatchEvent(new Event(ev || 'input', { bubbles:true })); };
+      set(card().querySelector('#bwCode'), 'test-404');
+      set(card().querySelector('[data-row="0"] [data-bwf="p"]'), '', 'change'); await wait(150);
+      card().querySelector('#bwMake').click(); await wait(150); out.empty = card().querySelector('#bwMsg').textContent;
+      card().querySelector('#bwXAdd').click(); await wait(150);
+      set(card().querySelector('[data-xrow="0"] [data-bwx="th"]'), 'Anti-Bullying Week'); card().querySelector('[data-xrow="0"] [data-bwx="th"]').dispatchEvent(new Event('change', { bubbles:true })); await wait(200);
+      out.ideas = [...card().querySelectorAll('[data-bwidea]')].map(b => b.textContent).join('|');
+      card().querySelector('[data-bwidea="0:0"]').click(); await wait(200);
+      out.filled = card().querySelector('[data-xrow="0"] [data-bwx="a"]').value + '|' + card().querySelector('[data-xrow="0"] [data-bwx="t"]').value;
+      set(card().querySelector('[data-xrow="0"] [data-bwx="n"]'), 'Use your favourite colours');
+      card().querySelector('#bwXAdd').click(); await wait(150);
+      set(card().querySelector('[data-xrow="1"] [data-bwx="a"]'), 'explore:victorian', 'change');
+      card().querySelector('#bwXAdd').click(); await wait(150);
+      set(card().querySelector('[data-xrow="2"] [data-bwx="t"]'), 'Tell your teacher one thing you <b>enjoyed</b> today');
+      card().querySelector('#bwMake').click(); await wait(200);
+      out.link = card().querySelector('#bwLink').value; out.acts = FabBurrow.acts.length; return out; });
+    await sp.close();
+    assert(/Choose a flightpath, an activity or a challenge first/.test(made.empty), 'an empty set of work is not made into a link: ' + made.empty);
+    assert(/Make a kindness poster/.test(made.ideas) && made.filled === 'studio|Make a kindness poster' && made.acts >= 12, 'a theme offers gentle starters, and tapping one fills the activity and the challenge: ' + JSON.stringify(made));
+    assert(/\?learner=test-404&class=1&quiet=1&burrow=[A-Za-z0-9_-]+$/.test(made.link), 'one link: ' + made.link);
+    const ctx = await browser.newContext(); const c = await ctx.newPage(); await c.setViewportSize({ width:1366, height:900 });
+    c.on('pageerror', e => errors.push('set work child: ' + e.message));
+    await c.goto(made.link); await c.waitForFunction(() => document.getElementById('screen-me') && document.getElementById('screen-me').classList.contains('active')); await c.waitForTimeout(400);
+    const r = await c.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {}, on = () => document.querySelector('.screen.active').id;
+      const rows = [...document.querySelectorAll('#bwToday .bw-x')];
+      out.rows = rows.map(li => (li.querySelector('.bw-theme') ? '[' + li.querySelector('.bw-theme').textContent + '] ' : '') + li.querySelector('b').textContent + (li.querySelector('em') ? ' / ' + li.querySelector('em').textContent : '') + (li.querySelector('[data-bwxgo]') ? ' +start' : '')).join(' ; ');
+      out.say = document.querySelector('#bwToday .bubble b').textContent; out.safe = !document.querySelector('#bwToday b b') && /<b>enjoyed<\/b>|enjoyed/.test(document.getElementById('bwToday').textContent);
+      out.only = [!document.getElementById('bwPaths'), !document.getElementById('bwFree'), !document.getElementById('bwMore'), !document.querySelector('#bwToday .bw-item:not(.bw-x)')].join();
+      document.querySelector('#bwToday [data-bwxgo="1"]').click(); await wait(500); out.go = on() + '|' + FabExplore.state.era + '|' + FabExplore.state.back; showScreen('screen-me'); await wait(250);
+      document.querySelector('#bwToday [data-bwxgo="0"]').click(); await wait(400); out.studio = on() + '|' + window.fabWorldOpen; showScreen('screen-me'); await wait(250);
+      document.querySelector('#bwToday [data-bwxdone="2"]').click(); await wait(300);
+      const li = document.querySelectorAll('#bwToday .bw-x')[2]; out.done = li.classList.contains('done') + '|' + /Done/.test(li.textContent) + '|' + !li.querySelector('[data-bwxdone]') + '|' + FabImpact.read('test-404').some(e => e.k === 'setwork' && e.v === 'challenge');
+      document.querySelector('#bwToday [data-bwxdone="0"]').click(); await wait(250); document.querySelector('#bwToday [data-bwxdone="1"]').click(); await wait(250);
+      out.all = /All done for today/.test(document.getElementById('bwToday').textContent) + '|' + FabImpact.read('test-404').filter(e => e.k === 'setwork').map(e => e.v + (e.step ? ':' + e.step : '')).join();
+      return out; });
+    await ctx.close();
+    assert(r.rows === '[Anti-Bullying Week] Make a kindness poster / Your teacher says: Use your favourite colours +start ; Explorer Worlds: the Victorians +start ; Tell your teacher one thing you benjoyed/b today' || /^\[Anti-Bullying Week\] Make a kindness poster \/ Your teacher says: Use your favourite colours \+start ; Explorer Worlds: the Victorians \+start ; Tell your teacher one thing you .*enjoyed.* today$/.test(r.rows), 'Today lists the theme task, the activity and the challenge: ' + r.rows);
+    assert(r.say === '3 things to do today' && r.safe && r.only === 'true,true,true,true', 'the child sees only what was set, and typed words stay words: ' + JSON.stringify(r));
+    assert(r.go === 'screen-time|victorian|screen-me' && r.studio === 'screen-world|studio', 'Start opens the activity, and Back will come home to the Burrow: ' + JSON.stringify(r));
+    assert(r.done === 'true|true|true|true' && /^true\|challenge,studio:Anti-Bullying Week,explore:victorian$/.test(r.all), '“I did it” marks it done, notes it in the soft impact log, and all done is celebrated: ' + JSON.stringify(r));
   });
   await test('Several children: Help and low energy reach Fab Fox World, Fox Blocks and Fab’s Sanctuary', async () => {
     const ap = await classPage('?learner=class-t1&class=1');
