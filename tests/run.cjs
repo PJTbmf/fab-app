@@ -2555,6 +2555,66 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(/^Not that one yet\. ?Think about what the paper makers needed.*\|0$/.test(r.wrong) && r.helped === '2|true' && /^true\|\d{3}\|true\|true$/.test(r.poster) && r.why === 'true|true' && r.tick === 'true|true' && r.reopen, 'a wrong step gets a tip and never a cross, Fab can place a step, and the finished steps become a poster with the child’s own “because”: ' + JSON.stringify(r));
     assert(r.goesIn && r.inReport === 'true|5' && /^1\|true\|Ancient Greece 4, Both 3, Today 3\|1$/.test(r.same) && /an explanation poster/i.test(r.made) && /a same-but-different chart/i.test(r.made), 'the poster slots into the report, the chart sorts ten cards into then, both and now, and both show in Things I made: ' + JSON.stringify([r.inReport, r.same, r.made]));
   });
+  await test('The Art Gallery: six rooms of artists and styles, no artwork copied, a gentle spot-the-style, a make on screen or for real, and a gallery card', async () => {
+    const ctx = await browser.newContext(); const c = await ctx.newPage(); await c.setViewportSize({ width:1366, height:900 });
+    c.on('pageerror', e => errors.push('art gallery: ' + e.message));
+    await c.goto(base + '/index.html?learner=test-970&class=1&quiet=1'); await c.waitForFunction(() => window.FabArt && window.FabBurrow && window.FabExplore && document.querySelector('#screen-art')); await c.waitForTimeout(400);
+    const r = await c.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {}, tap = async q => { document.querySelector(q).click(); await wait(150); };
+      const R = FabArt.rooms; out.ids = R.map(x => x.id).join();
+      out.data = R.every(x => x.about.length === 3 && x.look.length === 3 && x.spot.length === 3 && x.spot.every(s => s.length === 3) && x.real.steps.length === 4 && x.real.low && x.starters.length === 3 && x.teach.length >= 2 && x.links.length >= 1 && x.links.every(l => /^https:\/\//.test(l[1])) && x.about.concat(x.look, x.real.steps).every(t => t.length <= 150));
+      out.gentle = !R.some(x => /\b(died|death|dead|ill|illness|hospital|cancer|accident|injur|kill|suicide|asylum|mad)\b/i.test(JSON.stringify([x.about, x.look, x.spot, x.screen, x.real, x.starters, x.rule || ''])));
+      out.living = ['banksy', 'wiltshire'].every(id => /Living artist/.test(FabArt.room(id).teach.join(' ')) && /in copyright/.test(FabArt.room(id).teach.join(' ')));
+      out.acts = FabBurrow.acts.filter(a => a.id.indexOf('art:') === 0).map(a => a.n).join('|') + '|last:' + FabBurrow.acts[FabBurrow.acts.length - 1].id;
+      /* in from Explorer Worlds */
+      showScreen('screen-learn'); await wait(200); document.querySelector('#learnTimeBtn').click(); await wait(400);
+      out.door = document.querySelectorAll('.tm-era').length + '|' + document.querySelectorAll('.tm-door').length + '|' + !!document.querySelector('.art-door [data-tm="art"]');
+      await tap('[data-tm="art"]'); out.home = document.querySelector('.screen.active').id + '|' + document.querySelectorAll('.art-room').length + '|' + document.querySelectorAll('.art-room svg.art-sw').length + '|' + document.querySelectorAll('#screen-art img').length + '|' + /No artworks in the app/.test(document.querySelector('#screen-art .tm-teach').textContent) + '|' + /wax resist/.test(document.querySelector('.art-tip').textContent);
+      /* The Scream, with care */
+      await tap('[data-art="room"][data-id="munch"]'); const pg = () => document.querySelector('.art-roompage').textContent.replace(/\s+/g, ' ');
+      out.meet = document.querySelector('#artTitle').textContent + '|' + /big, wobbly feeling/.test(pg()) + '|' + /good place to stop/.test(pg()) + '|' + /Handle with care/.test(document.querySelector('#screen-art .tm-teach').textContent) + '|' + [...document.querySelectorAll('#screen-art .tm-teach a')].map(a => a.target + a.rel).join();
+      await tap('[data-art="step"][data-id="1"]'); await tap('.art-pick[data-id="0"]'); out.wrong = document.querySelector('.tm-notebox').textContent.replace(/\s+/g, ' ').trim() + '|' + FabArt.state.round;
+      await tap('[data-art="show"]'); out.shown = FabArt.state.round + '|' + /It was “/.test(document.querySelector('.tm-notebox').textContent);
+      await tap('.art-pick[data-id="1"]'); await tap('.art-pick[data-id="1"]'); out.spotted = /You can spot the style/.test(pg()) + '|' + (FabArt.load().munch || {}).spot + '|' + !!document.querySelector('.art-step.ok');
+      /* make it for real */
+      const stars0 = +localStorage.getItem('fabworld-pending-test-970') || 0;
+      await tap('[data-art="step"][data-id="2"]'); out.make0 = /On screen, for real, or both: you choose/.test(pg()) + '|' + document.querySelectorAll('.art-way .mk-howsteps li').length + '|' + !document.querySelector('[data-art="step"][data-id="3"].btn');
+      await tap('[data-art="realopen"]'); out.steps = document.querySelectorAll('.art-way .mk-howsteps li').length + '|' + /Tired\? Paint just the sky/.test(pg()) + '|' + /white crayon/.test(pg());
+      await tap('[data-art="realdone"]'); out.made = JSON.stringify(FabArt.load().munch) .replace(/"when":"[^"]+"/, '"when":"x"') + '|' + ((+localStorage.getItem('fabworld-pending-test-970') || 0) - stars0) + '|' + /You made it!/.test(document.querySelector('.tm-notebox').textContent);
+      await tap('.btn[data-art="step"][data-id="3"]'); out.card0 = !!document.querySelector('.art-card') + '|' + /My feeling sky/.test(document.querySelector('.art-card').textContent) + '|' + /For real, with my own hands/.test(document.querySelector('.art-card').textContent);
+      await tap('[data-art="starter"][data-id="0"]'); const l = document.querySelector('#artLabelIn'); out.starter = l.value; l.value = 'My sky feels <b>calm</b> and sleepy'; document.querySelector('#artTitleIn').value = 'Calm <i>sky</i>'; await tap('[data-art="savelabel"]');
+      out.card = /Calm isky\/i/.test(document.querySelector('.art-card').textContent) + '|' + /My sky feels bcalm\/b and sleepy/.test(document.querySelector('.art-card').textContent) + '|' + !document.querySelector('.art-card b b, .art-card i i') + '|' + /Expressionism: art that shows a feeling/.test(document.querySelector('.art-card').textContent);
+      /* on screen: the Studio opens on the artist's idea, and a second finish gives no second star */
+      await tap('[data-art="step"][data-id="2"]'); await tap('[data-art="screendone"]'); out.both = /on screen and for real/.test(FabArt.made('test-970')[0].s) + '|' + ((+localStorage.getItem('fabworld-pending-test-970') || 0) - stars0);
+      /* Things I made, and set work */
+      showScreen('screen-me'); await wait(400); out.shelf = [...document.querySelectorAll('[data-bwmade="art"]')].map(b => b.textContent.replace(/\s+/g, ' ').trim()).join(';');
+      document.querySelector('[data-bwmade="art"]').click(); await wait(300); out.reopen = document.querySelector('.screen.active').id + '|' + FabArt.state.room + '|' + FabArt.state.step;
+      return out; });
+    assert(r.ids === 'vangogh,munch,kahlo,gaudi,banksy,wiltshire' && r.data && r.gentle && r.living, 'six rooms, each a full short lesson, gentle on the child’s page, and living artists are taught “in the style of” only: ' + JSON.stringify([r.ids, r.data, r.gentle, r.living]));
+    assert(/^Art Gallery: Vincent van Gogh\|.*Art Gallery: Stephen Wiltshire\|last:booklet$/.test(r.acts) && r.door === '7|3|true' && r.home === 'screen-art|6|6|0|true|true', 'the gallery is a door in Explorer Worlds, shows swatches drawn by the app and no pictures, and each room can be set as work: ' + JSON.stringify([r.acts, r.door, r.home]));
+    assert(r.meet === '🎨 Edvard Munch: The Scream|true|true|true|_blanknoopener,_blanknoopener' && /^Have another look\..*\|0$/.test(r.wrong) && r.shown === '1|true' && r.spotted === 'true|1|true', 'The Scream is met with care, a wrong tap gets a tip and never a cross, and Fab can show one: ' + JSON.stringify([r.meet, r.wrong, r.shown, r.spotted]));
+    assert(r.make0 === 'true|0|true' && r.steps === '4|true|true' && r.made === '{"spot":1,"real":1,"when":"x"}|1|true' && r.card0 === 'true|true|true', 'the real make uses the box, has a tired version, earns one star and gives a gallery card: ' + JSON.stringify([r.make0, r.steps, r.made, r.card0]));
+    assert(r.starter === 'My sky feels ' && r.card === 'true|true|true|true' && r.both === 'true|1' && /Calm isky\/i ?In the style of Munch · on screen and for real ?See my card/.test(r.shelf) && r.reopen === 'screen-art|munch|3', 'the child’s own title and sentence go on the card as plain text, and the piece waits in Things I made: ' + JSON.stringify([r.starter, r.card, r.both, r.shelf, r.reopen]));
+    /* set as work in a Burrow link, started from Today, and ticked off when it is made; then from the Studio's own card */
+    const link = await c.evaluate(() => FabBurrow.linkFor('test-971', [], [], { cls:true, extras:[{ a:'art:gaudi', t:'', n:'Try the mosaic creature', th:'', d:'' }] }));
+    const d = await ctx.newPage(); await d.setViewportSize({ width:1366, height:900 }); d.on('pageerror', e => errors.push('art gallery set work: ' + e.message));
+    await d.goto(link.replace(/^https?:\/\/[^/]+(\/fab-app)?/, base)); await d.waitForFunction(() => window.FabArt && window.FabBurrow && document.querySelector('#screen-art')); await d.waitForTimeout(400); await d.evaluate(() => showScreen('screen-me')); await d.waitForSelector('[data-bwxgo]', { timeout:8000 });
+    const s = await d.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
+      out.today = document.querySelector('[data-bwxgo]').closest('li').textContent.replace(/\s+/g, ' ').trim();
+      document.querySelector('[data-bwxgo]').click(); await wait(400); out.open = document.querySelector('.screen.active').id + '|' + FabArt.state.room + '|' + /trencadís/.test(document.querySelector('.art-roompage').textContent);
+      document.querySelector('[data-art="step"][data-id="2"]').click(); await wait(150); document.querySelector('[data-art="studio"]').click(); await wait(200);
+      out.studio = document.querySelector('.screen.active').id + '|' + window.fabWorldOpen + '|' + window.fabArtIdea + '|' + typeof window.fabArtBack + '|' + window.fabWorldFrom;
+      /* a picture kept in the Studio while the child was there */
+      const k = 'fabworld-v2-test-971', W = JSON.parse(localStorage.getItem(k) || '{}') || {}; W.makes = [{ t:Date.now() + 5, d:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', k:'create' }].concat(W.makes || []); localStorage.setItem(k, JSON.stringify(W));
+      window.fabArtBack(); await wait(400); out.back = document.querySelector('.screen.active').id + '|' + FabArt.state.step + '|' + !!document.querySelector('.art-mine') + '|' + /You made it!/.test(document.querySelector('.tm-notebox').textContent) + '|' + (window.fabArtIdea || '') + '|' + !!(FabArt.load().gaudi.screen || {}).t;
+      out.done = FabBurrow.read('test-971').extras.map(x => x.a + ':' + (x.dn ? 1 : 0)).join();
+      document.querySelector('.btn[data-art="step"][data-id="3"]').click(); await wait(200); out.pic = !!document.querySelector('.art-card img[src^="data:image/png"]');
+      return out; });
+    await ctx.close();
+    assert(/Art Gallery: Antoni Gaudí/.test(s.today) && /Try the mosaic creature/.test(s.today) && s.open === 'screen-art|gaudi|true', 'a room set as work shows in Today and opens that room: ' + JSON.stringify([s.today, s.open]));
+    assert(/^screen-world\|studiocreate\|In the style of Gaudí: draw a curvy creature.*\|function\|screen-art$/.test(s.studio) && s.back === 'screen-art|2|true|true||true' && s.done === 'art:gaudi:1' && s.pic, 'the Studio opens on the artist’s idea, a kept picture comes back to the room and onto the card, and the set work is ticked: ' + JSON.stringify(s));
+    const world = fs.readFileSync(path.join(ROOT, 'games.js'), 'utf8');
+    assert(/id:\\"artists\\",e:\\"🎨\\",n:\\"Artists and styles\\"/.test(world) && /artists:\(\)=>\{try\{window\.parent\.FabArt\.open\(\\"screen-world\\",null\)/.test(world) && /w===\\"studiocreate\\"\)\{mStudio\(\\"create\\"\)/.test(world) && /window\.parent\.fabArtIdea/.test(world), 'the Studio has an Artists and styles card, and opens its paper on the artist’s idea');
+  });
   await test('Several children: Help and low energy reach Fab Fox World, Fox Blocks and Fab’s Sanctuary', async () => {
     const ap = await classPage('?learner=class-t1&class=1');
     const r = await ap.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
