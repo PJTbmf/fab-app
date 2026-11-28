@@ -42,7 +42,43 @@
     return `<div class="fab-say"><span class="fab-char fab" role="img" aria-label="Fab"></span><div class="bubble"><b>Make and do</b>Choose something to play, make or write. Your work is saved here, and it slots into your report.</div></div>
       <h3 class="mk-group">Play with facts</h3><div class="mk-cards">${card('order', '🧩', k.order.h, k.order.sub, me.order)}${card('pairs', '🃏', 'Find the pairs', 'Match each picture to its name', me.pairs)}${card('quiz', '❓', 'Fact or fib?', 'Six things to think about', me.quiz)}</div>
       <h3 class="mk-group">Design</h3><div class="mk-cards">${card('art', '🎨', k.art.h, k.art.sub, me.artDone)}</div>
-      <h3 class="mk-group">Plan and write</h3><div class="mk-cards">${card('map', '🕸️', 'Make a mind map', 'Gather your ideas before you write', me.mapDone)}${card('report', '✍️', 'Write my report', 'Read a model, then one step at a time', me.rep.done)}</div>`;
+      <h3 class="mk-group">Plan and write</h3><div class="mk-cards">${card('map', '🕸️', 'Make a mind map', 'Gather your ideas before you write', me.mapDone)}${card('report', '✍️', 'Write my report', 'Read a model, then one step at a time', me.rep.done)}</div>
+      ${(k.how && k.how.length) || k.same ? `<h3 class="mk-group">Explain it</h3><div class="mk-cards">${(k.how || []).map(t => card('how:' + t.id, '🪜', t.h, 'Put the steps in order to make a poster', me.how && me.how[t.id] && me.how[t.id].done)).join('')}${k.same ? card('same', '⚖️', k.same.h, 'Sort the cards: ' + k.same.a + ', ' + k.same.b + ' or both', me.same && me.same.done) : ''}</div>` : ''}`;
+  }
+
+  /* ---------- 🪜 explain how, and ⚖️ the same but different (Patrick, 28 Nov: "the activities baked into the current history areas
+     not simply report only as the outcome ... explaining different Greek Olympic events and how it's the same but different to
+     today's"). Each is a finished piece on its own, a poster or a chart, and it also slots into the report if the child writes one.
+     A child who only ever makes the poster has still made something whole. Both have a tired route: Fab places the next one. ---------- */
+  const howOf = (w, id) => (w.make.how || []).find(x => x.id === id);
+  const howList = t => `<ol class="mk-howsteps">${t.steps.map(x => `<li>${h(x)}</li>`).join('')}</ol>`;
+  function startHow(w, me, id){ const t = howOf(w, id); if(!t){ M.how = null; return; } const ids = t.steps.map((x, i) => i), done = me.how && me.how[id] && me.how[id].done; let sh = ids.slice();
+    for(let n = 0; n < 6 && sh.join() === ids.join(); n++) sh = shuffle(ids); M.how = done ? { id, left:[], placed:ids } : { id, left:sh, placed:[] }; M.note = null; }
+  function howHTML(w, me){
+    const t = howOf(w, M.how.id), S = M.how, mh = (me.how || {})[t.id] || {};
+    if(!S.left.length) return `<div class="tm-notebox" role="status">${note(M.note)}</div>
+      ${window.FabProud.page({ theme:w.id, cls:'mk-paper mk-final mk-howp', kicker:'I can explain', title:t.h, lead:t.lead || '', cards:[{ h:'Step by step', html:howList(t), wide:true }].concat(mh.why ? [{ h:'I think it was clever because', text:mh.why }] : []), fact:t.fact ? { label:'Did you know?', text:t.fact } : null, when:mh.when, seal:'Finished!' })}
+      <div class="mk-noterow"><label for="mkWhy">Stretch: I think it was clever because…</label><input id="mkWhy" class="mk-in" maxlength="110" value="${h(mh.why || '')}"><button type="button" class="btn small soft" data-mk="howwhy">Add it to my poster</button></div>
+      <div class="choice-row tm-row"><button type="button" class="btn small leaf" data-mk="print">🖨️ Print my poster</button>${toReport}<button type="button" class="btn small soft" data-mk="howagain">Do it again</button>${back}</div>`;
+    return `<h3 class="mk-h">🪜 ${h(t.h)}</h3><p class="mk-ask">${h(t.ask || 'Tap the steps in order. What happened first?')}</p>
+      <ol class="mk-howsteps build" aria-label="The steps so far">${S.placed.map(i => `<li>${h(t.steps[i])}</li>`).join('')}<li class="mk-slot" aria-hidden="true">${S.placed.length ? 'What happened next?' : 'What happened first?'}</li></ol>
+      <div class="mk-pool col" role="group" aria-label="Steps to put in order">${S.left.map(i => `<button type="button" class="mk-chip" data-mk="howput" data-id="${i}">${h(t.steps[i])}</button>`).join('')}</div>
+      <div class="tm-notebox" role="status">${note(M.note)}</div><div class="choice-row tm-row"><button type="button" class="btn small soft" data-mk="hownext">Tired? Put the next step in for me</button>${back}</div>`;
+  }
+  function startSame(w, me){ const c = w.make.same.cards; M.same = me.same && me.same.done ? { left:[], put:c.map(x => x[1]) } : { left:shuffle(c.map((x, i) => i)), put:c.map(() => '') }; M.note = null; }
+  function sameChart(w, put){ const s2 = w.make.same, col = (k, name) => `<div class="mk-col ${k}"><h4>${h(name)}</h4><ul>${s2.cards.map((c, i) => put[i] === k ? `<li>${h(c[0])}</li>` : '').join('')}</ul></div>`;
+    return `<div class="mk-same">${col('a', s2.a)}${col('both', 'Both')}${col('b', s2.b)}</div>`; }
+  function sameHTML(w, me){
+    const s2 = w.make.same, S = M.same;
+    if(!S.left.length) return `<div class="tm-notebox" role="status">${note(M.note)}</div>
+      ${window.FabProud.page({ theme:w.id, cls:'mk-paper mk-final mk-samep', kicker:'The same but different', title:s2.h, lead:s2.lead || '', cards:[{ h:s2.a + ', ' + s2.b + ', or both?', html:sameChart(w, S.put), wide:true }], fact:s2.fact ? { label:'Did you know?', text:s2.fact } : null, when:(me.same || {}).when, seal:'Finished!' })}
+      <div class="choice-row tm-row"><button type="button" class="btn small leaf" data-mk="print">🖨️ Print my chart</button>${toReport}<button type="button" class="btn small soft" data-mk="sameagain">Do it again</button>${back}</div>`;
+    const cur = S.left[0];
+    return `<h3 class="mk-h">⚖️ ${h(s2.h)}</h3><p class="mk-ask">Read the card. Is it about ${h(s2.a)}, ${h(s2.b)}, or both? <small>(${S.left.length} to go)</small></p>
+      <div class="mk-samecard" role="status">${h(s2.cards[cur][0])}</div>
+      <div class="choice-row tm-row mk-tf"><button type="button" class="btn leaf" data-mk="sameput" data-id="a">${h(s2.a)}</button><button type="button" class="btn leaf" data-mk="sameput" data-id="both">Both</button><button type="button" class="btn leaf" data-mk="sameput" data-id="b">${h(s2.b)}</button></div>
+      <div class="tm-notebox" role="status">${note(M.note)}</div>${sameChart(w, S.put)}
+      <div class="choice-row tm-row"><button type="button" class="btn small soft" data-mk="samehelp">Tired? Place this card for me</button>${back}</div>`;
   }
 
   /* ---------- 🧩 put it in order ---------- */
@@ -186,7 +222,7 @@
       sec(0), sec(1),
       `<section class="mk-sec"><h4>Did you know?</h4>${one ? (chosen.length ? `<p class="mk-ask">Tap one amazing fact.</p><div class="mk-picks">${chosen.map(sp => `<button type="button" class="mk-pick ${r.dpick === sp.id ? 'sel' : ''}" data-mk="dpick" data-id="${sp.id}" aria-pressed="${r.dpick === sp.id}">${h(sp.k)}</button>`).join('')}</div>` : '<p class="mk-ask">Choose your two subheadings first.</p>')
           : `${two ? chips(['Did you know that', 'Amazingly,'], 'mkDyk') : ''}<label class="sr-only" for="mkDyk">Did you know?</label><textarea id="mkDyk" class="mk-ta" data-mkf="dyk" rows="3" maxlength="300" placeholder="Share one amazing fact.">${h(r.dyk)}</textarea>`}</section>`,
-      `<section class="mk-sec"><h4>Your makes go in too</h4><ul class="mk-in-list"><li>${me.png ? '✅ ' + h(w.make.art.noun) + ' is in your report.' : '🎨 Finish your design and it will appear in your report.'}</li><li>${me.order ? '✅ ' + h(w.make.order.noun) + ' is in your report.' : '🧩 Finish the order cards and they will appear too.'}</li><li>${me.mapDone ? '✅ Your mind map is in your report.' : '🕸️ Finish a mind map and it will appear too.'}</li></ul>
+      `<section class="mk-sec"><h4>Your makes go in too</h4><ul class="mk-in-list"><li>${me.png ? '✅ ' + h(w.make.art.noun) + ' is in your report.' : '🎨 Finish your design and it will appear in your report.'}</li><li>${me.order ? '✅ ' + h(w.make.order.noun) + ' is in your report.' : '🧩 Finish the order cards and they will appear too.'}</li><li>${me.mapDone ? '✅ Your mind map is in your report.' : '🕸️ Finish a mind map and it will appear too.'}</li>${(w.make.how || []).length ? `<li>${(w.make.how || []).some(t => me.how && me.how[t.id] && me.how[t.id].done) ? '✅ Your explanation poster is in your report.' : '🪜 Make an explanation poster and it will appear too.'}</li>` : ''}${w.make.same ? `<li>${me.same && me.same.done ? '✅ Your same-but-different chart is in your report.' : '⚖️ Finish the same-but-different chart and it will appear too.'}</li>` : ''}</ul>
         <button type="button" class="btn leaf" data-mk="open" data-id="paper">👀 See my report</button></section>`
     ][st];
     return `<h3 class="mk-h">✍️ Write my report <button type="button" class="mk-link" data-mk="lvl" data-id="">change how I write</button></h3>
@@ -206,6 +242,8 @@
       if(own) own.pic = { src:me.png, alt:noun, cap:noun }; else cards.push({ h:noun, pic:{ src:me.png, alt:noun } }); }
     if(me.mapDone && me.map.length) cards.push({ h:'My mind map', html:mapSVG(w, me.map, me.notes), wide:me.map.some(id => (me.notes[id] || []).length) });
     if(me.order) cards.push({ h:o.noun.replace(/^My /, ''), html:`<ol class="mk-strip paper">${o.items.map(it => `<li>${orderItem(it)}</li>`).join('')}</ol>`, wide:true });
+    (w.make.how || []).forEach(t => { const mh = me.how && me.how[t.id]; if(mh && mh.done) cards.push({ h:t.h, html:howList(t) + (mh.why ? `<p class="mk-why">I think it was clever because ${h(mh.why)}</p>` : ''), wide:true }); });
+    if(w.make.same && me.same && me.same.done) cards.push({ h:w.make.same.h, html:sameChart(w, w.make.same.cards.map(c => c[1])), wide:true });
     /* keep the picture in proportion: if its own card would have to stretch across the page, it sits beside the last part's words instead */
     { const pc = cards.find(c => c.pic && !c.text && !c.html), host = pc && cards.filter(c => !c.wide).length % 2 ? [...cards].reverse().find(c => c.text && !c.pic) : null;
       if(host){ host.pic = { src:pc.pic.src, alt:pc.pic.alt, cap:pc.h }; cards.splice(cards.indexOf(pc), 1); } }
@@ -219,7 +257,7 @@
 
   /* ---------- wiring ---------- */
   function html(w){ const d = load(), me = mine(d, w.id), v = M.view;
-    return `<div class="mk">${v === 'order' && M.seq ? orderHTML(w) : v === 'pairs' && M.pairs ? pairsHTML(w) : v === 'quiz' && M.quiz ? quizHTML(w) : v === 'art' && M.grid ? artHTML(w, me) : v === 'map' ? mapHTML(w, me) : v === 'report' ? reportHTML(w, me) : v === 'paper' ? paperHTML(w, me) : homeHTML(w, me)}</div>`; }
+    return `<div class="mk">${v === 'order' && M.seq ? orderHTML(w) : v === 'pairs' && M.pairs ? pairsHTML(w) : v === 'quiz' && M.quiz ? quizHTML(w) : v === 'art' && M.grid ? artHTML(w, me) : v === 'map' ? mapHTML(w, me) : v === 'report' ? reportHTML(w, me) : v === 'paper' ? paperHTML(w, me) : v.indexOf('how:') === 0 && M.how ? howHTML(w, me) : v === 'same' && M.same ? sameHTML(w, me) : homeHTML(w, me)}</div>`; }
   function mount(w){
     if(M.view !== 'art') return; drawArt(w); const cv = q1('#mkArt'); if(!cv) return; let down = false, ch = false;
     const at = e => { const r = cv.getBoundingClientRect(); return [Math.floor((e.clientX - r.left) / r.width * w.make.art.W), Math.floor((e.clientY - r.top) / r.height * w.make.art.H)]; };
@@ -235,10 +273,25 @@
     if(a === 'home'){ home(); X.snd('tick'); return X.render(); }
     if(a === 'open'){ M.note = null; try{ X.say.stop(); }catch(err){}
       if(id === 'order') startOrder(w); if(id === 'art') startArt(w, me); if(id === 'pairs') startPairs(w); if(id === 'quiz') M.quiz = { i:0, ans:null };
+      if(id.indexOf('how:') === 0) startHow(w, me, id.slice(4)); if(id === 'same' && w.make.same) startSame(w, me);
       if(id === 'report' && M.view !== 'paper') M.rstep = r.read ? Math.max(1, M.rstep) : 0;
       if(id === 'paper' && !r.done && checks(w, me).slice(0, 4).every(c => c[1])){ r.done = 1; r.when = window.FabProud.stamp(); save(d); star(); M.note = { k:'win', h:'Your report is finished!', t:'What a lot you know. That earned a star for Fab Fox World.' }; }
       if(id === 'paper' && r.done && !r.when){ r.when = window.FabProud.stamp(); save(d); }
       M.view = id; X.snd('tick'); return X.render(); }
+    if((a === 'howput' || a === 'hownext') && M.how){ const t = howOf(w, M.how.id), S = M.how, want = S.placed.length, pick = a === 'hownext' ? want : +id;
+      if(pick === want){ S.placed.push(want); S.left = S.left.filter(x => x !== want); M.note = a === 'hownext' ? { k:'fix', h:'Fab put that one in.', t:'Read it together, then try the next one.' } : null; X.snd('ding');
+        if(!S.left.length){ me.how = me.how || {}; const first = !(me.how[t.id] && me.how[t.id].done); me.how[t.id] = Object.assign(me.how[t.id] || {}, { done:1, when:window.FabProud.stamp() }); save(d); if(first) star();
+          M.note = { k:'win', h:'You can explain it!', t:(first ? 'That earned a star for Fab Fox World. ' : '') + 'Here is your poster. It is finished as it is, and it will slot into your report too.' }; } }
+      else { M.note = { k:'fix', h:'Not that one yet.', t:t.hint || 'Think about what has to happen before that.' }; X.snd('gentle'); }
+      return X.render(); }
+    if(a === 'howwhy' && M.how){ const el = q1('#mkWhy'), t = howOf(w, M.how.id); me.how = me.how || {}; me.how[t.id] = Object.assign(me.how[t.id] || {}, { why:String(el ? el.value : '').replace(/[<>]/g, '').trim().slice(0, 110) }); save(d); X.snd('ding'); return X.render(); }
+    if(a === 'howagain' && M.how){ const t = howOf(w, M.how.id), ids = t.steps.map((x, i) => i); M.how = { id:t.id, left:shuffle(ids), placed:[] }; M.note = null; X.snd('tick'); return X.render(); }
+    if((a === 'sameput' || a === 'samehelp') && M.same){ const s2 = w.make.same, S = M.same, cur = S.left[0], c = s2.cards[cur], k = a === 'samehelp' ? c[1] : id;
+      if(k === c[1]){ S.put[cur] = k; S.left.shift(); M.note = a === 'samehelp' ? { k:'fix', h:'Fab placed that one.', t:'Read where it went, then try the next card.' } : null; X.snd('ding');
+        if(!S.left.length){ const first = !(me.same && me.same.done); me.same = { done:1, when:window.FabProud.stamp() }; save(d); if(first) star(); M.note = { k:'win', h:'All sorted!', t:(first ? 'That earned a star for Fab Fox World. ' : '') + 'Here is your chart. It is finished as it is, and it will slot into your report too.' }; } }
+      else { M.note = { k:'fix', h:'Have another think.', t:c[2] || s2.hint || 'Read the card again. When was that true?' }; X.snd('gentle'); }
+      return X.render(); }
+    if(a === 'sameagain' && M.same){ const c = w.make.same.cards; M.same = { left:shuffle(c.map((x, i) => i)), put:c.map(() => '') }; M.note = null; X.snd('tick'); return X.render(); }
     if(a === 'put'){ const o = w.make.order, S = M.seq, want = o.items[S.placed.length];
       if(want && want.id === id){ S.placed.push(id); S.left = S.left.filter(x => x !== id); M.note = null; X.snd('ding');
         if(!S.left.length){ const first = !me.order; me.order = 1; save(d); if(first) star(); M.note = { k:'win', h:'All in order!', t:first ? 'That earned a star for Fab Fox World. It is ready to go in your report.' : 'It is ready to go in your report.' }; } }
@@ -288,6 +341,18 @@
   document.addEventListener('focusin', e => { if(e.target.classList && e.target.classList.contains('mk-ta')) M.last = e.target.id; });
 
   const css = document.createElement('style'); css.textContent = `
+.mk-howsteps{margin:6px 0;padding:0;list-style:none;counter-reset:hs;display:grid;gap:8px;text-align:left}
+.mk-howsteps li{counter-increment:hs;position:relative;background:#FFF6E6;border:2.5px solid #2B1A12;border-radius:14px;padding:8px 12px 8px 3em;font-size:1.05rem;line-height:1.35}
+.mk-howsteps li::before{content:counter(hs);position:absolute;left:.6em;top:50%;transform:translateY(-50%);width:1.7em;height:1.7em;border-radius:50%;background:#F0B913;border:2.5px solid #2B1A12;display:grid;place-items:center;font-weight:700}
+.mk-howsteps li.mk-slot{background:transparent;border-style:dashed;color:#6b5a4a;font-style:italic}
+.mk-pool.col{display:grid;gap:8px}.mk-pool.col .mk-chip{text-align:left;white-space:normal}
+.mk-why{margin:8px 0 0;font-style:italic;text-align:left}
+.mk-howp .mk-howsteps li{font-size:1.15rem}.mk-samep .mk-col li{font-size:1.05rem}
+.mk-samecard{background:#fff;border:3px solid #2B1A12;border-radius:16px;padding:14px 18px;font-size:1.25rem;text-align:center;margin:8px auto;max-width:640px}
+.mk-same{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0;text-align:left}
+.mk-col{background:#FFF6E6;border:2.5px solid #2B1A12;border-radius:14px;padding:8px 10px;min-height:5em}.mk-col.both{background:#DDF0CF}.mk-col.b{background:#CFE7F2}
+.mk-col h4{margin:0 0 6px;text-align:center}.mk-col ul{margin:0;padding-left:1.1em;display:grid;gap:4px}
+@media (max-width:640px){.mk-same{grid-template-columns:1fr}}
 .mk-h{margin:0 0 6px;font-family:var(--disp);font-size:var(--t-head,1.5rem)}.mk-ask{margin:0 0 12px;font-size:var(--t-lead,1.2rem)}
 .mk-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}
 .mk-card{display:grid;gap:4px;justify-items:start;text-align:left;border:3px solid var(--ink,#2B1A12);border-radius:20px;background:#fff;padding:16px;cursor:pointer;font:inherit;color:inherit;min-height:120px;box-shadow:0 4px 0 rgba(43,26,18,.25)}
@@ -366,6 +431,30 @@
       pal:[['#1c2a5e', 'Navy blue'], ['#f8f4ea', 'White'], ['#c8372d', 'Red'], ['#e3b23c', 'Gold'], ['#5aa9e6', 'Sky blue'], ['#3e8f4f', 'Green'], ['#e8792b', 'Orange'], ['#2b2622', 'Black']] },
     report:{ title:'All about the Space Station', model:{ title:'All about astronauts', intro:'Astronauts are people who travel into space to live and work.', secs:[['Training', 'Astronauts train for years. They practise spacewalks in a huge swimming pool.'], ['Working in space', 'On the Space Station they do science experiments. They also look after the station.']], dyk:'Astronauts grow a little taller in space, because their backbones stretch out.' }, intro:['The Space Station is a home and a science lab in space.', 'Astronauts live and work on the Space Station.', 'This report is about life on the Space Station.'], words:['astronaut', 'orbit', 'gravity', 'solar panels', 'Cupola', 'spacesuit', 'experiment', 'Earth'] } });
 
+  /* Explain-it pieces for each world. Every step and card is a draft for a teacher to check. Kept gentle: no battles, no burials. */
+  const add = (id, extra) => { if(X.worlds[id] && X.worlds[id].make) Object.assign(X.worlds[id].make, extra); };
+  add('egypt', { how:[
+    { id:'papyrus', h:'How papyrus was made', lead:'The Egyptians made a kind of paper from a plant that grew beside the River Nile.', hint:'Think about what the paper makers needed before they could do that.',
+      steps:['Cut the tall papyrus reeds growing beside the Nile.', 'Peel each stem and slice the soft inside into thin strips.', 'Lay the strips side by side, then lay a second layer across them.', 'Press and hammer the layers so they stick together, then dry them in the sun.', 'Rub the sheet smooth with a stone. Now a scribe can write on it.'],
+      fact:'Our word “paper” comes from the word “papyrus”.' },
+    { id:'cartouche', h:'How a scribe wrote a royal name', lead:'Hieroglyphs are little pictures. Many of them stand for sounds.', hint:'A scribe had to know the signs before he could choose them.',
+      steps:['Go to scribe school for years to learn hundreds of picture signs.', 'Say the name slowly and listen for each sound.', 'Choose a picture sign for each sound.', 'Decide which way to write: the animals and people face the start of the line.', 'Draw an oval, called a cartouche, around the royal name.'],
+      fact:'Hieroglyphs could be written from left to right, from right to left, or from top to bottom.' },
+    { id:'pyramid', h:'How the pyramids were built', lead:'The pyramids were built for the pharaohs more than 4,000 years ago, without any machines.', hint:'A block had to be cut and moved before it could be lifted.',
+      steps:['Workers cut huge blocks of stone at a quarry.', 'Boats carried some of the stone along the River Nile.', 'Teams pulled the blocks over the sand on wooden sledges.', 'The blocks were dragged up ramps and set in place, one layer at a time.', 'Smooth white stone was added to the outside, so the pyramid shone in the sun.'],
+      fact:'Nobody is completely sure how it was done. This is what archaeologists think, from the clues they have found.' }] });
+  add('rome', { how:[
+    { id:'mosaic', h:'How a Roman mosaic was made', lead:'A mosaic is a picture made from tiny cubes of stone, tile and glass.', hint:'The cubes could not be pressed in until the floor was ready for them.',
+      steps:['Choose a picture or a pattern and draw the plan.', 'Cut stone, tile and glass into tiny cubes called tesserae.', 'Spread wet mortar over a small part of the floor.', 'Press the cubes into the mortar, following the plan.', 'Fill the gaps, let it dry, then clean and polish the mosaic.'],
+      fact:'Some Roman mosaics are still on the floor where they were made, nearly 2,000 years later.' }] });
+  add('greece', { same:{ h:'The Olympic Games: the same but different', a:'Ancient Greece', b:'Today', lead:'The Olympic Games began in Ancient Greece. People still hold them today.', hint:'Read the card again. Was that true long ago, now, or both?',
+    cards:[['The Games are held in the same place every time: Olympia.', 'a'], ['The Games are held every four years.', 'both'], ['The Games move to a different country each time.', 'b'], ['Only men and boys take part.', 'a', 'Today, women and men both take part.'],
+      ['There are running races.', 'both'], ['Winners are given a crown of olive leaves.', 'a'], ['Winners are given gold, silver and bronze medals.', 'b'], ['Athletes throw the discus and the javelin.', 'both'], ['There is a chariot race.', 'a'], ['The Paralympic Games follow the Olympic Games.', 'b']],
+    fact:'The first Olympic Games we know about were held in 776 BC. The modern Olympic Games began in 1896.' } });
+  add('victorian', { same:{ h:'A school day: the same but different', a:'Victorian times', b:'Today', lead:'By the end of Queen Victoria’s time, nearly every child went to school.', hint:'Think about Ada’s schoolroom. Is that how school is now?',
+    cards:[['Children write on a slate with a slate pencil.', 'a'], ['Children learn to read, write and do maths.', 'both'], ['Children use tablets and computers.', 'b'], ['The whole class chants answers together.', 'a'], ['A teacher helps the children learn.', 'both'],
+      ['Boys and girls often sit apart.', 'a'], ['Lessons can happen online.', 'b'], ['There is a time to play.', 'both']],
+    fact:'From 1880, children in England had to go to school from the age of five to ten.' } });
   window.FabMake = { html, mount, home, state:M, load, checks, mask:MASK, modelGrid };
   try{ if(X.state.era && q1('#screen-time') && q1('#screen-time').classList.contains('active')) X.render(); }catch(e){}
 })();

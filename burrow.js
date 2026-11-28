@@ -169,8 +169,9 @@
     try{ const mk = raw.json('fab-make-' + code, {}), X = window.FabExplore;
       if(X) X.order.forEach(id => { const m = mk[id], w = X.worlds[id]; if(!m || !w) return;
         const rep = m.rep || {}, wrote = !!(rep.intro || rep.dyk || arr(rep.s).some(x => x && x.t)), drew = !!(m.png || (m.art && /[1-9]/.test(m.art)));
-        if(!wrote && !drew) return;
-        const bits = []; if(drew) bits.push(String((w.make.art && w.make.art.noun) || 'My design')); if(wrote) bits.push('my report');
+        const posters = m.how ? Object.keys(m.how).filter(k => m.how[k] && m.how[k].done).length : 0, chart = !!(m.same && m.same.done);
+        if(!wrote && !drew && !posters && !chart) return;
+        const bits = []; if(drew) bits.push(String((w.make.art && w.make.art.noun) || 'My design')); if(posters) bits.push(posters === 1 ? 'an explanation poster' : posters + ' explanation posters'); if(chart) bits.push('a same-but-different chart'); if(wrote) bits.push('my report');
         out.push({ k:'explore', id, pic:m.png || '', ic:ic('compass', '🧭'), t:w.n, s:bits.join(' and ').replace(/^./, c => c.toUpperCase()), b:'Open' }); }); }catch(e){}
     arr(raw.json('fabcode-makes-' + code, [])).filter(d => d && d.k === 'dance').slice(0, 3).forEach(d =>
       out.push({ k:'dance', id:String(d.t), pic:d.pic || '', ic:ic('code', '💃'), t:'My dance', s:(Number(d.n) || 0) + ' blocks in Fox Blocks', b:'Watch it' }));
