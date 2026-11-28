@@ -47,6 +47,8 @@
     { id:'world', n:'Fab Fox World', ic:'fox', e:'🦊' },
     { id:'canvas', n:'Canvas: draw, write, add pictures', ic:'picture', e:'📋' },
     { id:'music', n:'Music: the keyboard or the beat maker', ic:'piano', e:'🎹' },
+    /* the Art Gallery's rooms (artists.js loads first): one per artist or style */
+    ...((window.FabArt && window.FabArt.acts) || []),
     /* a booklet (Patrick, 27 Nov: "being able to assign booklet activities as opposed to relying on flightpaths alone"). The teacher
        opens the booklet on the board; the app lists the part to do and the child taps "I did it". Nothing opens in the app. */
     { id:'booklet', n:'Booklet', ic:'books', e:'📚', show:'Your teacher will open this booklet with you.' }
@@ -72,6 +74,7 @@
       if(k === 'bk'){ FabBooklets.open(v, pg || null, { code, back:'screen-me' }); return; }
       if(k === 'fp'){ const p = packById(String(id).slice(3)); if(p) openPack(p); return; }
       if(k === 'explore') FabExplore.open('screen-me', v);
+      else if(k === 'art') FabArt.open('screen-me', v);
       else if(k === 'code'){ window.fabCodeFrom = 'screen-me'; showScreen('screen-code'); document.getElementById('codeFrame').src = 'code.html?embed=1&back=app&learner=' + encodeURIComponent(code) + '&project=' + encodeURIComponent(v); }
       else if(k === 'sanct'){ fabOpenSanct(); window.fabSanctFrom = 'screen-me'; }
       else if(k === 'studio'){ window.fabWorldOpen = 'studio'; showScreen('screen-world'); }
@@ -173,6 +176,7 @@
         if(!wrote && !drew && !posters && !chart) return;
         const bits = []; if(drew) bits.push(String((w.make.art && w.make.art.noun) || 'My design')); if(posters) bits.push(posters === 1 ? 'an explanation poster' : posters + ' explanation posters'); if(chart) bits.push('a same-but-different chart'); if(wrote) bits.push('my report');
         out.push({ k:'explore', id, pic:m.png || '', ic:ic('compass', '🧭'), t:w.n, s:bits.join(' and ').replace(/^./, c => c.toUpperCase()), b:'Open' }); }); }catch(e){}
+    try{ if(window.FabArt) FabArt.made(code).forEach(a => out.push({ k:'art', id:a.id, pic:a.pic, ic:ic('canvas', '🎨'), t:a.t, s:a.s, b:'See my card' })); }catch(e){}
     arr(raw.json('fabcode-makes-' + code, [])).filter(d => d && d.k === 'dance').slice(0, 3).forEach(d =>
       out.push({ k:'dance', id:String(d.t), pic:d.pic || '', ic:ic('code', '💃'), t:'My dance', s:(Number(d.n) || 0) + ' blocks in Fox Blocks', b:'Watch it' }));
     const W = raw.json('fabworld-v2-' + code, null) || {}, pics = arr(W.makes).filter(m => m && m.d), shows = arr(W.shows).length || (W.onShow ? 1 : 0);
@@ -194,6 +198,7 @@
     if(k === 'poster'){ const p = packById(id), po = pathOf(p), pr = progress(code, p); if(!po || !pr) return;
       if(FabFlightPoster.open(po.s, pr.kid, p)){ const b = document.querySelector('.fp-layer [data-fp="close"]'); if(b && b.lastChild && b.lastChild.nodeType === 3) b.lastChild.textContent = 'Back to my Burrow'; } }
     else if(k === 'explore'){ try{ FabExplore.open('screen-me', id); }catch(e){} }
+    else if(k === 'art'){ try{ FabArt.open('screen-me', id, 3); }catch(e){} }
     else if(k === 'dance'){ window.fabCodeFrom = 'screen-me'; showScreen('screen-code');
       document.getElementById('codeFrame').src = 'code.html?embed=1&back=app&learner=' + encodeURIComponent(code) + '&project=dance&play=' + encodeURIComponent(id); }
     else if(k === 'studio'){ window.fabWorldOpen = 'studio'; showScreen('screen-world'); }
