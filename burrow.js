@@ -47,6 +47,12 @@
     { id:'world', n:'Fab Fox World', ic:'fox', e:'🦊' },
     { id:'canvas', n:'Canvas: draw, write, add pictures', ic:'picture', e:'📋' },
     { id:'music', n:'Music: the keyboard or the beat maker', ic:'piano', e:'🎹' },
+    /* EYFS Hub activities, so the youngest class has something to set (stress test, 28 Nov: "EYFS has almost nothing settable") */
+    { id:'eyfs:phonics', n:'EYFS: Sound it out (phonics sounds)', ic:'', e:'🔤', big:1 },
+    { id:'eyfs:drawing', n:'EYFS: Let’s draw together', ic:'', e:'🖍️', big:1 },
+    { id:'eyfs:finemotor', n:'EYFS: Fine motor fun', ic:'', e:'✋', big:1 },
+    { id:'eyfs:talk', n:'EYFS: Talk about a picture', ic:'', e:'🗣️', big:1 },
+    { id:'eyfs:sequence', n:'EYFS: What comes next?', ic:'', e:'🧩', big:1 },
     /* the Art Gallery's rooms (artists.js loads first): one per artist or style */
     ...((window.FabArt && window.FabArt.acts) || []),
     /* a booklet (Patrick, 27 Nov: "being able to assign booklet activities as opposed to relying on flightpaths alone"). The teacher
@@ -54,7 +60,13 @@
     { id:'booklet', n:'Booklet', ic:'books', e:'📚', show:'Your teacher will open this booklet with you.' }
   ];
   /* a booklet from the library travels as 'bk:<id>' or 'bk:<id>:<page>' (booklets.js): one rebuilt as pages opens in the app, the others are opened on the board */
-  const actOf = id => ACTS.find(a => a.id === id) || (String(id || '').indexOf('bk:') === 0 && window.FabBooklets ? FabBooklets.act(id) : String(id || '').indexOf('fp:') === 0 ? fpAct(id) : null);
+  /* one piece of a World Explorers world, set by name (mk:<world>:<piece>), e.g. "make the papyrus poster". The names are here because a
+     child's link is read before the worlds load. */
+  const MK = { order:'the timeline', art:'the design', map:'a mind map', report:'the report', same:'the same-but-different chart', pairs:'find the pairs', quiz:'fact or fib',
+    'how:papyrus':'the poster: how papyrus was made', 'how:cartouche':'the poster: how a scribe wrote a royal name', 'how:pyramid':'the poster: how the pyramids were built', 'how:mosaic':'the poster: how a mosaic was made' };
+  function mkAct(id){ const m = /^mk:([a-z]+):([a-z]+(?::[a-z]+)?)$/.exec(String(id || '')); if(!m) return null; const w = ACTS.find(a => a.id === 'explore:' + m[1]), pc = MK[m[2]];
+    return w && pc ? { id, n:w.n + ': ' + pc, ic:w.ic, e:w.e } : null; }
+  const actOf = id => ACTS.find(a => a.id === id) || mkAct(id) || (String(id || '').indexOf('bk:') === 0 && window.FabBooklets ? FabBooklets.act(id) : String(id || '').indexOf('fp:') === 0 ? fpAct(id) : null);
   /* a flightpath set as the day's practice in a week plan: 'fp:<pack id>', at the child's own step */
   function fpAct(id){ let p = null; try{ p = packById(String(id).slice(3)); }catch(e){} return p && pathOf(p) ? { id:'fp:' + p.id, n:'Flightpath: ' + p.title, ic:'map', e:'🗺️' } : null; }
   /* theme weeks: a few gentle starters a teacher can tap (drafts for a teacher to check and change) */
@@ -68,12 +80,21 @@
   };
   function extraOK(x){ return !!(x && (x.t || (x.a && actOf(x.a)))); }
   function extraTitle(x){ const a = actOf(x.a); return x.t || (a ? a.n : ''); }
+  /* has the child already begun this? (a booklet part-way through, a gallery room with steps done, or a world already explored) */
+  function begun(code, id){ const [k, v] = String(id || '').split(':');
+    try{ if(k === 'bk') return !!(window.FabBooklets && FabBooklets.started(v, code));
+      if(k === 'art'){ const m = JSON.parse(localStorage.getItem('fab-art-' + code) || '{}')[v]; return !!(m && m.spot); }
+      if(k === 'mk'){ const m = JSON.parse(localStorage.getItem('fab-make-' + code) || '{}')[v]; return !!m; }
+      if(k === 'explore'){ const p = JSON.parse(localStorage.getItem('fab-passport-' + code) || '{}')[String(v).split('.')[0]]; return !!(p && p.seen && p.seen.length); } }catch(e){}
+    return false; }
   function openAct(code, id){
     const [k, v, pg] = String(id || '').split(':');
     try{
       if(k === 'bk'){ FabBooklets.open(v, pg || null, { code, back:'screen-me' }); return; }
       if(k === 'fp'){ const p = packById(String(id).slice(3)); if(p) openPack(p); return; }
       if(k === 'explore') FabExplore.open('screen-me', v);
+      else if(k === 'eyfs'){ showScreen('screen-eyfs'); const t = document.querySelector('#eyfsMenu [data-eyfs="' + v + '"]'); if(t) t.click(); }
+      else if(k === 'mk'){ if(!(window.FabMake && FabMake.start(v, String(id).split(':').slice(2).join(':'), 'screen-me'))) FabExplore.open('screen-me', v); }
       else if(k === 'art') FabArt.open('screen-me', v);
       else if(k === 'code'){ window.fabCodeFrom = 'screen-me'; showScreen('screen-code'); document.getElementById('codeFrame').src = 'code.html?embed=1&back=app&learner=' + encodeURIComponent(code) + '&project=' + encodeURIComponent(v); }
       else if(k === 'sanct'){ fabOpenSanct(); window.fabSanctFrom = 'screen-me'; }
@@ -217,10 +238,10 @@
         <button type="button" class="btn ${S.done ? 'soft small' : 'leaf'}" data-bwgo="${it.i}">${S.done ? 'Do more' : S.started ? 'Carry on ➡️' : 'Start ➡️'}</button></li>`; }).join('');
     const xs = todaysExtras(code);
     const xrows = xs.map(x => { const a = actOf(x.a) || ACTS[0];
-      return `<li class="bw-item bw-x ${x.dn ? 'done' : ''}"><span class="bw-xic" aria-hidden="true">${ic(a.ic, a.e)}</span>
+      return `<li class="bw-item bw-x ${x.dn ? 'done' : ''} ${a.big ? 'bw-big' : ''}"><span class="bw-xic" aria-hidden="true">${a.big ? `<span class="bw-pic">${h(a.e)}</span>` : ic(a.ic, a.e)}</span>
         <div class="bw-what">${x.r === 'f' ? '<span class="bw-theme bw-role">If you finish</span>' : x.late ? `<span class="bw-theme bw-role">From ${h(dayName(x.d))}, if you like</span>` : x.r === 'p' ? '<span class="bw-theme bw-role">Practise</span>' : ''}${x.th ? `<span class="bw-theme">${h(x.th)}</span>` : ''}<b>${h(extraTitle(x))}</b>${x.t && x.a ? `<span>${h(a.n)}</span>` : ''}${a.show ? `<span class="bw-show">${h(a.show)}</span>` : ''}${x.n ? `<em>Your teacher says: ${h(x.n)}</em>` : ''}</div>
         ${x.dn ? '<span class="bw-status">⭐ Done</span>' : ''}
-        ${x.a && !a.show ? `<button type="button" class="btn ${x.dn ? 'soft small' : 'leaf'}" data-bwxgo="${x.i}">${x.dn ? 'Do more' : 'Start ➡️'}</button>` : ''}
+        ${x.a && !a.show ? `<button type="button" class="btn ${x.dn ? 'soft small' : 'leaf'}" data-bwxgo="${x.i}">${x.dn ? 'Do more' : begun(code, x.a) ? 'Carry on ➡️' : 'Start ➡️'}</button>` : ''}
         ${x.dn ? '' : `<button type="button" class="btn soft small" data-bwxdone="${x.i}">I did it</button>`}</li>`; }).join('');
     const xn = xs.filter(x => !x.late && x.r !== 'f');
     const total = list.length + xn.length;
@@ -347,6 +368,7 @@
 
   const CSS = `
 .bw-shelf h3{margin:0 0 8px}
+.bw-big .bw-pic{font-size:3.2rem;line-height:1;display:block}.bw-big .bw-what b{font-size:1.35rem}.bw-big .btn{min-height:60px;font-size:1.25rem}
 .bw-none{margin:0;opacity:.85}
 .bw-list{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:10px}
 .bw-item{display:flex;flex-wrap:wrap;align-items:center;gap:12px;background:#fff;border:3px solid var(--cream-deep,#f0dfbd);border-radius:18px;padding:10px 14px}
@@ -385,7 +407,7 @@
 `;
   const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
 
-  window.FabBurrow = { shelvesHTML, wire, staffHTML, staffWire, read, apply, enc, dec, linkFor, progress, form:F, home:homeOn, made, acts:ACTS, act:actOf, actDone, themes:THEMES,
+  window.FabBurrow = { shelvesHTML, wire, staffHTML, staffWire, read, apply, enc, dec, linkFor, progress, form:F, home:homeOn, made, acts:ACTS, act:actOf, mk:MK, actDone, themes:THEMES,
     paths:pathPacks, pathOf, packById, status:statusOf, extraTitle, openAll, today, codeRe:CODE_RE };
 
   /* the Learning Hub's door leads to the Burrow for a signed-in child; the teacher's button opens the full list */

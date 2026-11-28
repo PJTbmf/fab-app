@@ -107,7 +107,7 @@
     if(!p && T.kind !== 'c' && T.kind !== 'k') return T.kind === 'b' ? 'Choose a booklet first, or add one to your list.' : 'Choose one of the cards first.';
     let rows = [], opt = { cls:true, merge:true, extras:[] };
     if(T.kind === 'p') rows = [{ p:p.id, s:T.step === 'own' ? null : Number(T.step) || 0, d, n:T.note, th:T.label }];
-    else if(T.kind === 't') opt.extras = [{ a:'explore:' + p.id, t:T.text, n:T.note, th:T.label, d }];
+    else if(T.kind === 't') opt.extras = [{ a:T.piece ? 'mk:' + p.id + ':' + T.piece : 'explore:' + p.id, t:T.text, n:T.note, th:T.label, d }];
     else if(T.kind === 'a') opt.extras = [{ a:p.id, t:T.text, n:T.note, th:T.label, d }];
     else if(T.kind === 'b' && p.lib) opt.extras = [{ a:'bk:' + p.lib.id + (p.lib.app && T.step !== 'own' ? ':' + (Number(T.step) + 1) : ''), t:p.lib.app ? '' : words(T.part, 60), n:T.note, th:T.label, d }];
     else if(T.kind === 'b') opt.extras = [{ a:'booklet', t:p.t + (T.part.trim() ? ': ' + T.part.trim() : ''), n:T.note, th:T.label, d }];
@@ -220,10 +220,12 @@
   function savePlan(cn, wk, p){ const all = plans(); all[cn + '|' + wk] = p; const keys = Object.keys(all).sort((a, b) => a.split('|')[1] < b.split('|')[1] ? -1 : 1); while(keys.length > 40) delete all[keys.shift()]; ls.set(PK, all); }
   const topicsList = () => B() ? B().acts.filter(a => a.id.indexOf('explore:') === 0) : [];
   const actsList = () => B() ? B().acts.filter(a => a.id && a.id !== 'booklet' && a.id.indexOf('explore:') !== 0) : [];
+  /* the pieces a teacher can set in a world (a poster, a chart, the timeline...) */
+  const piecesOf = w => { try{ if(window.FabMake) return FabMake.pieces(w); }catch(e){} return []; };
   function mainName(d){
     const m = d.main || '', mt = words(d.mt, 60);
     if(m.indexOf('b:') === 0){ const b = lib().find(x => x.id === m.slice(2)); return b ? 'Booklet: ' + (b.short || b.t) + (mt ? ' (' + mt + ')' : '') + (b.app ? '' : ', on the board') : ''; }
-    if(m.indexOf('t:') === 0){ const a = topicsList().find(x => x.id === 'explore:' + m.slice(2)); return a ? a.n + (mt ? ': ' + mt : '') : ''; }
+    if(m.indexOf('t:') === 0){ const [w, ...pc] = m.slice(2).split(':'), a = topicsList().find(x => x.id === 'explore:' + w), pn = pc.length ? (piecesOf(w).find(x => x[0] === pc.join(':')) || [])[1] : ''; return a ? a.n + (pn ? ': ' + pn : '') + (mt ? ': ' + mt : '') : ''; }
     if(m.indexOf('a:') === 0){ const a = actsList().find(x => x.id === m.slice(2)); return a ? a.n + (mt ? ': ' + mt : '') : ''; }
     return m === 'c' ? mt : '';
   }
@@ -232,7 +234,7 @@
     const out = [], mineIds = new Set();
     p.days.forEach((d, i) => { const day = addDays(wk, i), m = d.main || '', mt = words(d.mt, 60);
       if(m.indexOf('b:') === 0){ const b = lib().find(x => x.id === m.slice(2)); if(b){ out.push({ a:'bk:' + b.id, t:b.app ? '' : mt, n:b.app ? mt : '', th:p.unit, d:day, r:'m' }); if(b.mine) mineIds.add(b.id); } }
-      else if(m.indexOf('t:') === 0) out.push({ a:'explore:' + m.slice(2), t:mt, n:'', th:p.unit, d:day, r:'m' });
+      else if(m.indexOf('t:') === 0){ const [w, ...pc] = m.slice(2).split(':'); out.push({ a:pc.length ? 'mk:' + w + ':' + pc.join(':') : 'explore:' + w, t:mt, n:'', th:p.unit, d:day, r:'m' }); }
       else if(m.indexOf('a:') === 0) out.push({ a:m.slice(2), t:mt, n:'', th:p.unit, d:day, r:'m' });
       else if(m === 'c' && mt) out.push({ a:'', t:mt, n:'', th:p.unit, d:day, r:'m' });
       if(d.prac) out.push({ a:'fp:' + d.prac, t:'', n:'', th:'', d:day, r:'p' });
@@ -248,7 +250,7 @@
       <label><span>Connect (${slot[1][0]} min): choose from</span><input type="text" list="tpGames" data-tp="c1" data-day="${i}" maxlength="30" value="${h(d.c1)}" placeholder="Fab Fox Pairs"></label>
       <label><span>or</span><input type="text" list="tpGames" data-tp="c2" data-day="${i}" maxlength="30" value="${h(d.c2)}" placeholder="Charades"></label>
       <label class="wide"><span>I do, we do, on the carpet (your own note)</span><input type="text" data-tp="teach" data-day="${i}" maxlength="160" value="${h(d.teach)}" placeholder="Read the extract twice; word bank; answer the first question together"></label>
-      <label><span>You do: the main task</span><select data-tp="main" data-day="${i}" id="tpMain${i}">${opt('', 'Nothing set', d.main)}<optgroup label="Booklets">${lib().map(b => opt('b:' + b.id, (b.short || b.t) + (b.app ? '' : ' (on the board)'), d.main)).join('')}</optgroup><optgroup label="World Explorers">${topicsList().map(a => opt('t:' + a.id.slice(8), a.n.replace('Explorer Worlds: ', ''), d.main)).join('')}</optgroup><optgroup label="Activities in the app">${actsList().map(a => opt('a:' + a.id, a.n, d.main)).join('')}</optgroup>${opt('c', 'A challenge in my own words', d.main)}</select></label>
+      <label><span>You do: the main task</span><select data-tp="main" data-day="${i}" id="tpMain${i}">${opt('', 'Nothing set', d.main)}<optgroup label="Booklets">${lib().map(b => opt('b:' + b.id, (b.short || b.t) + (b.app ? '' : ' (on the board)'), d.main)).join('')}</optgroup>${topicsList().map(a => `<optgroup label="${h(a.n)}">${opt('t:' + a.id.slice(8), 'The whole world: the child chooses', d.main)}${piecesOf(a.id.slice(8)).map(x => opt('t:' + a.id.slice(8) + ':' + x[0], x[1], d.main)).join('')}</optgroup>`).join('')}<optgroup label="Activities in the app">${actsList().map(a => opt('a:' + a.id, a.n, d.main)).join('')}</optgroup>${opt('c', 'A challenge in my own words', d.main)}</select></label>
       <label><span>Which part, or the challenge</span><input type="text" data-tp="mt" data-day="${i}" id="tpMt${i}" maxlength="60" value="${h(d.mt)}" placeholder="Pages 1 to 5"></label>
       <label><span>Practise (${slot[1][3]} min): a flightpath</span><select data-tp="prac" data-day="${i}" id="tpPrac${i}">${opt('', 'None', d.prac)}${packs.map(k => opt(k.id, k.title + (k.years ? ' (' + k.years + ')' : ''), d.prac)).join('')}</select></label>
       <label><span>If you finish</span><input type="text" data-tp="fin" data-day="${i}" id="tpFin${i}" maxlength="60" value="${h(d.fin)}" placeholder="Draw the foggy street and label three things"></label>
@@ -372,6 +374,7 @@
       ${ready ? `<h2><span class="tc-n">${T.kind === 'c' || T.kind === 'k' ? 3 : 4}</span> ${T.kind === 'k' ? 'Your words' : 'The details'}</h2>
         <div class="bw-row">
         ${po ? `<label><span>Start at</span><select id="tcStep"><option value="own" ${T.step === 'own' ? 'selected' : ''}>Each child’s own step</option>${po.s.steps.map((s, i) => `<option value="${i}" ${String(T.step) === String(i) ? 'selected' : ''}>${i + 1}. ${h(s.name)}${s.year ? ' (' + h(s.year) + ')' : ''}</option>`).join('')}</select></label>` : ''}
+        ${T.kind === 't' && p ? `<label><span>Which piece? (optional)</span><select id="tcPiece"><option value="">The whole world: the child chooses</option>${piecesOf(p.id).map(x => `<option value="${h(x[0])}" ${T.piece === x[0] ? 'selected' : ''}>${h(x[1])}</option>`).join('')}</select></label>` : ''}
         ${T.kind === 'b' && p.lib && p.lib.app ? `<label><span>Start at</span><select id="tcStep"><option value="own" ${T.step === 'own' ? 'selected' : ''}>Where each child left off</option>${p.lib.pages.map((pg, i) => `<option value="${i}" ${String(T.step) === String(i) ? 'selected' : ''}>Page ${i + 1}: ${h(pg.t)}</option>`).join('')}</select></label>` : ''}
         ${T.kind === 'b' && !(p.lib && p.lib.app) ? `<label class="bw-note"><span>Which part? (a page, a section or one activity)</span><input type="text" id="tcPart" maxlength="${p.lib ? 60 : 38}" list="tcParts" value="${h(T.part)}" placeholder="${p.lib ? h(p.lib.parts[0]) : 'Pages 4 and 5: tens and ones'}"></label><datalist id="tcParts">${(p.lib ? p.lib.parts : []).map(x => `<option value="${h(x)}">`).join('')}</datalist>` : ''}
         ${T.kind === 't' || T.kind === 'a' || T.kind === 'c' || T.kind === 'k' ? `<label class="bw-note"><span>${T.kind === 'k' ? 'What the well done is for' : T.kind === 'c' ? 'The challenge, in your own words' : 'A challenge to go with it (optional)'}</span><input type="text" id="tcText" maxlength="60" value="${h(T.text)}" placeholder="${T.kind === 'k' ? 'Super effort with your times tables' : 'Find three facts about Victorian schools'}"></label>` : ''}
@@ -456,6 +459,14 @@
       <p class="hint">For now the bank is kept in this browser until you send it: “Email the ideas bank” opens a draft to ${h(IDEAS_TO)} in your own email, and you press send. A bank that collects every teacher’s ideas and emails a spreadsheet each week or month needs a short online form set up by someone with a BMF account. The steps are in the handover.</p></div>`;
   }
 
+  /* ---------- marks are never put in front of a child (stress test, 28 Nov): in Pencil the Teachers' area is opened inside the child's own
+     viewer, so the marks pages wait behind a deliberate second tap. The choice lasts until the page is reloaded. ---------- */
+  function coverHTML(){
+    return `<div class="me-card tc-cover" id="tcCover"><h2>${ic('compass', '🧭')} This page shows marks</h2>
+      <p>Marks, bands and next steps are for you, not the child. Before you open them, check the child cannot see this screen.</p>
+      <ul><li>In Pencil Spaces, the Teachers’ area opens inside the child’s own viewer, so the child may be looking at it. Read the marks after the session, or with the viewer hidden from the class.</li><li>Never share your screen while this page is open.</li></ul>
+      <div class="st-row"><button type="button" class="btn leaf" id="tcSeeMarks">The child can’t see this: show the marks</button><button type="button" class="btn soft" data-tcgo="home">Not now</button></div></div>`;
+  }
   /* ---------- the page ---------- */
   function render(){
     const box = document.getElementById('teachBody'); if(!box) return;
@@ -463,7 +474,7 @@
     const ttl = document.querySelector('#screen-teach .screen-title'); if(ttl) ttl.textContent = TITLES[T.view];
     const bk = document.querySelector('#screen-teach .btn-back'); if(bk) bk.textContent = T.view === 'home' ? '← Back' : '← Teachers’ area';
     box.dataset.view = T.view;
-    box.innerHTML = T.view === 'plan' ? planHTML() : T.view === 'today' ? todayHTML() : T.view === 'assign' ? assignHTML() : T.view === 'tasks' ? tasksHTML() : T.view === 'library' ? libraryHTML() : T.view === 'profile' ? profileHTML() : T.view === 'progress' ? progressHTML() : T.view === 'print' ? printHTML() : T.view === 'suggest' ? suggestHTML() : T.view === 'classes' ? classesHTML() : homeHTML();
+    box.innerHTML = (T.view === 'profile' || T.view === 'progress') && !T.seeMarks ? coverHTML() : T.view === 'plan' ? planHTML() : T.view === 'today' ? todayHTML() : T.view === 'assign' ? assignHTML() : T.view === 'tasks' ? tasksHTML() : T.view === 'library' ? libraryHTML() : T.view === 'profile' ? profileHTML() : T.view === 'progress' ? progressHTML() : T.view === 'print' ? printHTML() : T.view === 'suggest' ? suggestHTML() : T.view === 'classes' ? classesHTML() : homeHTML();
     wire(box);
   }
   function go(v){ T.view = TITLES[v] ? v : 'home'; T.lmsg = []; T.lok = ''; T.lrm = ''; if(v === 'library' && T.st === 'auto') T.st = 'all'; T.rm = -1; T.irm = -1; T.iclear = 0; T.brm = -1; if(v !== 'classes'){ T.edit = null; T.emsg = ''; } render(); try{ window.scrollTo(0, 0); }catch(e){} }
@@ -471,21 +482,24 @@
   function choose(v){
     v = String(v || ''); let k = v.slice(0, 1), id = v.slice(2);
     if(k === 'a' && id.indexOf('explore:') === 0){ k = 't'; id = id.slice(8); }
-    T.view = 'assign'; T.kind = KINDS.some(x => x.k === k) ? k : ''; T.sub = 'all'; T.st = 'all'; T.pick = id; T.step = 'own'; T.text = ''; T.part = ''; T.links = []; T.msg = ''; render();
+    T.view = 'assign'; T.kind = KINDS.some(x => x.k === k) ? k : ''; T.sub = 'all'; T.st = 'all'; T.pick = id; T.step = 'own'; T.piece = ''; T.text = ''; T.part = ''; T.links = []; T.msg = ''; render();
   }
   function wire(box){
     const $ = s => box.querySelector(s), on = (s, ev, f) => { const el = $(s); if(el) el.addEventListener(ev, f); };
     const all = (s, f) => box.querySelectorAll(s).forEach(el => el.addEventListener('click', () => f(el)));
+    on('#tcSeeMarks', 'click', () => { T.seeMarks = true; snd('tick'); render(); });
+    all('[data-tcgo]', b => go(b.dataset.tcgo));
     const redraw = () => render(), stale = () => { T.links = []; };
     all('[data-tcview]', b => { snd('tick'); go(b.dataset.tcview); });
     /* assign a task */
     all('[data-tccls]', b => { const v = b.dataset.tccls; T.cls = v === 'one' || v === 'all' ? v : Number(v); T.st = 'auto'; T.pick = T.kind === 'b' || T.kind === 'p' || T.kind === 't' ? '' : T.pick; T.links = []; T.msg = ''; snd('tick'); redraw(); });
     on('#tcOne', 'input', e => { T.one = String(e.target.value || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20); stale(); });
-    all('[data-tckind]', b => { T.kind = b.dataset.tckind; T.pick = ''; T.step = 'own'; T.text = ''; T.part = ''; T.sub = 'all'; T.badd = false; T.brm = -1; T.links = []; T.msg = ''; snd('tick'); redraw(); });
+    all('[data-tckind]', b => { T.kind = b.dataset.tckind; T.pick = ''; T.piece = ''; T.step = 'own'; T.text = ''; T.part = ''; T.sub = 'all'; T.badd = false; T.brm = -1; T.links = []; T.msg = ''; snd('tick'); redraw(); });
     all('[data-tcsub]', b => { T.sub = b.dataset.tcsub; T.pick = ''; T.links = []; snd('tick'); redraw(); });
     all('[data-tcst]', b => { T.st = b.dataset.tcst; T.pick = ''; T.links = []; snd('tick'); redraw(); });
-    all('[data-tcpick]', b => { T.pick = T.pick === b.dataset.tcpick ? '' : b.dataset.tcpick; T.step = 'own'; T.brm = -1; T.links = []; T.msg = ''; snd('tick'); redraw(); });
+    all('[data-tcpick]', b => { T.pick = T.pick === b.dataset.tcpick ? '' : b.dataset.tcpick; T.step = 'own'; T.piece = ''; T.brm = -1; T.links = []; T.msg = ''; snd('tick'); redraw(); });
     on('#tcStep', 'change', e => { T.step = e.target.value; stale(); });
+    on('#tcPiece', 'change', e => { T.piece = e.target.value; stale(); });
     on('#tcLook', 'click', () => { const p = picked(); if(p && p.lib) FabBooklets.open(p.lib.id, T.step === 'own' ? 1 : Number(T.step) + 1, { teach:true, back:'screen-teach' }); });
     on('#tcText', 'input', e => { T.text = e.target.value.slice(0, 60); stale(); });
     on('#tcPart', 'input', e => { T.part = e.target.value.slice(0, 60); stale(); });

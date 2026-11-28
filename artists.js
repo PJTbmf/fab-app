@@ -178,7 +178,7 @@
   function meetHTML(r){
     return `${say('bell', 'Miss Bell', 'Meet ' + r.n + '.', 'Read about the artist, then look for three things.')}
       <div class="art-meet"><figure class="art-fig">${swatch(r, 'big')}<figcaption>A style swatch drawn for this app. Ask your teacher to show you the real thing.</figcaption></figure>
-        <div><ul class="art-about">${r.about.map(t => `<li>${h(t)}</li>`).join('')}</ul>${r.rule ? `<p class="art-rule">☝️ ${h(r.rule)}</p>` : ''}</div></div>
+        <div>${window.fabReadAloud ? '<button type="button" class="btn small soft art-sayb" data-art="say">🔊 Read it to me</button>' : ''}<ul class="art-about">${r.about.map(t => `<li>${h(t)}</li>`).join('')}</ul>${r.rule ? `<p class="art-rule">☝️ ${h(r.rule)}</p>` : ''}</div></div>
       <h3 class="mk-group">Look for</h3><ol class="mk-howsteps art-look">${r.look.map(t => `<li>${h(t)}</li>`).join('')}</ol>
       <p class="art-word"><b>Art word:</b> ${h(r.word[0])} = ${h(r.word[1])}.</p>
       <div class="choice-row tm-row"><button type="button" class="btn leaf" data-art="step" data-id="1">Next: spot the style ➡️</button></div>
@@ -242,7 +242,7 @@
     const b = A.back || 'screen-learn'; showScreen(b);
     if(b === 'screen-world'){ try{ const wf = q1('iframe[data-game="world"]'); if(wf && wf.contentWindow){ wf.contentWindow.postMessage('fabworld-wake', '*'); wf.contentWindow.postMessage('fabworld-refresh', '*'); } }catch(e){} }
   }
-  function onClick(e){
+  function onClick(e){ if(!e.target.closest('[data-art="say"]')){ try{ window.speechSynthesis && speechSynthesis.cancel(); }catch(err){} }
     const b = e.target.closest('[data-art]'); if(!b) return;
     const a = b.dataset.art, id = b.dataset.id, r = roomOf(A.room), d = load();
     if(a === 'room'){ setRoom(id, 0); snd('jingle'); render(); window.scrollTo(0, 0); return; }
@@ -255,6 +255,7 @@
         if(A.round >= r.spot.length && !m.spot){ m.spot = 1; save(d); } }
       else { A.note = { k:'fix', h:'Have another look.', t:s[2] }; snd('gentle'); }
       return render(); }
+    if(a === 'say'){ const t = r.about.join(' ') + ' Look for: ' + r.look.join('. ') + '.'; try{ if(window.speechSynthesis && speechSynthesis.speaking){ speechSynthesis.cancel(); return; } window.fabReadAloud(t); }catch(err){} return; }
     if(a === 'studio'){ snd('tick'); return toStudio(r); }
     if(a === 'screendone'){ A.note = null; finish(d, r, 'screen'); return render(); }
     if(a === 'realopen'){ A.real = true; snd('tick'); return render(); }
@@ -295,6 +296,7 @@ body:has(#screen-art.active) main{max-width:1240px}
 .art-meet{display:grid;grid-template-columns:minmax(200px,340px) minmax(0,1fr);gap:18px;align-items:start;margin:10px 0}
 .art-fig{margin:0}.art-fig figcaption{font-size:.92rem;font-style:italic;margin-top:4px;line-height:1.3}
 .art-about{margin:0;padding-left:1.2em;display:grid;gap:8px;font-size:1.15rem;line-height:1.45}
+.art-sayb{margin:0 0 8px}
 .art-rule{background:#CFE7F2;border:2.5px solid ${INK};border-radius:12px;padding:8px 12px;margin:10px 0 0;font-weight:700}
 .art-word{margin:10px 0;font-size:1.08rem}.art-stop{margin:10px 0 0;font-size:1rem;opacity:.9}
 .art-picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:10px 0}

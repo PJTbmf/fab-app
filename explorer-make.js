@@ -12,7 +12,11 @@
   const h = X.kit.h, q1 = s => document.querySelector(s);
   const KEY = () => 'fab-make-' + X.code();
   const load = () => { try{ return JSON.parse(localStorage.getItem(KEY()) || '{}') || {}; }catch(e){ return {}; } };
-  const save = d => { try{ localStorage.setItem(KEY(), JSON.stringify(d)); }catch(e){} };
+  const save = d => { try{ localStorage.setItem(KEY(), JSON.stringify(d)); }catch(e){} ticks(d); };
+  /* a piece a teacher set as work (mk:<world>:<piece>) is ticked off in the child's Burrow when it is finished */
+  const PIECES = (w, m) => { const out = []; if(!m) return out; if(m.order) out.push('order'); if(m.pairs) out.push('pairs'); if(m.quiz) out.push('quiz'); if(m.artDone) out.push('art'); if(m.mapDone) out.push('map'); if(m.rep && m.rep.done) out.push('report');
+    Object.keys(m.how || {}).forEach(k => { if(m.how[k] && m.how[k].done) out.push('how:' + k); }); if(m.same && m.same.done) out.push('same'); return out; };
+  function ticks(d){ try{ const c = X.code(); if(!window.FabBurrow || !FabBurrow.codeRe.test(c)) return; Object.keys(d || {}).forEach(id => PIECES(id, d[id]).forEach(pc => FabBurrow.actDone(c, 'mk:' + id + ':' + pc))); }catch(e){} }
   const mine = (d, id) => { const m = d[id] = d[id] || {}; m.rep = m.rep || {}; m.map = m.map || []; m.notes = m.notes || {}; m.art = m.art || ''; m.png = m.png || ''; return m; };
   const M = { view:'home', seq:null, note:null, col:1, grid:null, pairs:null, quiz:null, rstep:0, last:'', sel:'' };
   const star = () => { try{ fabWorldAward(1); }catch(e){} X.snd('jingle'); };
@@ -455,6 +459,18 @@
     cards:[['Children write on a slate with a slate pencil.', 'a'], ['Children learn to read, write and do maths.', 'both'], ['Children use tablets and computers.', 'b'], ['The whole class chants answers together.', 'a'], ['A teacher helps the children learn.', 'both'],
       ['Boys and girls often sit apart.', 'a'], ['Lessons can happen online.', 'b'], ['There is a time to play.', 'both']],
     fact:'From 1880, children in England had to go to school from the age of five to ten.' } });
-  window.FabMake = { html, mount, home, state:M, load, checks, mask:MASK, modelGrid };
+  /* open one piece straight away (from set work): the world, its Make and do tab, then the piece, as if its card were tapped */
+  function start(world, piece, back){
+    if(!X.worlds[world] || !X.worlds[world].make) return false;
+    X.open(back || 'screen-me', world); X.state.tab = 'make'; home(); X.render();
+    if(piece){ const b = document.createElement('button'); b.type = 'button'; b.dataset.mk = 'open'; b.dataset.id = piece; b.hidden = true; const host = q1('#tmBody'); if(host){ host.appendChild(b); b.click(); b.remove(); } }
+    return true;
+  }
+  /* the pieces in a world a teacher can set, with names a child and a teacher both understand */
+  function pieces(world){ const w = X.worlds[world]; if(!w || !w.make) return []; const k = w.make, out = [];
+    if(k.order) out.push(['order', k.order.h]); if(k.art) out.push(['art', k.art.h]); out.push(['map', 'Make a mind map']);
+    (k.how || []).forEach(t => out.push(['how:' + t.id, 'Explanation poster: ' + t.h])); if(k.same) out.push(['same', 'Chart: ' + k.same.h]);
+    out.push(['report', 'Write my report']); return out; }
+  window.FabMake = { html, mount, home, state:M, load, checks, mask:MASK, modelGrid, start, pieces };
   try{ if(X.state.era && q1('#screen-time') && q1('#screen-time').classList.contains('active')) X.render(); }catch(e){}
 })();

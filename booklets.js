@@ -146,7 +146,79 @@
         { h:'How it felt', items:['Counting forwards and back', 'Ten frames', 'Counting on', 'Counting back', 'Part-whole', 'Counting up'].map(q => ({ q, opts:FACES })) },
         { h:'In my own words', items:[{ q:'My favourite tool is…' }, { q:'Something I want to practise again:' }] }] }
     ] };
-  const LIB = [Y34, Y56,
+  /* ---------- A Christmas Carol, Year 3/4 (Adventurers): sessions 1 and 2 of a 12-session unit. Patrick, 28 Nov: "imagine having a
+     group of Y3/4s ... around 12 English sessions a half term ... a booklet on A Christmas Carol". The text is Dickens's own (1843, out
+     of copyright), cut down but not rewritten. Kept gentle: these two sessions use only the description of Scrooge and the scene in the
+     counting-house. Marley's death, the ghosts and Tiny Tim's illness come later in the unit and are flagged in the outline. ---------- */
+  const CC_ROWS = ['Reading an old story', 'Finding answers in the text', 'Describing a character'];
+  const CC_LOW = 'Tired? One sentence is plenty. Or say it aloud and your teacher will write it for you.';
+  const CAROL = { id:'christmas-carol-y34', t:'A Christmas Carol: Meet Scrooge (sessions 1 and 2)', short:'A Christmas Carol: Meet Scrooge', sub:'English', st:['lks2'], app:true, time:'Two English sessions of about 25 minutes',
+    about:'The first two of twelve sessions on A Christmas Carol for Year 3/4. Each session has a warm start, a short piece of Dickens’s own words with a word bank, questions at three levels that the child chooses, a short piece of writing with starters and a checklist, and a clear place to stop. The 12-session outline is in the teacher notes.',
+    care:'These two sessions stay with Scrooge and his nephew. The famous opening line about Marley is left out of the child’s text. Later sessions meet ghosts, a lonely childhood and Tiny Tim’s illness: the outline flags each one and gives a gentler path.',
+    notes:['Session 1 is pages 1 to 5 and session 2 is pages 6 to 10. Each session ends on a page that says it is a good place to stop.', 'Read the text aloud first (I do), read it again together (we do), then let each child choose their questions (you do). “Read it to me” reads the page for a child working alone.', 'The three question levels are Find it (facts in the text), Think about it (working things out) and Dig deeper (why Dickens wrote it that way). Any level is a good choice; children can change level.', 'Writing is never marked by the app. You read it under View task progress, with the checklist the child ticked.'],
+    run:{ head:['Page', 'What it is', 'What to look for'], rows:[
+      ['1', 'Confidence before', 'A child who marks 1 or 2 for reading an old story: read every extract aloud to them'],
+      ['2', 'Old words before we read', 'Counting-house, clerk and humbug are needed for both sessions'],
+      ['3', 'Read: Scrooge', 'Can they tell what Scrooge looks like (Find it) from what he is like (Think about it)?'],
+      ['4', 'Write: describe Scrooge', 'One sentence is success. Look for a describing word lifted from Dickens'],
+      ['5', 'What do we know so far?', 'End of session 1. The prediction is a guess: every answer is welcome'],
+      ['6', 'Remember Scrooge?', 'A warm, easy start to session 2. Good for a child who missed session 1: read page 3 together first'],
+      ['7', 'Read: in the counting-house', 'Do they see that Scrooge will not spend money even on coal?'],
+      ['8', 'Say it like Scrooge', 'Reading aloud in two voices. A tired child can listen and choose'],
+      ['9', 'Write: what is Scrooge thinking?', 'Does the thought sound like Scrooge? This is early inference of a character’s thoughts'],
+      ['10', 'Confidence after', 'End of session 2. Compare with page 1'] ] },
+    unit:{ head:['Session', 'What happens', 'Reading or writing focus (National Curriculum, Year 3/4: please check the wording)', 'A piece to keep', 'With care'], rows:[
+      ['1', 'Meet Scrooge: Dickens’s description', 'Drawing inferences about characters; discussing words and phrases that capture the reader’s interest', 'Two or three sentences describing Scrooge', 'Opening line about Marley left out'],
+      ['2', 'The counting-house: “Bah! Humbug!”', 'Inferring characters’ feelings, thoughts and motives from their actions; reading aloud with intonation', 'What Scrooge is thinking', '–'],
+      ['3', 'The two gentlemen, and Bob Cratchit asks for Christmas Day', 'Justifying inferences with evidence', '“Scrooge at the start”: a character profile', 'Leave out Scrooge’s line about the “surplus population”'],
+      ['4', 'A visit from Marley: a warning from an old friend', 'Predicting what might happen from details stated and implied', 'A prediction, and a paper chain of kind links (Studio: Kindness chain)', 'A ghost, and a friend who has died. Tell it as a warning given out of friendship; keep the chains, drop the wailing phantoms'],
+      ['5', 'Christmas Past: young Scrooge, and Fezziwig’s party', 'Identifying main ideas and summarising', 'Three sentences: what Scrooge sees and how he feels', 'A boy left alone at school at Christmas may feel close to home. Move quickly to Fezziwig’s party'],
+      ['6', 'Writing: Fezziwig’s party', 'Creating settings; expanded noun phrases; fronted adverbials', 'A setting description using the senses', '–'],
+      ['7', 'Christmas Present: the Cratchits’ dinner', 'Inferring feelings; comparing characters', 'Same but different: Scrooge’s Christmas and the Cratchits’', 'Tiny Tim is unwell and uses a crutch. Tell the children early that Dickens says Tiny Tim “did NOT die”. Leave out Scrooge’s question about whether he will live'],
+      ['8', 'Writing: talk at the Cratchits’ table', 'Using and punctuating direct speech with inverted commas', 'Four lines of conversation', '–'],
+      ['9', 'Christmas Yet to Come: a future nobody wants', 'Predicting; discussing how a character feels', 'Scrooge’s promise, in one sentence', 'This part has a death in the family and a gravestone. Gentler path: you tell it in two sentences (“The last spirit shows Scrooge a sad future. He begs for the chance to change”) and go straight to the morning'],
+      ['10', 'Christmas morning: Scrooge changes', 'Identifying how language contributes to meaning; evidence for how a character has changed', 'Then and now: a two-column chart of Scrooge', '–'],
+      ['11', 'Outcome piece: plan and draft', 'Discussing similar writing; composing and rehearsing sentences orally; organising paragraphs around a theme', 'Choose one: Scrooge’s diary for Christmas morning; a letter to his nephew; or a before-and-after poster with captions (the low-energy choice)', '–'],
+      ['12', 'Finish, check and share', 'Proofreading; assessing their own writing; reading their writing aloud', 'The finished outcome piece, read or shown to the group', 'Sharing is a choice. A child can ask you to read theirs'] ],
+      note:'Twelve sessions is about two a week for a half term. A child who misses sessions still has a finished piece from every session they attend, and sessions 1, 2, 7 and 10 on their own tell the whole story. Only sessions 1 and 2 are built as pages so far.' },
+    pages:[
+      { kind:'conf', k:'c1', t:'How confident do you feel?', strap:'There are no wrong answers. Tap a number for each line.', rows:CC_ROWS },
+      { kind:'steps', t:'Old words before we read', strap:'This story is nearly 200 years old, so some of its words are old too.', s:'Vocabulary', parts:[
+        { h:W, say:'This story is called A Christmas Carol. Charles Dickens wrote it in 1843, in Victorian times. It is set in London, in a cold winter. Let’s meet three old words first.' },
+        { h:G, say:'Choose what each word means.', items:[
+          { q:'A counting-house is…', opts:['an office where money is counted', 'a house with lots of rooms', 'a shop that sells clocks'], a:'an office where money is counted' },
+          { q:'A clerk is…', opts:['a kind of coat', 'someone who writes and keeps records in an office', 'a cold wind'], a:'someone who writes and keeps records in an office' },
+          { q:'“Humbug!” means…', opts:['Nonsense!', 'Hooray!', 'Hello!'], a:'Nonsense!' } ] } ] },
+      { kind:'read', t:'Read: Scrooge', strap:'Listen first, then read it together. What kind of man is Scrooge?', src:'From A Christmas Carol by Charles Dickens, 1843 (made shorter).',
+        body:['Oh! But he was a tight-fisted hand at the grindstone, Scrooge! A squeezing, wrenching, grasping, scraping, clutching, covetous old sinner!', 'Hard and sharp as flint, secret, and self-contained, and solitary as an oyster.', 'The cold within him froze his old features, nipped his pointed nose, shrivelled his cheek, made his eyes red, his thin lips blue.', 'He carried his own low temperature always about with him, and didn’t thaw it one degree at Christmas.', 'Nobody ever stopped him in the street to say, with gladsome looks, “My dear Scrooge, how are you?”'],
+        words:[['tight-fisted', 'mean with money'], ['covetous', 'always wanting more'], ['flint', 'a very hard stone'], ['solitary', 'alone'], ['shrivelled', 'dried up and wrinkled'], ['thaw', 'warm up and melt'], ['gladsome', 'cheerful']],
+        lv:{ 'Find it':[ { q:'What colour were Scrooge’s thin lips?', opts:['red', 'blue', 'white'], a:'blue', s:'Reading: finding facts' }, { q:'Which creature is Scrooge compared to?', opts:['an oyster', 'a fox', 'a robin'], a:'an oyster', s:'Reading: finding facts' }, { q:'Did people stop Scrooge in the street to say hello?', opts:['Yes', 'No'], a:'No', s:'Reading: finding facts' } ],
+          'Think about it':[ { q:'“Tight-fisted” tells us that Scrooge…', opts:['does not like to share his money', 'has strong hands', 'likes to fight'], a:'does not like to share his money', s:'Reading: working things out' }, { q:'Why does nobody stop to talk to Scrooge?', opts:['He is cold and unfriendly to people', 'He walks too fast', 'Nobody knows him'], a:'He is cold and unfriendly to people', s:'Reading: working things out' }, { q:'Which word tells us Scrooge likes to be alone?', opts:['solitary', 'gladsome', 'thaw'], a:'solitary', s:'Reading: working things out' } ],
+          'Dig deeper':[ { q:'Dickens says the cold is “within” Scrooge. What is cold about him?', opts:['His feelings towards other people', 'His dinner', 'Only his house'], a:'His feelings towards other people', s:'Reading: the writer’s choices' }, { q:'Why do you think Dickens chose an oyster? Tell me your idea.' }, { q:'Which describing word is your favourite, and why?' } ] } },
+      { kind:'write', t:'Write: describe Scrooge', strap:'Now you are the writer. A sentence is enough to begin.', task:'Write two or three sentences to describe Scrooge. What does he look like? What is he like inside?',
+        model:['Scrooge is a cold, mean old man. His nose is pointed and his thin lips are blue. He is as solitary as an oyster because he does not want any friends.'],
+        stems:['Scrooge is', 'He looks', 'His face is', 'He is as solitary as', 'Nobody talks to him because'], bank:['mean', 'cold', 'grumpy', 'solitary', 'tight-fisted', 'pointed nose', 'thin lips', 'unfriendly'],
+        sc:['I wrote about how Scrooge looks', 'I wrote about what Scrooge is like', 'I used a word from the word bank', 'I checked my capital letters and full stops'], low:CC_LOW },
+      { kind:'steps', t:'What do we know so far?', strap:'This is the end of session 1. A good place to stop.', s:'Reading: working things out', parts:[
+        { h:M, say:'Two quick things, then you are done for today.', items:[ { q:'Which word best describes Scrooge so far?', opts:['kind', 'mean', 'jolly'], a:'mean' }, { q:'What do you think might happen to Scrooge? It is only a guess, so any idea is a good one.' } ] } ] },
+      { kind:'steps', t:'Remember Scrooge?', strap:'Welcome back. Let’s warm up with what we already know.', s:'Remembering', parts:[
+        { h:G, say:'Last time we met Scrooge. What do you remember?', items:[ { q:'Scrooge was as solitary as an…', opts:['oyster', 'owl', 'otter'], a:'oyster' }, { q:'Who wrote A Christmas Carol?', opts:['Charles Dickens', 'Queen Victoria', 'Fab Fox'], a:'Charles Dickens' }, { q:'Tell me one thing you remember about Scrooge.' } ] } ] },
+      { kind:'read', t:'Read: in the counting-house', strap:'It is Christmas Eve. Listen for two very different voices.', src:'From A Christmas Carol by Charles Dickens, 1843 (made shorter).',
+        body:['Once upon a time, of all the good days in the year, on Christmas Eve, old Scrooge sat busy in his counting-house. It was cold, bleak, biting weather.', 'The door of Scrooge’s counting-house was open that he might keep his eye upon his clerk, who in a dismal little cell beyond was copying letters. Scrooge had a very small fire, but the clerk’s fire was so very much smaller that it looked like one coal.', '“A merry Christmas, uncle!” cried a cheerful voice. It was the voice of Scrooge’s nephew.', '“Bah!” said Scrooge. “Humbug!”', '“Christmas a humbug, uncle!” said Scrooge’s nephew. “You don’t mean that, I am sure?”', '“I do,” said Scrooge. “Merry Christmas! What right have you to be merry? You’re poor enough.”', '“Come, then,” returned the nephew gaily. “What right have you to be dismal? You’re rich enough.”', '“Don’t be angry, uncle. Come! Dine with us to-morrow.”', '“Good afternoon,” said Scrooge.'],
+        words:[['bleak', 'cold and miserable'], ['dismal', 'gloomy and sad'], ['cell', 'a tiny room'], ['nephew', 'the son of your brother or sister'], ['gaily', 'cheerfully'], ['dine', 'eat dinner']],
+        lv:{ 'Find it':[ { q:'What day is it in the story?', opts:['Christmas Eve', 'Christmas Day', 'New Year’s Day'], a:'Christmas Eve', s:'Reading: finding facts' }, { q:'Who comes to visit Scrooge?', opts:['his nephew', 'his clerk', 'a robin'], a:'his nephew', s:'Reading: finding facts' }, { q:'What does Scrooge say about Christmas?', opts:['“Bah! Humbug!”', '“A merry Christmas!”', '“Dine with us!”'], a:'“Bah! Humbug!”', s:'Reading: finding facts' } ],
+          'Think about it':[ { q:'The clerk’s fire looks like one coal. What does that tell us about Scrooge?', opts:['He will not spend money to keep his clerk warm', 'He likes small fires', 'He has run out of coal'], a:'He will not spend money to keep his clerk warm', s:'Reading: working things out' }, { q:'How does the nephew feel about Christmas?', opts:['He loves it', 'He does not like it', 'He has forgotten it'], a:'He loves it', s:'Reading: working things out' }, { q:'Scrooge says “Good afternoon.” What does he really mean?', opts:['Please go away', 'Please stay for tea', 'What a lovely day'], a:'Please go away', s:'Reading: working things out' } ],
+          'Dig deeper':[ { q:'The nephew is poor but merry. Scrooge is rich but dismal. What is Dickens showing us?', opts:['Money does not make you happy', 'Rich people are always sad', 'Poor people are always happy'], a:'Money does not make you happy', s:'Reading: the writer’s choices' }, { q:'Why does Scrooge keep his door open? What does that tell you about him?' }, { q:'If you were the nephew, what would you say to Scrooge next?' } ] } },
+      { kind:'steps', t:'Say it like Scrooge', strap:'Scrooge is low and grumpy. His nephew is bright and cheerful.', s:'Reading aloud', parts:[
+        { h:W, say:'Listen to how your teacher reads Scrooge, low and grumpy, and then the nephew, bright and cheerful.' },
+        { h:G, say:'Read each line aloud in the right voice. Then choose who said it. Tired? Listen, and just choose.', items:[ { q:'“What right have you to be merry?”', opts:['Scrooge', 'The nephew'], a:'Scrooge' }, { q:'“Don’t be angry, uncle. Come! Dine with us to-morrow.”', opts:['Scrooge', 'The nephew'], a:'The nephew' }, { q:'“Bah! Humbug!”', opts:['Scrooge', 'The nephew'], a:'Scrooge' } ] } ] },
+      { kind:'write', t:'Write: what is Scrooge thinking?', strap:'Step inside Scrooge’s head for a moment.', task:'The nephew has just said “A merry Christmas, uncle!” Write what Scrooge might be thinking.',
+        model:['“Christmas again!” thinks Scrooge. “Everybody wants a day off and a big dinner. What a waste of money! I wish they would all leave me alone with my work.”'],
+        stems:['Scrooge thinks', '“Humbug!” thinks Scrooge.', 'He wishes', 'He does not like Christmas because'], bank:['humbug', 'waste of money', 'leave me alone', 'dismal', 'cross', 'nephew', 'work', 'cold'],
+        sc:['I wrote what Scrooge is thinking', 'It sounds like grumpy Scrooge', 'I used a word from the word bank', 'I checked my capital letters and full stops'], low:CC_LOW },
+      { kind:'exit', k:'c8', t:'How do you feel now?', strap:'This is the end of session 2. Tap a number for each line, then tell me two things.', rows:CC_ROWS }
+    ] };
+  const LIB = [Y34, Y56, CAROL,
     TOOLKIT,
     board('year4-challenge', 'Year 4 Challenge Booklet: maths and English', ['Maths', 'English'], ['lks2'], ['Page 2: Number Detective', 'Page 3: Multiplication Masters', 'Page 4: Fraction & Decimal Challenge', 'Page 5: Shape Investigator', 'Page 6: Logic Lab', 'Page 7: Dickens’ Foggy Street (reading)', 'Page 8: Reading Detective', 'Page 9: Grammar Workshop', 'Page 10: Writer’s Challenge'],
       'Every page starts with a Quick start, then a Challenge and a Stretch. Each box is a natural stopping point, and the maths ends with a planned break. Stretch boxes go beyond Year 4.'),
@@ -169,7 +241,7 @@
   /* ---------- answers: kept in the child's own viewer, under their Fab code ---------- */
   const KEY = (id, code) => 'fab-booklet-' + id + '-' + code;
   const read = (id, code) => { const v = CODE_RE.test(code) ? ls.json(KEY(id, code), null) : null; return v && typeof v === 'object' && v.a ? v : { a:{}, p:0, t:0 }; };
-  const S = { b:null, i:0, code:'', back:'screen-hub', teach:false, A:{}, lv:'' };
+  const S = { b:null, i:0, code:'', back:'screen-hub', teach:false, A:{}, lv:'', pad:{}, padOpen:false };
   function save(){ if(S.b && CODE_RE.test(S.code)) ls.set(KEY(S.b.id, S.code), { a:S.A, p:S.i, t:Date.now(), n:S.b.pages.length }); }
   function known(code){ return all().filter(b => b.app).map(b => ({ b, d:read(b.id, code) })).filter(x => x.d.t); }
   function codes(){ const out = new Set(); try{ for(let i = 0; i < localStorage.length; i++){ const m = /^fab-booklet-.+-([a-z]{2,12}-\d{3})$/.exec(localStorage.key(i) || ''); if(m) out.add(m[1]); } }catch(e){} return [...out]; }
@@ -183,11 +255,81 @@
     const cell = c => Array.isArray(c) ? `<td><sup>${h(c[0])}</sup>${h(c[1])}</td>` : `<td>${h(c)}</td>`;
     return `<table class="bk-col" role="img" aria-label="The written working">${rows.map(r => r === LINE ? '<tr class="rule"><td colspan="9"></td></tr>' : Array.isArray(r) ? `<tr>${r.map(cell).join('')}</tr>` : `<tr class="${Object.keys(r)[0]}">${r[Object.keys(r)[0]].map(cell).join('')}</tr>`).join('')}</table>`;
   }
+  /* ---------- "How confident do you feel?" asks about what the booklet is about (it used to ask every booklet about the four operations) ---------- */
+  const ENG_ROWS = ['Reading the text', 'Answering questions about it', 'Writing my own sentences'];
+  function confRows(p, b){
+    b = b || S.b || {};
+    if(Array.isArray(p.rows) && p.rows.length) return p.rows.slice(0, 6).map((t, n) => ({ k:p.k + '.r' + n, n:String(t), dot:'' }));
+    const sub = [].concat(b.sub || '')[0] || '';
+    if(b.afl || sub === 'Maths') return OPK.map(o => ({ k:p.k + '.' + o, n:OPS[o].n, dot:opDot(o) }));
+    return (sub === 'English' ? ENG_ROWS : ['The work in this booklet']).map((t, n) => ({ k:p.k + '.r' + n, n:t, dot:'' }));
+  }
   function confHTML(p){
-    return `<div class="bk-card"><table class="bk-conf"><thead><tr><th></th>${SCALE.map(s => `<th>${s}</th>`).join('')}</tr></thead><tbody>${OPK.map(o => `<tr><th>${opDot(o)} ${OPS[o].n}</th>${SCALE.map((s, i) => { const k = p.k + '.' + o, on = String(S.A[k]) === String(i + 1);
-      return `<td><button type="button" class="bk-num ${on ? 'on' : ''}" data-k="${k}" data-v="${i + 1}" aria-pressed="${on}" aria-label="${OPS[o].n}: ${i + 1}, ${s}">${i + 1}</button></td>`; }).join('')}</tr>`).join('')}</tbody></table></div>
+    return `<div class="bk-card"><table class="bk-conf"><thead><tr><th></th>${SCALE.map(s => `<th>${s}</th>`).join('')}</tr></thead><tbody>${confRows(p).map(r => `<tr><th>${r.dot} ${h(r.n)}</th>${SCALE.map((s, i) => { const k = r.k, on = String(S.A[k]) === String(i + 1);
+      return `<td><button type="button" class="bk-num ${on ? 'on' : ''}" data-k="${h(k)}" data-v="${i + 1}" aria-pressed="${on}" aria-label="${h(r.n)}: ${i + 1}, ${s}">${i + 1}</button></td>`; }).join('')}</tr>`).join('')}</tbody></table></div>
       ${p.kind === 'exit' ? `<div class="bk-card bk-lines"><label><span>One thing I can do now:</span>${box('x.can', 'One thing I can do now', true)}</label><label><span>One thing I’d like help with:</span>${box('x.help', 'One thing I would like help with', true)}</label></div>` : ''}`;
   }
+  /* ---------- read it to me: Miss Bell's recording if there is one for these words, otherwise the device's voice. Tap again to stop. ---------- */
+  let saying = '';
+  function sayStop(){ try{ window.speechSynthesis && speechSynthesis.cancel(); }catch(e){} try{ window.FabVoice && FabVoice.bellStop(); }catch(e){} saying = ''; }
+  const sayBtn = text => text && window.fabReadAloud ? `<button type="button" class="btn small soft bk-sayb" data-bksay="${h(text)}">${saying === text ? '⏹ Stop reading' : '🔊 Read it to me'}</button>` : '';
+  /* one question: choices to tap, a number box, or a line to write on */
+  function itemHTML(q, k){
+    if(q.opts) return `<div class="bk-item"><p>${h(q.q)}</p><div class="bk-opts many">${q.opts.map(o => { const on = S.A[k] === String(o); return `<button type="button" class="bk-opt ${on ? 'on' : ''}" data-k="${h(k)}" data-v="${h(o)}" aria-pressed="${on}">${h(o)}</button>`; }).join('')}</div></div>`;
+    const numeric = q.a != null && !Array.isArray(q.a) && num(q.a) != null;
+    return `<div class="bk-item bk-q"><span class="bk-sum ${numeric ? '' : 'words'}">${h(q.q)}${isSum(q.q) ? ' =' : ''}</span>${box(k, q.q, !numeric)}</div>`;
+  }
+  const wordsHTML = p => (p.words || []).length ? `<div class="bk-words"><b>Word bank</b>${p.words.map(w => `<span><i>${h(w[0])}</i> ${h(w[1])}</span>`).join('')}</div>` : '';
+  /* ---------- a reading page: a short text, a word bank, then questions at up to three levels. The child chooses the level. ---------- */
+  function readHTML(p, i){
+    const L = Object.keys(p.lv || {}), lk = 'r' + i + '.lv', cur = S.A[lk] || '';
+    return `<div class="bk-card bk-text bk-read">${sayBtn((p.body || []).join(' '))}${(p.body || []).map(x => `<p>${h(x)}</p>`).join('')}${p.src ? `<p class="bk-src">${h(p.src)}</p>` : ''}${wordsHTML(p)}</div>
+      ${L.length ? `<p class="bk-soft bk-pick">Now choose your questions. Every level is a good choice.</p><div class="bk-levels">${L.map((k, n) => `<button type="button" class="bk-lv ${['mild', 'spicy', 'hot'][n] || ''} ${cur === k ? 'on' : ''}" data-k="${h(lk)}" data-v="${h(k)}" aria-pressed="${cur === k}">${h(k)}</button>`).join('')}</div>
+        ${cur && p.lv[cur] ? `<div class="bk-card bk-lvq bk-rq">${p.lv[cur].map((q, n) => itemHTML(q, 'r' + i + '.' + cur + '.' + n)).join('')}</div><p class="bk-soft">Want a change? Tap another level at any time.</p>` : ''}` : ''}`;
+  }
+  /* ---------- a writing page: a model to read first, the task, sentence starters and a word bank to tap in, a box to write in, and a
+     checklist the child ticks for themselves. The writing is never marked by the app: the teacher reads it. ---------- */
+  function writeHTML(p, i){
+    const k = 'w' + i;
+    return `${(p.model || []).length ? `<div class="bk-card bk-part w"><h3>Read mine first</h3>${sayBtn(p.model.join(' '))}${p.model.map(x => `<p class="bk-model">${h(x)}</p>`).join('')}</div>` : ''}
+      <div class="bk-card bk-part m bk-write"><h3>${M}</h3><p class="bk-say">${h(p.task)}</p>
+        ${(p.stems || []).length ? `<div class="bk-chips" role="group" aria-label="Sentence starters"><b>Sentence starters</b>${p.stems.map(s => `<button type="button" class="bk-chip" data-bkins="${h(s)}" data-for="bkW${i}">${h(s)}</button>`).join('')}</div>` : ''}
+        ${(p.bank || []).length ? `<div class="bk-chips bank" role="group" aria-label="Word bank"><b>Word bank</b>${p.bank.map(s => `<button type="button" class="bk-chip" data-bkins="${h(s)}" data-for="bkW${i}">${h(s)}</button>`).join('')}</div>` : ''}
+        <label class="sr-only" for="bkW${i}">My writing</label><textarea id="bkW${i}" class="bk-ta" data-kt="${k}.text" rows="5" maxlength="700" placeholder="Write here. One sentence is enough to begin.">${h(S.A[k + '.text'] || '')}</textarea>
+        ${p.low ? `<p class="bk-soft">🌱 ${h(p.low)}</p>` : ''}</div>
+      ${(p.sc || []).length ? `<div class="bk-card bk-sc"><h3>Check my writing</h3><p class="bk-soft">Tick what you did. This is just for you and your teacher.</p>${p.sc.map((s, n) => { const kk = k + '.sc' + n, on = S.A[kk] === '1';
+        return `<button type="button" class="bk-opt bk-tickb ${on ? 'on' : ''}" data-k="${kk}" data-v="1" aria-pressed="${on}"><b>${on ? '✓' : '○'}</b> ${h(s)}</button>`; }).join('')}</div>` : ''}`;
+  }
+  /* ---------- a space to work things out, beside the questions (maths pages). It is for the child and the teacher to see while the
+     booklet is open; it is not kept afterwards. ---------- */
+  const wantsPad = p => ['quick', 'hinge', 'levels', 'model', 'steps', 'mistake'].includes(p.kind) && [].concat((S.b && S.b.sub) || '')[0] === 'Maths';
+  const padHTML = () => `<details class="bk-pad" id="bkPadBox" ${S.padOpen ? 'open' : ''}><summary>✏️ Working out</summary><canvas id="bkPad" width="1000" height="320" aria-label="A space to work things out. Draw with a finger, a pen or the mouse."></canvas>
+    <div class="st-row"><button type="button" class="btn small soft" id="bkPadClear">Rub it all out</button><span class="bk-soft">For you and your teacher to see. It is not kept when you close the booklet.</span></div></details>`;
+  function padWire(box){
+    const dt = box.querySelector('#bkPadBox'), cv = box.querySelector('#bkPad'); if(!dt || !cv) return;
+    dt.addEventListener('toggle', () => { S.padOpen = dt.open; });
+    const ctx = cv.getContext('2d'); ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#2B1A12';
+    const keep = S.pad[S.i]; if(keep){ const im = new Image(); im.onload = () => { try{ ctx.drawImage(im, 0, 0); }catch(e){} }; im.src = keep; }
+    let down = false; const at = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+    cv.addEventListener('pointerdown', e => { down = true; try{ cv.setPointerCapture(e.pointerId); }catch(err){} const [x, y] = at(e); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + .1, y + .1); ctx.stroke(); e.preventDefault(); });
+    cv.addEventListener('pointermove', e => { if(!down) return; const [x, y] = at(e); ctx.lineTo(x, y); ctx.stroke(); });
+    const up = () => { if(!down) return; down = false; try{ S.pad[S.i] = cv.toDataURL('image/png'); }catch(e){} };
+    cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); cv.addEventListener('pointerleave', up);
+    box.querySelector('#bkPadClear').addEventListener('click', () => { ctx.clearRect(0, 0, cv.width, cv.height); delete S.pad[S.i]; snd('tick'); });
+  }
+  /* the unit a booklet belongs to, session by session, for the teacher */
+  const unitHTML = b => b && b.unit ? `<details class="bk-run bk-unit"><summary>The whole unit: ${b.unit.rows.length} sessions</summary><div style="overflow-x:auto"><table class="st-table"><thead><tr>${b.unit.head.map(c => `<th>${h(c)}</th>`).join('')}</tr></thead><tbody>${b.unit.rows.map(r => `<tr>${r.map(c => `<td>${h(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${b.unit.note ? `<p>${h(b.unit.note)}</p>` : ''}<p class="hint">A draft for a teacher to check and adapt. The curriculum wording needs checking against the National Curriculum programme of study.</p></details>` : '';
+  const EXTRA_CSS = `
+.bk-sayb{float:right;margin:0 0 6px 10px}.bk-src{font-size:.95rem;font-style:italic;opacity:.85}.bk-read p{font-size:1.25rem;line-height:1.6}.bk-pick{margin:12px 0 6px}
+.bk-rq .bk-item p{font-size:1.15rem;margin:0 0 4px}.bk-opts.many{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.bk-model{font-size:1.2rem;line-height:1.55;background:#fff;border-left:6px solid #3F8FC4;border-radius:8px;padding:8px 12px;margin:6px 0}
+.bk-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.bk-chips b{font-size:1rem;margin-right:2px}
+.bk-chip{font:inherit;font-size:1.05rem;background:#FFF6E6;border:2.5px solid #2B1A12;border-radius:999px;padding:6px 14px;min-height:42px;cursor:pointer}.bk-chips.bank .bk-chip{background:#DDF0CF;border-radius:12px}
+.bk-ta{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:1.25rem;line-height:1.6;border:3px solid #2B1A12;border-radius:14px;padding:10px 14px;background:#fff;margin-top:6px}
+.bk-sc{display:grid;gap:8px}.bk-sc h3{margin:0}.bk-tickb{text-align:left}.bk-tickb b{display:inline-block;width:1.4em}
+.bk-pad{background:#FFFDF7;border:2.5px dashed #2F5458;border-radius:14px;padding:8px 12px;margin:12px 0}.bk-pad summary{font-weight:700;cursor:pointer}
+#bkPad{display:block;width:100%;height:auto;background:#fff;border:2.5px solid #2B1A12;border-radius:10px;margin:8px 0;touch-action:none;cursor:crosshair}
+.bk-unit td{font-size:.95rem;vertical-align:top}`;
   function pageHTML(p){
     if(p.kind === 'conf' || p.kind === 'exit') return confHTML(p);
     if(p.kind === 'quick') return `<div class="bk-grid2">${p.items.map(q => `<div class="bk-card bk-q"><b class="bk-letter">${h(q.id)}</b>${q.op ? opDot(q.op) : ''}<span class="bk-sum">${h(q.q)} =</span>${box('q.' + q.id, q.q)}</div>`).join('')}</div>`;
@@ -203,7 +345,9 @@
     if(p.kind === 'model') return `<div class="bk-watch"><div class="bk-card"><h3>${opDot(p.op)} I do: ${h(p.ido)}</h3><div class="bk-ido">${colHTML(p.col)}<ol>${p.steps.map(s => `<li>${h(s)}</li>`).join('')}</ol></div></div>
       <div class="bk-card bk-you"><h3>You do:</h3><p class="bk-sum">${h(p.you)} =</p>${box('m.' + p.op, p.you)}<p class="bk-soft">Use paper or the board for your working. Your teacher can start it with you.</p></div></div>`;
     if(p.kind === 'steps') return stepsHTML(p, S.i);
-    if(p.kind === 'text') return `<div class="bk-card bk-text">${(p.body || []).map(x => `<p>${h(x)}</p>`).join('')}${(p.words || []).length ? `<div class="bk-words"><b>Word bank</b>${p.words.map(w => `<span><i>${h(w[0])}</i> ${h(w[1])}</span>`).join('')}</div>` : ''}</div>`;
+    if(p.kind === 'read') return readHTML(p, S.i);
+    if(p.kind === 'write') return writeHTML(p, S.i);
+    if(p.kind === 'text') return `<div class="bk-card bk-text">${sayBtn((p.body || []).join(' '))}${(p.body || []).map(x => `<p>${h(x)}</p>`).join('')}${(p.words || []).length ? `<div class="bk-words"><b>Word bank</b>${p.words.map(w => `<span><i>${h(w[0])}</i> ${h(w[1])}</span>`).join('')}</div>` : ''}</div>`;
     return '';
   }
   function tnoteHTML(i){
@@ -217,6 +361,9 @@
     else if(p.kind === 'asn') extra = `<p>${p.items.map(q => h(q.q) + ' <b>' + q.a + '</b>' + (q.why ? ' (' + h(q.why) + ')' : '')).join(' · ')}</p>`;
     else if(p.kind === 'model') extra = `<p>You do: ${h(p.you)} = ${p.a.toLocaleString('en-GB')}</p>`;
     else if(p.kind === 'steps') extra = `<p>Answers: ${markItems({ pages:[p] }, {}).map(x => h(x.label === 'gap' ? '' : x.label + ' ') + '<b>' + h([].concat(x.a).join(' or ')) + '</b>').join(' · ') || 'nothing on this page is marked'}</p>${i === 0 && S.b.notes ? S.b.notes.map(x => `<p>${h(x)}</p>`).join('') : ''}`;
+    else if(p.kind === 'read') extra = `<p>Answers: ${Object.keys(p.lv || {}).map(L => '<b>' + h(L) + '</b> ' + p.lv[L].map(q => q.a != null ? h(String(q.a)) : '(for you to read)').join(' · ')).join(' | ')}</p>`;
+    else if(p.kind === 'write') extra = '<p>The writing and the ticked checklist are for you to read, under View task progress. The app does not mark writing.</p>';
+    if(i === 0) extra += (p.kind !== 'steps' && S.b.notes ? S.b.notes.map(x => `<p>${h(x)}</p>`).join('') : '') + unitHTML(S.b);
     return `<details class="bk-tnote"><summary>For the teacher: this page</summary>${row ? `<p>${row.slice(1).map((c, k) => `<b>${h(r.head[k + 1].replace(/…$/, ''))}:</b> ${h(c)}`).join(' · ')}</p>` : ''}${extra}<p>Nothing on these pages is marked in front of the child. Their answers are read in the Teachers’ area, under View task progress.</p></details>`;
   }
   function render(){
@@ -228,23 +375,31 @@
     const p = S.b.pages[S.i];
     box.innerHTML = `<div class="bk-page" data-kind="${p.kind}"><div class="bk-band"><h2>${h(p.t)}</h2></div><p class="bk-strap">${h(p.strap)}</p>
       ${pageHTML(p)}
+      ${wantsPad(p) ? padHTML() : ''}
       ${S.teach ? tnoteHTML(S.i) : ''}
       <div class="st-row bk-nav">${S.i ? `<button type="button" class="btn soft" data-bkgo="${S.i - 1}">◀ Back a page</button>` : ''}<span class="bk-count">Page ${S.i + 1} of ${N}</span><button type="button" class="btn leaf" data-bkgo="${S.i + 1}">${S.i === N - 1 ? 'Hand it in ⭐' : 'Next page ▶'}</button></div>
       <p class="bk-rest"><button type="button" class="btn small soft" data-bkstop>Stop here for today</button> <span>It is fine to stop after any page. Your place is kept${CODE_RE.test(S.code) ? '' : ' only while this page is open'}.</span></p></div>`;
     wire(box);
   }
   function wire(box){
+    box.querySelectorAll('textarea[data-kt]').forEach(el => el.addEventListener('input', () => { S.A[el.dataset.kt] = el.value.slice(0, 700); save(); }));
+    box.querySelectorAll('[data-bkins]').forEach(b => b.addEventListener('click', () => { const el = document.getElementById(b.dataset.for); if(!el) return; const v = el.value;
+      el.value = (v + (v && !/\s$/.test(v) ? ' ' : '') + b.dataset.bkins + ' ').slice(0, 700); S.A[el.dataset.kt] = el.value; save(); snd('tick'); try{ el.focus(); el.setSelectionRange(el.value.length, el.value.length); }catch(e){} }));
+    box.querySelectorAll('[data-bksay]').forEach(b => b.addEventListener('click', () => { const t = b.dataset.bksay, was = saying === t; sayStop(); if(!was){ saying = t; try{ window.fabReadAloud(t); }catch(e){} }
+      box.querySelectorAll('[data-bksay]').forEach(x => { x.textContent = saying && x.dataset.bksay === saying ? '⏹ Stop reading' : '🔊 Read it to me'; }); }));
+    padWire(box);
     box.querySelectorAll('input[data-k]').forEach(el => el.addEventListener('input', () => { S.A[el.dataset.k] = el.value.slice(0, 120); save(); }));
     box.querySelectorAll('button[data-k]').forEach(b => b.addEventListener('click', () => { const k = b.dataset.k; S.A[k] = S.A[k] === b.dataset.v && k !== 'lv' ? '' : b.dataset.v; snd('tick'); save(); render(); }));
-    box.querySelectorAll('[data-bkgo]').forEach(b => b.addEventListener('click', () => { const to = Number(b.dataset.bkgo), N = S.b.pages.length; S.i = to; save();
+    box.querySelectorAll('[data-bkgo]').forEach(b => b.addEventListener('click', () => { const to = Number(b.dataset.bkgo), N = S.b.pages.length; S.i = to; save(); sayStop();
       if(to === N){ snd('jingle'); if(!S.teach && CODE_RE.test(S.code)){ S.A.done = Date.now(); save(); try{ FabBurrow.actDone(S.code, 'bk:' + S.b.id); }catch(e){} } } else snd('tick');
       render(); try{ window.scrollTo(0, 0); }catch(e){} }));
     box.querySelectorAll('[data-bkstop]').forEach(b => b.addEventListener('click', () => { save(); snd('tick'); close(); }));
   }
-  function close(){ const back = S.back; try{ showScreen(back); }catch(e){} }
+  function close(){ sayStop(); const back = S.back; try{ showScreen(back); }catch(e){} }
   /* open a booklet: for a child from their Burrow (answers kept), or for a teacher to look inside (nothing kept) */
   function open(id, page, opt){
     const b = byId(id); if(!b || !b.app) return false; opt = opt || {}; build();
+    S.pad = {}; S.padOpen = false; sayStop();
     S.b = b; S.teach = !!opt.teach; S.code = S.teach ? '' : String(opt.code || ''); S.back = opt.back || 'screen-hub';
     const d = read(b.id, S.code); S.A = S.teach ? {} : d.a;
     S.i = page != null && page !== '' && !isNaN(Number(page)) ? Number(page) - 1 : (d.p >= b.pages.length ? 0 : d.p || 0);
@@ -308,7 +463,7 @@
   const isSum = q => /^[\d.,]+ [+−×÷] [\d.,]+$/.test(q);
   function stepsHTML(p, i){
     let n = 0; const tone = hd => hd === W ? 'w' : hd === G ? 'g' : hd === M ? 'm' : '';
-    return (p.parts || []).map(pt => `<div class="bk-card bk-part ${tone(pt.h)}">${pt.h ? `<h3>${h(pt.h)}</h3>` : ''}${pt.say ? `<p class="bk-say">${h(pt.say)}</p>` : ''}${aidHTML(pt.aid)}
+    return (p.parts || []).map(pt => `<div class="bk-card bk-part ${tone(pt.h)}">${pt.h ? `<h3>${h(pt.h)}</h3>` : ''}${pt.say ? sayBtn(pt.say) + `<p class="bk-say">${h(pt.say)}</p>` : ''}${aidHTML(pt.aid)}
       ${pt.seq ? `<div class="bk-seq">${pt.seq.map(x => typeof x === 'string' && x[0] === '_' ? box('p' + i + '.' + (n++), 'A missing number').replace('class="bk-in ', 'class="bk-in gap ') : `<span>${h(x)}</span>`).join('')}</div>` : ''}
       ${(pt.items || []).map(q => { const k = 'p' + i + '.' + (n++);
         if(q.opts) return `<div class="bk-item"><p>${h(q.q)}</p><div class="bk-opts many">${q.opts.map(o => { const on = S.A[k] === String(o); return `<button type="button" class="bk-opt ${on ? 'on' : ''}" data-k="${k}" data-v="${h(o)}" aria-pressed="${on}">${h(o)}</button>`; }).join('')}</div></div>`;
@@ -328,14 +483,20 @@
       else if(p.kind === 'hinge') p.items.forEach(q => add('h.' + (q.id || q.op), q.q, q.ok, q.s || strandOf(q)));
       else if(p.kind === 'levels'){ const L = A.lv; if(L && p.lv[L]) p.lv[L].forEach((q, n) => add('lv.' + L + '.' + n, q[0], q[1], strandOf({ q:q[0] }))); }
       else if(p.kind === 'asn') p.items.forEach((q, n) => add('asn.' + n, q.q, q.a, 'Reasoning'));
+      else if(p.kind === 'read'){ const L = A['r' + i + '.lv']; if(L && p.lv && p.lv[L]) p.lv[L].forEach((q, n) => { if(q.a != null) add('r' + i + '.' + L + '.' + n, q.q, q.a, q.s || p.s || 'Reading'); }); }
       else if(p.kind === 'steps'){ let n = 0; (p.parts || []).forEach(pt => { (pt.seq || []).forEach(x => { if(typeof x === 'string' && x[0] === '_') add('p' + i + '.' + (n++), 'gap', x.slice(1), pt.s || p.s); });
         (pt.items || []).forEach(q => { const k = 'p' + i + '.' + (n++); if(q.a != null) add(k, q.q, q.a, q.s || pt.s || p.s || strandOf(q)); }); }); } });
     return out.map(it => Object.assign(it, { s:it.s || sub, ok:it.v === '' ? null : same(it.v, it.a) }));
   }
   /* what a child wrote that only a person can read (open questions and choices with no right answer) */
   function openItems(b, A){
-    const out = []; b.pages.forEach((p, i) => { if(p.kind !== 'steps') return; let n = 0; (p.parts || []).forEach(pt => { (pt.seq || []).forEach(x => { if(typeof x === 'string' && x[0] === '_') n++; });
-      (pt.items || []).forEach(q => { const k = 'p' + i + '.' + (n++); if(q.a == null && A[k]) out.push({ i, label:q.q, v:String(A[k]) }); }); }); });
+    const out = []; b.pages.forEach((p, i) => {
+      if(p.kind === 'steps'){ let n = 0; (p.parts || []).forEach(pt => { (pt.seq || []).forEach(x => { if(typeof x === 'string' && x[0] === '_') n++; });
+        (pt.items || []).forEach(q => { const k = 'p' + i + '.' + (n++); if(q.a == null && A[k]) out.push({ i, label:q.q, v:String(A[k]) }); }); }); }
+      else if(p.kind === 'read'){ const L = A['r' + i + '.lv']; if(L && p.lv && p.lv[L]){ out.push({ i, label:p.t + ': chose the questions', v:L }); p.lv[L].forEach((q, n) => { const k = 'r' + i + '.' + L + '.' + n; if(q.a == null && A[k]) out.push({ i, label:q.q, v:String(A[k]) }); }); } }
+      else if(p.kind === 'write'){ const t = A['w' + i + '.text']; if(t) out.push({ i, label:p.t, v:String(t) }); const ticks = (p.sc || []).filter((x, n) => A['w' + i + '.sc' + n] === '1'); if(ticks.length) out.push({ i, label:'Ticked for themselves', v:ticks.join(' · ') }); }
+      else if((p.kind === 'conf' || p.kind === 'exit') && !b.afl){ const v = confRows(p, b).filter(r => A[r.k]).map(r => r.n + ' ' + A[r.k] + ' of 5'); if(v.length) out.push({ i, label:p.kind === 'conf' ? 'Confidence before' : 'Confidence after', v:v.join(' · ') });
+        if(p.kind === 'exit'){ if(A['x.can']) out.push({ i, label:'One thing I can do now', v:String(A['x.can']) }); if(A['x.help']) out.push({ i, label:'One thing I’d like help with', v:String(A['x.help']) }); } } });
     return out;
   }
   function mark(b, A){
@@ -344,7 +505,7 @@
       [S1, P].forEach(x => { x.of++; if(it.ok != null) x.tried++; if(it.ok) x.got++; }); });
     return { items, strands, pages, of:items.length, tried:items.filter(x => x.ok != null).length, got:items.filter(x => x.ok).length };
   }
-  const BANDS = { G:'Secure', A:'Developing', R:'Needs support' };
+  const BANDS = { G:'Secure', A:'Developing', R:'Needs support' }, THIN = 6;
   const band = x => x.tried < 2 ? '' : x.got / x.tried >= .8 ? 'G' : x.got / x.tried >= .5 ? 'A' : 'R';
   const when = t => new Date(t).toLocaleDateString('en-GB', { day:'numeric', month:'short' });
   function marksLine(b, d){ const m = mark(b, d.a); return `<p class="bk-marks"><b>Marks: ${m.got} of ${m.tried} answered</b> (${m.of} questions are marked by the app) · ${d.a.done ? 'handed in ' + h(when(d.a.done)) : 'not handed in yet'}</p>`; }
@@ -355,7 +516,8 @@
       <div style="overflow-x:auto"><table class="st-table bk-atable"><thead><tr><th>Page</th><th>Marks</th><th>Answers (the child’s answer, then the right one where it differs)</th></tr></thead><tbody>
       ${b.pages.map((p, i) => { const P = m.pages[i], its = m.items.filter(x => x.i === i); return P ? `<tr><td>${i + 1}. ${h(p.t)}</td><td>${P.got} of ${P.tried}${P.tried < P.of ? ' <small>(' + (P.of - P.tried) + ' left)</small>' : ''}</td><td>${its.filter(x => x.ok != null).map(x => `<span class="bk-ans">${x.label === 'gap' ? '' : h(x.label) + ': '}<b>${h(x.v)}</b> ${x.ok ? '<b class="bk-yes">✓</b>' : '<b class="bk-no">✗</b> <small>(' + h([].concat(x.a).join(' or ')) + ')</small>'}</span>`).join(' ') || '<span class="bk-na">–</span>'}</td></tr>` : ''; }).join('')}</tbody></table></div>
       ${open.length ? `<div class="bk-next"><b>In the child’s own words and choices</b> (for you to read)<ul>${open.map(o => `<li>${h(o.label)} <b>${h(o.v)}</b></li>`).join('')}</ul></div>` : ''}
-      <p class="hint">Marks are worked out on this device from the answers kept in this viewer. Nothing here is shown to the child.</p></div>`;
+      ${b.run ? `<details class="bk-run"><summary>How to run this booklet</summary><div style="overflow-x:auto"><table class="st-table"><thead><tr>${b.run.head.map(c => `<th>${h(c)}</th>`).join('')}</tr></thead><tbody>${b.run.rows.map(r => `<tr>${r.map(c => `<td>${h(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>` : ''}${unitHTML(b)}
+      <p class="hint">Marks are worked out on this device from the answers kept in this viewer. Writing and open answers are never marked by the app.</p></div>`;
   }
   /* an assessment profile for one Fab code: every booklet on this device, strand by strand, with a draft next step */
   const NEXTFOR = { Adding:'maths-flightpath-addition-subtraction', Subtracting:'maths-flightpath-addition-subtraction', Multiplying:'maths-flightpath-multiplication-division', Dividing:'maths-flightpath-multiplication-division',
@@ -366,16 +528,21 @@
       books.push({ id:x.b.id, t:x.b.short || x.b.t, got:m.got, tried:m.tried, of:m.of, done:x.d.a.done || 0, last:x.d.t });
       Object.keys(m.strands).forEach(s => { const key = sub + '|' + s, r = rows[key] = rows[key] || { sub, s, got:0, tried:0, of:0, from:[], harder:'' }; const v = m.strands[s];
         r.got += v.got; r.tried += v.tried; r.of += v.of; if(v.tried) r.from.push(x.b.short || x.b.t); if(x.b.harder && byId(x.b.harder)) r.harder = x.b.harder; }); });
-    const list = Object.keys(rows).map(k => { const r = rows[k], bd = band(r), fp = NEXTFOR[r.s] || '', next = [];
-      if(bd === 'R'){ if(fp) next.push({ k:'p:' + fp, l:'Support: the flightpath, from an earlier step' }); if(/^(Adding|Subtracting)$/.test(r.s)) next.push({ k:'b:L:number-toolkit', l:'Support: My Number Toolkit' }); }
-      else if(bd === 'A'){ if(fp) next.push({ k:'p:' + fp, l:'Practice: the flightpath' }); }
-      else if(bd === 'G'){ if(r.harder) next.push({ k:'b:L:' + r.harder, l:'Challenge: ' + byId(r.harder).short }); else if(fp) next.push({ k:'p:' + fp, l:'Challenge: the flightpath, from a later step' }); }
-      return Object.assign(r, { band:bd, bandName:BANDS[bd] || 'Not enough yet', next }); });
+    const fpName = id => { try{ const pk = window.FabBurrow.packById(id); return pk && pk.title ? pk.title : ''; }catch(e){ return ''; } };
+    const list = Object.keys(rows).map(k => { const r = rows[k], bd = band(r), fp = NEXTFOR[r.s] || '', nm = fp ? (fpName(fp) || 'the flightpath') : '', next = [];
+      if(bd === 'R'){ if(fp) next.push({ k:'p:' + fp, l:'Support: ' + nm + ', from an earlier step' }); if(/^(Adding|Subtracting)$/.test(r.s)) next.push({ k:'b:L:number-toolkit', l:'Support: My Number Toolkit' }); }
+      else if(bd === 'A'){ if(fp) next.push({ k:'p:' + fp, l:'Practice: ' + nm }); }
+      else if(bd === 'G'){ if(r.harder) next.push({ k:'b:L:' + r.harder, l:'Challenge: ' + byId(r.harder).short }); else if(fp) next.push({ k:'p:' + fp, l:'Challenge: ' + nm + ', from a later step' }); }
+      /* a band from a handful of answers is a first impression, not a judgement (stress test, 28 Nov: "a label from four questions is a guess") */
+      const thin = !!bd && r.tried < THIN;
+      return Object.assign(r, { band:bd, thin, bandName:bd ? (thin ? 'Early signs: ' + BANDS[bd].toLowerCase() : BANDS[bd]) : 'Not enough yet', next }); });
+    /* the same next step is offered once per child, on the first strand that calls for it */
+    const seen = new Set(); list.forEach(r => { const n0 = r.next.length; r.next = r.next.filter(n => !seen.has(n.k) && seen.add(n.k)); r.above = n0 > 0 && !r.next.length; });
     return { code, rows:list, books };
   }
 
   /* ---------- booklets made by teachers with Claude: checked here before they are kept ---------- */
-  const IMPORT_KINDS = ['conf', 'exit', 'quick', 'hinge', 'levels', 'asn', 'steps', 'text'];
+  const IMPORT_KINDS = ['conf', 'exit', 'quick', 'hinge', 'levels', 'asn', 'steps', 'text', 'read', 'write'];
   const calc = q => { const m = /^([\d.,]+) ([+−×÷]) ([\d.,]+)$/.exec(String(q || '')); if(!m) return null; const a = Number(m[1].replace(/,/g, '')), b = Number(m[3].replace(/,/g, '')); return Math.round((m[2] === '+' ? a + b : m[2] === '−' ? a - b : m[2] === '×' ? a * b : a / b) * 1000) / 1000; };
   function check(d){
     const E = [], str = (v, n) => typeof v === 'string' && v.trim().length > 0 && v.length <= n, arr = v => Array.isArray(v) ? v : [];
@@ -388,12 +555,19 @@
       if(!p || typeof p !== 'object'){ E.push(at + ' is empty.'); return; }
       if(!IMPORT_KINDS.includes(p.kind)){ E.push(`${at}: the kind “${String(p.kind).slice(0, 20)}” is not one the app knows. Use ${IMPORT_KINDS.join(', ')}.`); return; }
       if(!str(p.t, 60)) E.push(at + ' needs a title ("t"), up to 60 letters.');
-      if(p.kind === 'conf' || p.kind === 'exit'){ p.k = p.kind === 'conf' ? 'c1' : 'c8'; }
+      if(p.kind === 'conf' || p.kind === 'exit'){ p.k = p.kind === 'conf' ? 'c1' : 'c8'; if(p.rows != null){ p.rows = arr(p.rows).filter(x => str(x, 40)).slice(0, 6); if(!p.rows.length) delete p.rows; } }
       if(p.kind === 'quick'){ if(!arr(p.items).length || p.items.length > 12) E.push(at + ' needs 1 to 12 questions.'); arr(p.items).forEach((q, n) => { if(!q || !str(q.q, 60) || num(q.a) == null) E.push(`${at}, question ${n + 1} needs words ("q") and a number answer ("a").`); else { q.id = 'ABCDEFGHIJKL'[n]; q.a = num(q.a); if(q.op && !OPS[q.op]) delete q.op; sum(q.q, q.a, at); } }); }
       if(p.kind === 'hinge'){ if(!arr(p.items).length || p.items.length > 4) E.push(at + ' needs 1 to 4 questions.'); arr(p.items).forEach((q, n) => { const o = arr(q && q.opts).map(String), ok = 'ABCD'.indexOf(q && q.ok);
         if(!q || !str(q.q, 120) || o.length < 2 || o.length > 4 || ok < 0 || ok >= o.length) E.push(`${at}, question ${n + 1} needs words, 2 to 4 options and the right letter ("ok").`); else { q.opts = o; q.id = 'i' + i + 'n' + n; if(q.op && !OPS[q.op]) delete q.op; q.why = o.map((x, k) => k === ok ? 'Correct' : String(arr(q.why)[k] || 'Not yet right').slice(0, 120)); const c = calc(q.q); if(c != null && num(o[ok]) != null && Math.abs(c - num(o[ok])) > 1e-9) E.push(`${at}: “${q.q}” is ${c}, but option ${q.ok} says ${o[ok]}.`); } }); }
       if(p.kind === 'levels'){ const L = p.lv && typeof p.lv === 'object' ? Object.keys(p.lv) : []; if(L.length < 2 || L.length > 3) E.push(at + ' needs two or three levels.'); L.forEach(k => { if(!/^[A-Za-z ]{1,12}$/.test(k) || !arr(p.lv[k]).length || p.lv[k].length > 6) E.push(`${at}: the level “${k}” needs a short name and 1 to 6 questions.`); arr(p.lv[k]).forEach(q => { if(!Array.isArray(q) || !str(q[0], 60) || num(q[1]) == null) E.push(`${at}, level ${k}: each question is ["words", number].`); else { q[1] = num(q[1]); sum(q[0], q[1], at); } }); }); }
       if(p.kind === 'asn'){ if(!arr(p.items).length || p.items.length > 6) E.push(at + ' needs 1 to 6 statements.'); arr(p.items).forEach((q, n) => { if(!q || !str(q.q, 140) || !['always', 'sometimes', 'never'].includes(q.a)) E.push(`${at}, statement ${n + 1} needs words and an answer: always, sometimes or never.`); }); }
+      if(p.kind === 'read'){ if(!arr(p.body).length || p.body.length > 10 || !arr(p.body).every(x => str(x, 900))) E.push(at + ' needs 1 to 10 paragraphs to read ("body").'); p.words = arr(p.words).filter(w => Array.isArray(w) && str(w[0], 40) && str(w[1], 120)).slice(0, 14); if(p.src != null && !str(p.src, 160)) delete p.src;
+        const L = p.lv && typeof p.lv === 'object' && !Array.isArray(p.lv) ? Object.keys(p.lv) : []; if(L.length > 3) E.push(at + ' can have up to three levels of questions.');
+        L.forEach(k => { if(!/^[A-Za-z ]{1,16}$/.test(k) || !arr(p.lv[k]).length || p.lv[k].length > 5) E.push(`${at}: the level “${k}” needs a short name and 1 to 5 questions.`);
+          arr(p.lv[k]).forEach((q, n) => { if(!q || !str(q.q, 160)){ E.push(`${at}, level ${k}, question ${n + 1} needs words ("q").`); return; }
+            if(q.opts != null){ q.opts = arr(q.opts).map(String).slice(0, 4); if(q.opts.length < 2) E.push(`${at}, level ${k}, question ${n + 1}: choices need at least two options.`); else if(q.a != null && !q.opts.includes(String(q.a))) E.push(`${at}, level ${k}, question ${n + 1}: the answer must be one of the options.`); } }); }); }
+      if(p.kind === 'write'){ if(!str(p.task, 300)) E.push(at + ' needs the writing task ("task").'); const list = (f, n, len) => { p[f] = arr(p[f]).filter(x => str(x, len)).slice(0, n); };
+        list('model', 4, 600); list('stems', 8, 60); list('bank', 16, 30); list('sc', 6, 80); if(p.low != null && !str(p.low, 160)) delete p.low; }
       if(p.kind === 'text'){ if(!arr(p.body).length || !arr(p.body).every(x => str(x, 900))) E.push(at + ' needs one or more paragraphs ("body").'); p.words = arr(p.words).filter(w => Array.isArray(w) && str(w[0], 40) && str(w[1], 120)).slice(0, 14); }
       if(p.kind === 'steps'){ if(!arr(p.parts).length || p.parts.length > 8) E.push(at + ' needs 1 to 8 parts.'); arr(p.parts).forEach((pt, n) => { const w = `${at}, part ${n + 1}`;
         if(!pt || typeof pt !== 'object'){ E.push(w + ' is empty.'); return; }
@@ -432,7 +606,7 @@ The file is one JSON object:
 { "t": "Title", "sub": "Maths | English | Phonics | Science | Topic", "st": ["eyfs" | "ks1" | "lks2" | "uks2"], "time": "About 20 minutes", "about": "One or two sentences for the teacher", "notes": ["How to run it", "What to look for"], "pages": [ ... up to 12 pages ... ] }
 
 Page kinds (each page has "kind", "t" (title) and "strap" (one line for the child)):
-- "conf": How confident do you feel? (first page). "exit": the same again plus two sentences (last page).
+- "conf": How confident do you feel? (first page). Give "rows": ["Reading the text", "Finding answers in it"] to say what the child rates (up to 6 lines). "exit": the same again plus two sentences (last page).
 - "steps": { "s": "strand name, e.g. Fractions", "parts": [ { "h": "Watch me", "say": "the model, step by step" }, { "h": "Let’s do it together", "say": "...", "items": [ { "q": "6 + 4", "a": 10 } ] }, { "h": "My turn", "items": [ { "q": "7 + 2", "a": 9 }, { "q": "Which is a noun?", "a": "fox", "opts": ["ran", "fox", "quickly"] }, { "q": "Tell me how you know." } ] } ] }
   A part may also have "seq": [20, 17, 14, "_11", "_8"] (a gap is "_answer") or "aid": { "type": "line", "from": 0, "to": 10, "at": 5, "hop": 3 } | { "type": "frame", "n": 7 } | { "type": "pw", "w": 10, "a": 7, "b": "?" }.
   A question with "a" is marked by the app; with no "a" it is for the teacher to read. "a" may be a list of accepted answers.
@@ -440,6 +614,8 @@ Page kinds (each page has "kind", "t" (title) and "strap" (one line for the chil
 - "hinge": { "items": [ { "q": "358 + 167", "opts": ["415", "525", "425", "625"], "ok": "B", "why": ["No carrying at all", "Correct", "Carried to tens, not hundreds", "Carried too much"] } ] } each wrong option stands for one misconception.
 - "levels": { "lv": { "Mild": [["34 + 25", 59]], "Spicy": [["368 + 145", 513]], "Hot": [["2,476 + 1,385", 3861]] } } the child chooses.
 - "asn": { "items": [ { "q": "Multiplying makes a number bigger.", "a": "sometimes", "why": "not × 1 or × 0" } ] } always, sometimes or never.
+- "read": { "body": ["A short paragraph."], "src": "From … by …", "words": [["bleak", "cold and miserable"]], "lv": { "Find it": [ { "q": "What day is it?", "opts": ["Monday", "Friday"], "a": "Friday" } ], "Think about it": [ { "q": "…", "opts": ["…", "…"], "a": "…" } ], "Dig deeper": [ { "q": "An open question for the teacher to read." } ] } } a text with questions at up to three levels; the child chooses the level. Public-domain texts only.
+- "write": { "task": "What to write", "model": ["A model text to read first."], "stems": ["Scrooge is"], "bank": ["mean", "cold"], "sc": ["I checked my capital letters and full stops"], "low": "Tired? One sentence is plenty." } never marked by the app; the teacher reads it.
 - "text": { "body": ["A paragraph to read."], "words": [["bleak", "cold, grey and miserable"]] } for reading; public-domain texts only.
 
 Write sums with spaces and these signs: + − × ÷. Give me the JSON only, in a code block, so I can save it as a .json file.`;
@@ -449,6 +625,7 @@ Write sums with spaces and these signs: + − × ÷. Give me the JSON only, in a
     if(document.getElementById('screen-booklet')) return true;
     const hub = document.getElementById('screen-hub'); if(!hub) return false;
     hub.parentNode.insertAdjacentHTML('beforeend', `<section id="screen-booklet" class="screen" aria-label="Booklet"><div class="screen-top"><button class="btn-back" data-go="screen-hub">← Back</button><h1 class="screen-title">Booklet</h1></div><div id="bookletBody"></div></section>`);
+    const st2 = document.createElement('style'); st2.textContent = EXTRA_CSS; document.head.appendChild(st2);
     const st = document.createElement('style'); st.textContent = `
 .bk-page{max-width:900px;margin:0 auto;text-align:left}
 .bk-band{background:#2F5458;border-radius:16px;padding:10px 18px;text-align:center}.bk-band h2{margin:0;color:#fff;font-size:1.7rem}
@@ -496,6 +673,6 @@ Write sums with spaces and these signs: + − × ÷. Give me the JSON only, in a
     document.head.appendChild(st); return true;
   }
   fromHash();
-  window.FabBooklets = { all, byId, act, open, read, known, codes, afl, teacherHTML, state:S, render, mark, profile, check, add, remove, mine, hashFor, brief:BRIEF, bands:BANDS };
+  window.FabBooklets = { all, byId, act, open, read, known, codes, afl, teacherHTML, state:S, render, mark, profile, check, add, remove, mine, hashFor, brief:BRIEF, bands:BANDS, unitHTML, confRows, sayStop, started:(id, code) => { const d = read(id, code); return !!(d.t && !d.a.done && (d.p > 0 || Object.keys(d.a).length)); } };
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();
 })();

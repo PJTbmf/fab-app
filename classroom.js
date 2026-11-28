@@ -134,6 +134,7 @@
   /* ---- For staff: today's class in Pencil Spaces ---- */
   const F = { text:'', quiet:true, hand:true, msg:'' };
   const parse = t => [...new Set(String(t || '').toLowerCase().split(/[\s,;]+/).map(x => x.replace(/[^a-z0-9-]/g, '').slice(0, 20)).filter(Boolean))];
+  const teachLink = () => location.origin + location.pathname + '?pointer=1' + (F.quiet ? '&quiet=1' : '');
   const linkFor = c => location.origin + location.pathname + '?learner=' + encodeURIComponent(c) + (F.hand ? '&class=1' : '') + (F.quiet ? '&quiet=1' : '');
   function staffHTML(){
     if(!F.text){ try{ if(typeof pwCodes !== 'undefined' && pwCodes.length) F.text = pwCodes.slice(0, 6).join('\n'); }catch(e){} }
@@ -144,6 +145,8 @@
       <div class="cl-opts"><label><input type="checkbox" id="clQuiet" ${F.quiet ? 'checked' : ''}>Start with sounds off</label><label><input type="checkbox" id="clHand" ${F.hand ? 'checked' : ''}>The help hand (class mode)</label></div>
       <div class="st-row"><button type="button" class="btn small leaf" id="clMake">Make a new code</button>${good.length > 1 ? '<button type="button" class="btn small soft" id="clCopyAll">Copy all links</button>' : ''}</div>
       ${bad.length ? `<p class="learn-msg">Not a Fab code: ${bad.map(h).join(', ')}. Fab codes look like otter-482. Please never use a name.</p>` : ''}
+      <div class="cl-links cl-teach"><div><b>Your viewer</b><input readonly value="${h(teachLink())}" aria-label="App link for the teacher’s own viewer, with the Look here pointer"><button type="button" class="btn small soft" data-clcopy="__teach">Copy link</button></div></div>
+      <p class="hint">For the teacher’s own viewer on the carpet: the app with the “Look here” pointer button on. In Pencil, Shift + L does not reach the app, so use the button (bottom left).</p>
       ${good.length ? `<div class="cl-links">${good.map(c => `<div><b>${h(c)}</b><input readonly value="${h(linkFor(c))}" aria-label="App link for ${h(c)}"><button type="button" class="btn small soft" data-clcopy="${h(c)}">Copy link</button></div>`).join('')}</div>` : ''}
       <p class="learn-msg" id="clMsg" aria-live="polite">${h(F.msg)}</p>
       <h3>Setting up the board</h3>
@@ -162,7 +165,7 @@
     card.querySelector('#clMake').addEventListener('click', () => { F.text = ta.value; const n = typeof pupilMakeCodes === 'function' ? pupilMakeCodes(1) : []; if(n.length) F.text = (F.text.trim() ? F.text.trim() + '\n' : '') + n[0]; F.msg = n.length ? 'New code: ' + n[0] + '. Record it in Beacon.' : ''; redraw(); });
     const copy = (txt, b) => { const done = () => { F.msg = 'Copied.'; const m = card.querySelector('#clMsg'); if(m) m.textContent = 'Copied.'; if(b){ b.textContent = 'Copied'; } };
       try{ navigator.clipboard.writeText(txt).then(done, done); }catch(e){ done(); } };
-    card.querySelectorAll('[data-clcopy]').forEach(b => b.addEventListener('click', () => copy(linkFor(b.dataset.clcopy), b)));
+    card.querySelectorAll('[data-clcopy]').forEach(b => b.addEventListener('click', () => copy(b.dataset.clcopy === '__teach' ? teachLink() : linkFor(b.dataset.clcopy), b)));
     const all = card.querySelector('#clCopyAll'); if(all) all.addEventListener('click', () => copy(parse(ta.value).filter(c => CODE_RE.test(c)).map(c => c + '  ' + linkFor(c)).join('\n'), all));
   }
 
