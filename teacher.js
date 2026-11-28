@@ -70,13 +70,13 @@
 
   const T = { view:'home', cls:0, one:'', kind:'', sub:'all', st:'auto', pick:'', step:'own', text:'', part:'', label:'', day:'', note:'', links:[], msg:'',
     edit:null, en:'', ec:'', emsg:'', rm:-1, open:'', own:'', badd:false, bt:'', bsub:'', bst:'', bmsg:'', brm:-1,
-    iw:'', ik:'A booklet', isub:'', ist:'', iy:'', imsg:'', irm:-1, iclear:0 };
-  const TITLES = { home:'Teachers’ area', assign:'Assign a task', progress:'View task progress', suggest:'Suggest a resource', print:'Print achievements', classes:'My classes' };
+    iw:'', ik:'A booklet', isub:'', ist:'', iy:'', imsg:'', irm:-1, iclear:0, tv:'active', lib:'', ladd:false, ltext:'', lmsg:[], lok:'', lrm:'' };
+  const TITLES = { home:'Teachers’ area', assign:'Assign a task', tasks:'Set tasks', library:'Booklet library', progress:'View task progress', profile:'Assessment profiles', suggest:'Suggest a resource', print:'Print achievements', classes:'My classes' };
 
   /* ---------- assign: who, what kind, which one ---------- */
-  function targets(){ const C = classes(); if(T.cls === 'one') return CODE_RE.test(T.one) ? [T.one] : []; const c = C[Number(T.cls)]; return c ? c.codes : []; }
-  function clsName(){ const C = classes(); return T.cls === 'one' ? T.one : (C[Number(T.cls)] || {}).n || ''; }
-  function stageNow(){ return T.st === 'auto' ? (T.cls === 'one' ? '' : usualStage(clsName())) || 'all' : T.st; }
+  function targets(){ const C = classes(); if(T.cls === 'one') return CODE_RE.test(T.one) ? [T.one] : []; if(T.cls === 'all') return [...new Set([].concat(...C.map(c => c.codes)))]; const c = C[Number(T.cls)]; return c ? c.codes : []; }
+  function clsName(){ const C = classes(); return T.cls === 'one' ? T.one : T.cls === 'all' ? 'Everyone' : (C[Number(T.cls)] || {}).n || ''; }
+  function stageNow(){ return T.st === 'auto' ? (T.cls === 'one' || T.cls === 'all' ? '' : usualStage(clsName())) || 'all' : T.st; }
   function items(){
     if(!B()) return [];
     const st = stageNow(), okS = x => T.sub === 'all' || [].concat(x.sub).includes(T.sub), okT = x => st === 'all' || !x.st.length || x.st.includes(st);
@@ -84,7 +84,7 @@
     if(T.kind === 'p') L = B().paths().map(p => ({ id:p.id, t:p.title, e:p.emoji || '📘', s:[p.subject, p.years].filter(Boolean).join(' · '), sub:p.subject || '', st:stagesOfPack(p) }));
     else if(T.kind === 't') L = B().acts.filter(a => a.id.indexOf('explore:') === 0).map(a => { const id = a.id.slice(8), m = TOPICS[id] || { sub:'Topic', st:[] };
       return { id, t:a.n.replace('Explorer Worlds: ', ''), i:a.ic, e:a.e, s:m.sub + (m.st.length ? ' · ' + m.st.map(stageName).join(', ') : ''), sub:m.sub, st:m.st }; });
-    else if(T.kind === 'b') L = lib().map(b => ({ id:'L:' + b.id, t:b.t, i:'books', e:'📚', s:[[].concat(b.sub).join(' and '), b.st.map(stageName).join(', ')].join(' · '), tag:b.app ? 'In the app' : 'On the board', sub:b.sub, st:b.st, lib:b }))
+    else if(T.kind === 'b') L = lib().map(b => ({ id:'L:' + b.id, t:b.t, i:'books', e:'📚', s:[[].concat(b.sub).join(' and '), b.st.map(stageName).join(', ')].join(' · '), tag:b.mine ? 'Made by a teacher' : b.app ? 'In the app' : 'On the board', sub:b.sub, st:b.st, lib:b }))
       .concat(booklets().map((b, i) => ({ id:String(i), t:b.t, i:'books', e:'📚', s:[b.sub, stageName(b.st)].filter(Boolean).join(' · ') || 'Any subject, any stage', tag:'My own list', sub:b.sub, st:b.st ? [b.st] : [], own:true })));
     else if(T.kind === 'a') return B().acts.filter(a => a.id && a.id !== 'booklet' && a.id.indexOf('explore:') !== 0).map(a => ({ id:a.id, t:a.n, i:a.ic, e:a.e, s:'', sub:'', st:[] }));
     return L.filter(x => (T.kind === 'b' && !x.sub ? true : okS(x)) && okT(x));
@@ -101,7 +101,7 @@
   function makeLinks(){
     const codes = targets(), d = T.day || today(), p = picked();
     if(!B()) return 'The Burrow is not ready on this page. Reload and try again.';
-    if(!codes.length) return T.cls === 'one' ? 'Type a Fab code first: an animal, a dash and three numbers, like otter-482. Never a name.' : 'Add a class with at least one Fab code first (My classes).';
+    if(!codes.length) return T.cls === 'one' ? 'Type a Fab code first: an animal, a dash and three numbers, like otter-482. Never a name.' : T.cls === 'all' ? 'Add a class first (My classes). Everyone means every child in your classes.' : 'Add a class with at least one Fab code first (My classes).';
     if(!T.kind) return 'Choose what kind of task first.';
     if((T.kind === 'c' || T.kind === 'k') && !T.text.trim()) return T.kind === 'k' ? 'Say what the well done is for, in a few words.' : 'Type the challenge first, in a few words.';
     if(!p && T.kind !== 'c' && T.kind !== 'k') return T.kind === 'b' ? 'Choose a booklet first, or add one to your list.' : 'Choose one of the cards first.';
@@ -113,8 +113,10 @@
     else if(T.kind === 'b') opt.extras = [{ a:'booklet', t:p.t + (T.part.trim() ? ': ' + T.part.trim() : ''), n:T.note, th:T.label, d }];
     else if(T.kind === 'c') opt.extras = [{ a:'', t:T.text, n:T.note, th:T.label, d }];
     else if(T.kind === 'k') opt.praise = T.text;
-    T.links = codes.map(c => ({ c, l:B().linkFor(c, rows, [], opt) }));
-    const log = arr(ls.json(LK, [])); log.unshift({ t:Date.now(), c:clsName(), w:whatName().slice(0, 90), l:T.label, n:codes.length }); ls.set(LK, log.slice(0, 20));
+    /* a booklet a teacher added is not on the app's site, so it travels after the # in each child's link */
+    const tail = T.kind === 'b' && p.lib && p.lib.mine ? FabBooklets.hashFor(p.lib.id) : '';
+    T.links = codes.map(c => ({ c, l:B().linkFor(c, rows, [], opt) + tail }));
+    const K = KINDS.find(x => x.k === T.kind), log = arr(ls.json(LK, [])); log.unshift({ t:Date.now(), c:clsName(), w:whatName().slice(0, 90), l:T.kind === 'k' ? '' : T.label, n:codes.length, d:T.kind === 'k' ? today() : d, k:K ? K.n.replace(/^An? /, '') : '', sub:p ? [].concat(p.sub || '').filter(Boolean).join(', ') : '' }); ls.set(LK, log.slice(0, 60));
     return '';
   }
 
@@ -167,16 +169,65 @@
 
   /* ---------- the home page: four cards, like the app's landing page ---------- */
   function homeHTML(){
-    const C = classes(), tile = (id, v, name, emoji, t, p) => `<button type="button" class="tile category-tile tc-tile" id="${id}" data-tcview="${v}"><span class="emoji">${ic(name, emoji)}</span><h2>${t}</h2><p>${p}</p></button>`;
+    const C = classes(), nb = lib().length;
+    const tile = (id, v, name, emoji, t, p) => `<button type="button" class="tile category-tile tc-tile" id="${id}" ${v ? `data-tcview="${v}"` : ''}><span class="emoji">${ic(name, emoji)}</span><h2>${t}</h2><p>${p}</p></button>`;
+    const sec = (id, t, tiles) => `<section class="tc-sec" id="${id}"><h2 class="tc-sech">${t}</h2><div class="hub-grid tc-home">${tiles}</div></section>`;
     return `<p class="tc-top"><b>Fab codes only, never a child’s name.</b> Everything on these pages stays in this browser.</p>
-      <div class="hub-grid category-grid tc-home">
-        ${tile('tcGoAssign', 'assign', 'target', '📌', 'Assign a task', 'A booklet, flightpath, topic or activity, for a class or one child')}
-        ${tile('tcGoProgress', 'progress', 'map', '🗺️', 'View task progress', 'What is set, started and finished')}
-        ${tile('tcGoSuggest', 'suggest', 'pencil', '💡', 'Suggest a resource', 'Tell us what would help. It goes into the ideas bank')}
-        ${tile('tcGoPrint', 'print', 'star', '🏅', 'Print achievements', 'Certificates for steps, checkpoints and super effort')}
-      </div>
-      <div class="me-card tc-foot" id="tcMore"><div class="st-row"><button type="button" class="btn small soft" id="tcGoClasses" data-tcview="classes">${ic('paw', '🐾')} My classes${C.length ? ' (' + C.length + ')' : ''}</button>
-        <button type="button" class="btn small soft" id="tcAll">Every flightpath and lesson</button><button type="button" class="btn small soft" id="tcStaff">Fab codes, set work for one child, the impact log</button></div></div>`;
+      ${sec('tcSecTeach', 'Teach', tile('tcGoAssign', 'assign', 'target', '📌', 'Assign a task', 'A booklet, flightpath, topic or activity, for a class, one child or everyone')
+        + tile('tcGoTasks', 'tasks', 'pencil', '🗓️', 'Set tasks', 'What is coming up, active and past')
+        + tile('tcGoLibrary', 'library', 'books', '📚', 'Booklet library', nb + ' booklets. Look inside, assign one or add your own'))}
+      ${sec('tcSecData', 'Children’s work and data', tile('tcGoProgress', 'progress', 'map', '🗺️', 'View task progress', 'What is set, started and finished, and booklet marks')
+        + tile('tcGoProfile', 'profile', 'compass', '🧭', 'Assessment profiles', 'Marks by strand, with support or challenge to set next')
+        + tile('tcGoPrint', 'print', 'star', '🏅', 'Print achievements', 'Certificates for steps, checkpoints and super effort'))}
+      ${sec('tcSecRes', 'Resources and ideas', tile('tcAll', '', 'rocket', '🚀', 'Flightpaths and lessons', 'Every flightpath and lesson in the app')
+        + tile('tcGoSuggest', 'suggest', 'pencil', '💡', 'Suggest a resource', 'Tell us what would help. It goes into the ideas bank'))}
+      ${sec('tcSecAdmin', 'Admin', tile('tcGoClasses', 'classes', 'paw', '🐾', 'My classes', C.length ? C.length + (C.length === 1 ? ' class' : ' classes') + ' of Fab codes' : 'Set up a class of Fab codes')
+        + tile('tcStaff', '', 'toolbox', '🧰', 'Fab codes and class links', 'Make a Fab code, class links, the impact log')
+        + tile('tcPointer', '', 'sun', '☁️', 'Look here: the teacher’s pointer', (window.FabSpot && FabSpot.shown() ? '<b>On.</b> A “Look here” button sits bottom left on every page.' : 'A soft cloud of light to show children where to look.') + ' Shift + L works anywhere'))}`;
+  }
+
+  /* ---------- set tasks: what is coming up, active and past (like a to-do list for the school) ---------- */
+  function tasksHTML(){
+    const log = arr(ls.json(LK, [])), td = today(), old = Date.now() - 28 * 864e5;
+    const st = r => (r.d || '') > td ? 'future' : r.t < old ? 'past' : 'active', n = k => log.filter(r => st(r) === k).length, L = log.filter(r => st(r) === T.tv);
+    const day = d => { const m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(d || ''); return m ? new Date(m[1], m[2] - 1, m[3]).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : ''; };
+    return `<div class="me-card" id="tcTasks"><h2>${ic('pencil', '🗓️')} Set tasks</h2>
+      <div class="tc-chips" id="tcTv">${[['future', 'Future'], ['active', 'Active'], ['past', 'Past']].map(x => chip('data-tctv', x[0], x[1] + ' (' + n(x[0]) + ')', T.tv === x[0])).join('')}<button type="button" class="btn small leaf" data-tcview="assign">New task</button></div>
+      ${L.length ? `<ul class="tc-tasklist">${L.map(r => `<li><div><b>${h(r.w)}</b><span>Set for: ${h(r.c)} (${Number(r.n) === 1 ? '1 child' : (Number(r.n) || 0) + ' children'})${r.d ? ' · shows from ' + h(day(r.d)) : ''} · set on ${h(new Date(r.t).toLocaleDateString('en-GB', { day:'numeric', month:'short' }))}</span>
+        <span class="tc-tags">${[r.k, r.sub, r.l].filter(Boolean).map(x => `<i>${h(x)}</i>`).join('')}</span></div></li>`).join('')}</ul>` : `<p class="hint">Nothing ${T.tv === 'future' ? 'coming up' : T.tv === 'past' ? 'older than four weeks' : 'active'} yet.</p>`}
+      <p class="hint">This lists what was set from this browser (the last 60). How many children have done each task can only be counted once progress is saved online; today, open View task progress on a child’s viewer.</p></div>`;
+  }
+
+  /* ---------- the booklet library ---------- */
+  function libraryHTML(){
+    const st = T.st === 'auto' ? 'all' : T.st, L = lib().filter(b => (T.sub === 'all' || [].concat(b.sub).includes(T.sub)) && (st === 'all' || !b.st.length || b.st.includes(st))), b = lib().find(x => x.id === T.lib);
+    return `<div class="me-card" id="tcLibrary"><h2>${ic('books', '📚')} Booklet library</h2>
+      <p>Booklets sit beside the flightpaths. A booklet <b>in the app</b> is worked through by the child and marked when it is handed in. One <b>on the board</b> is opened from your own files.</p>
+      <div class="tc-filter"><span>Subject</span><div class="tc-chips">${chip('data-tcsub', 'all', 'All', T.sub === 'all')}${SUBJECTS.map(x => chip('data-tcsub', x, x, T.sub === x)).join('')}</div></div>
+      <div class="tc-filter"><span>Key stage</span><div class="tc-chips">${chip('data-tcst', 'all', 'All', st === 'all')}${STAGES.map(x => chip('data-tcst', x.k, x.n, st === x.k)).join('')}</div></div>
+      ${L.length ? `<div class="tc-picks" id="tcLibPicks">${L.map(x => `<button type="button" class="tc-pick ${x.id === T.lib ? 'on' : ''}" data-tclib="${h(x.id)}" aria-pressed="${x.id === T.lib}"><span class="tc-pic" aria-hidden="true">${ic('books', '📚')}</span><b>${h(x.t)}</b><small>${h([[].concat(x.sub).filter(Boolean).join(' and '), x.st.map(stageName).join(', ')].filter(Boolean).join(' · '))}</small><i class="tc-tag ${x.app ? 'app' : ''}">${x.mine ? 'Made by a teacher' : x.app ? 'In the app' : 'On the board'}</i></button>`).join('')}</div>` : '<p class="hint">No booklet matches. Tap All.</p>'}
+      ${b ? `<div class="tc-about" id="tcLibOne"><p><b>${h(b.t)}</b>${b.time ? ' · ' + h(b.time) : ''}. ${h(b.about)}</p>${b.care ? `<p><b>With care:</b> ${h(b.care)}</p>` : ''}
+        <ol class="tc-pages">${(b.app ? b.pages.map(p => p.t) : b.parts).map(x => `<li>${h(x)}</li>`).join('')}</ol>
+        <div class="st-row">${b.app ? '<button type="button" class="btn small soft" id="tcLibLook">Look inside</button>' : ''}<button type="button" class="btn small leaf" id="tcLibAssign">Assign this booklet</button>${b.mine ? `<button type="button" class="btn small soft" id="tcLibRm">${T.lrm === b.id ? 'Tap again to remove it' : 'Remove it from this browser'}</button>` : ''}</div></div>` : ''}</div>
+      <div class="me-card" id="tcLibAdd"><h2>${ic('pencil', '✏️')} Add a booklet made with Claude</h2>
+      <ol class="tc-how"><li><b>Copy the brief</b> and paste it into Claude (the Teaching Studio), with your year group, subject and goal. Describe the group, never a child.</li><li>Claude gives you a booklet file. <b>Paste it below</b>, or choose the saved .json file.</li><li>The app <b>checks it</b> (every sum is worked out again) and adds it to your library. Look inside, then assign it.</li></ol>
+      <div class="st-row"><button type="button" class="btn small leaf" id="tcBrief">Copy the brief for Claude</button><label class="btn small soft tc-file">Choose a booklet file<input type="file" id="tcLfile" accept=".json,application/json,text/plain" hidden></label></div>
+      <label class="bw-note tc-paste"><span>Or paste the booklet here</span><textarea id="tcLtext" rows="5" spellcheck="false" placeholder='{ "t": "Fractions: halves and quarters", "sub": "Maths", "st": ["ks1"], "pages": [ … ] }'>${h(T.ltext)}</textarea></label>
+      <div class="st-row"><button type="button" class="btn leaf" id="tcLadd">Check it and add it</button></div>
+      ${T.lok ? `<p class="learn-msg good" id="tcLok" aria-live="polite">${h(T.lok)}</p>` : ''}${T.lmsg.length ? `<ul class="tc-errs" id="tcLerr" aria-live="polite">${T.lmsg.map(x => `<li>${h(x)}</li>`).join('')}</ul>` : ''}
+      <p class="hint">A booklet you add is kept in this browser, and it travels inside each child’s link when you assign it. To put it in the library for every teacher, send the file to be published with the app. Claude cannot write booklets inside the app itself: that would need the app to have a server and a paid Claude connection.</p></div>`;
+  }
+
+  /* ---------- assessment profiles ---------- */
+  function profileHTML(){
+    if(!B() || !window.FabBooklets) return '';
+    const P = knownCodes().map(c => FabBooklets.profile(c));
+    return `<div class="me-card" id="tcProfile"><h2>${ic('compass', '🧭')} Assessment profiles on this device</h2>
+      <p>Each booklet is marked by the app when it is handed in. The marks build a profile, strand by strand, so support or challenge can be set at the point of need.</p>
+      ${P.length ? P.map(pf => `<div class="tc-kid on" data-tcprof="${h(pf.code)}"><div class="tc-kidtop"><b>${h(pf.code)}</b><span>${pf.books.length ? pf.books.map(b => `${h(b.t)}: ${b.got} of ${b.tried}${b.done ? '' : ' (not handed in yet)'}`).join(' · ') : 'No booklets yet'}</span></div>
+        ${pf.rows.length ? `<div style="overflow-x:auto"><table class="st-table tc-ptable"><thead><tr><th>Subject</th><th>Strand</th><th>Marks</th><th>Where they are</th><th>Set next (a draft: you know the child)</th></tr></thead><tbody>${pf.rows.map(r => `<tr><td>${h(r.sub)}</td><td>${h(r.s)}</td><td>${r.got} of ${r.tried}</td><td>${r.band ? `<span class="bk-light ${r.band}">${r.bandName}</span>` : '<span class="bk-na">Not enough yet</span>'}</td><td>${r.next.map(n => `<button type="button" class="btn small soft" data-tcnext="${h(pf.code)}|${h(n.k)}">${h(n.l)}</button>`).join(' ') || '–'}</td></tr>`).join('')}</tbody></table></div>` : ''}</div>`).join('') : '<p>No child has used this browser yet.</p>'}
+      <p class="hint">Secure is 8 in 10 or more of the questions answered, Developing is 5 in 10 or more, and a strand needs two answers before it is judged. Questions left empty are not counted against a child. Open questions and confidence are for you to read under View task progress.</p>
+      ${whereHint}</div>`;
   }
 
   /* ---------- my classes ---------- */
@@ -205,8 +256,9 @@
       ${T.bmsg ? `<p class="learn-msg" aria-live="polite">${h(T.bmsg)}</p>` : ''}</div>`;
   }
   function assignHTML(){
-    const C = classes(), L = items(), p = picked(), st = stageNow(), usual = T.cls === 'one' ? '' : usualStage(clsName());
-    if(T.cls !== 'one' && !C[Number(T.cls)]) T.cls = C.length ? 0 : 'one';
+    const C = classes(), L = items(), p = picked(), st = stageNow(), usual = T.cls === 'one' || T.cls === 'all' ? '' : usualStage(clsName());
+    const ideas0 = B() && B().themes[T.label] && T.kind !== 'k' ? B().themes[T.label] : null;
+    if(T.cls !== 'one' && T.cls !== 'all' && !C[Number(T.cls)]) T.cls = C.length ? 0 : 'one';
     const K = KINDS.find(k => k.k === T.kind), filtered = T.kind === 'b' || T.kind === 'p' || T.kind === 't';
     const po = T.kind === 'p' && p ? B().pathOf(B().packById(p.id)) : null;
     const ready = T.kind === 'c' || T.kind === 'k' || !!p;
@@ -215,8 +267,9 @@
       : 'Nothing matches that subject and stage. Tap All to see everything.';
     return `<div class="me-card tc-step" id="tcAssign">
       <h2><span class="tc-n">1</span> Who is it for?</h2>
-      <div class="tc-chips" id="tcWho">${C.map((c, i) => chip('data-tccls', i, h(c.n) + ' (' + c.codes.length + ')', T.cls === i)).join('')}${chip('data-tccls', 'one', 'One child', T.cls === 'one')}<button type="button" class="btn small soft" data-tcview="classes">${C.length ? 'Change my classes' : 'Add a class'}</button></div>
+      <div class="tc-chips" id="tcWho">${C.map((c, i) => chip('data-tccls', i, h(c.n) + ' (' + c.codes.length + ')', T.cls === i)).join('')}${C.length > 1 ? chip('data-tccls', 'all', 'Everyone (' + new Set([].concat(...C.map(c => c.codes))).size + ')', T.cls === 'all') : ''}${chip('data-tccls', 'one', 'One child', T.cls === 'one')}<button type="button" class="btn small soft" data-tcview="classes">${C.length ? 'Change my classes' : 'Add a class'}</button></div>
       ${T.cls === 'one' ? `<div class="bw-row"><label><span>Fab code</span><input type="text" id="tcOne" value="${h(T.one)}" placeholder="otter-482" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="20"></label></div>` : ''}
+      ${T.cls === 'all' ? '<p class="hint">For something the whole school is doing, such as Children in Need, Anti-Bullying Week, National Coding Week or Make More FAB: choose the task, then type the theme under “Half term or theme” and it shows as a tag on every child’s card.</p>' : ''}
       <h2><span class="tc-n">2</span> What kind of task?</h2>
       <div class="tc-chips" id="tcKinds">${KINDS.map(k => chip('data-tckind', k.k, ic(k.ic, k.e) + ' ' + k.n, T.kind === k.k)).join('')}</div>
       ${K ? `<p class="hint tc-say">${h(K.say)}</p>` : ''}
@@ -236,6 +289,7 @@
         <label><span>Shows from</span><input type="date" id="tcDay" value="${h(T.day || today())}"></label>
         <label class="bw-note"><span>Note for the children (optional)</span><input type="text" id="tcNote" maxlength="80" value="${h(T.note)}"></label>` : ''}</div>
         <datalist id="tcLabels">${TERMS.concat(B() ? Object.keys(B().themes) : []).map(t => `<option value="${h(t)}">`).join('')}</datalist>
+        ${ideas0 ? `<div class="tc-ideas0"><span>Ideas for ${h(T.label)}:</span>${ideas0.map((x, k) => `<button type="button" class="btn small soft" data-tcidea="${k}">${h(x[1])}</button>`).join('')}</div>` : ''}
         ${T.kind === 'b' && p.lib ? `<div class="tc-about"><p><b>${h(p.lib.t)}</b>${p.lib.time ? ' · ' + h(p.lib.time) : ''}. ${h(p.lib.about)}</p>${p.lib.care ? `<p><b>With care:</b> ${h(p.lib.care)}</p>` : ''}
           ${p.lib.app ? `<p>This booklet is built into the app. The child works through it in their own viewer; nothing is marked in front of them. You read their answers, the hinge letters and draft next steps under <b>View task progress</b>.</p><div class="st-row"><button type="button" class="btn small soft" id="tcLook">Look inside</button></div>`
             : '<p>This booklet is opened <b>on the board</b> from your own files. The app lists the part in the child’s Today and they tap “I did it”. Set one part at a time: a part a child can finish in one sitting.</p>'}</div>`
@@ -319,10 +373,10 @@
     const ttl = document.querySelector('#screen-teach .screen-title'); if(ttl) ttl.textContent = TITLES[T.view];
     const bk = document.querySelector('#screen-teach .btn-back'); if(bk) bk.textContent = T.view === 'home' ? '← Back' : '← Teachers’ area';
     box.dataset.view = T.view;
-    box.innerHTML = T.view === 'assign' ? assignHTML() : T.view === 'progress' ? progressHTML() : T.view === 'print' ? printHTML() : T.view === 'suggest' ? suggestHTML() : T.view === 'classes' ? classesHTML() : homeHTML();
+    box.innerHTML = T.view === 'assign' ? assignHTML() : T.view === 'tasks' ? tasksHTML() : T.view === 'library' ? libraryHTML() : T.view === 'profile' ? profileHTML() : T.view === 'progress' ? progressHTML() : T.view === 'print' ? printHTML() : T.view === 'suggest' ? suggestHTML() : T.view === 'classes' ? classesHTML() : homeHTML();
     wire(box);
   }
-  function go(v){ T.view = TITLES[v] ? v : 'home'; T.rm = -1; T.irm = -1; T.iclear = 0; T.brm = -1; if(v !== 'classes'){ T.edit = null; T.emsg = ''; } render(); try{ window.scrollTo(0, 0); }catch(e){} }
+  function go(v){ T.view = TITLES[v] ? v : 'home'; T.lmsg = []; T.lok = ''; T.lrm = ''; if(v === 'library' && T.st === 'auto') T.st = 'all'; T.rm = -1; T.irm = -1; T.iclear = 0; T.brm = -1; if(v !== 'classes'){ T.edit = null; T.emsg = ''; } render(); try{ window.scrollTo(0, 0); }catch(e){} }
   /* for tests and for links from other pages: FabTeach.choose('p:christmas-flightpath'), 'a:explore:victorian', 'a:studio', 'b:0', 'c', 'k' */
   function choose(v){
     v = String(v || ''); let k = v.slice(0, 1), id = v.slice(2);
@@ -335,7 +389,7 @@
     const redraw = () => render(), stale = () => { T.links = []; };
     all('[data-tcview]', b => { snd('tick'); go(b.dataset.tcview); });
     /* assign a task */
-    all('[data-tccls]', b => { const v = b.dataset.tccls; T.cls = v === 'one' ? 'one' : Number(v); T.st = 'auto'; T.pick = T.kind === 'b' || T.kind === 'p' || T.kind === 't' ? '' : T.pick; T.links = []; T.msg = ''; snd('tick'); redraw(); });
+    all('[data-tccls]', b => { const v = b.dataset.tccls; T.cls = v === 'one' || v === 'all' ? v : Number(v); T.st = 'auto'; T.pick = T.kind === 'b' || T.kind === 'p' || T.kind === 't' ? '' : T.pick; T.links = []; T.msg = ''; snd('tick'); redraw(); });
     on('#tcOne', 'input', e => { T.one = String(e.target.value || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20); stale(); });
     all('[data-tckind]', b => { T.kind = b.dataset.tckind; T.pick = ''; T.step = 'own'; T.text = ''; T.part = ''; T.sub = 'all'; T.badd = false; T.brm = -1; T.links = []; T.msg = ''; snd('tick'); redraw(); });
     all('[data-tcsub]', b => { T.sub = b.dataset.tcsub; T.pick = ''; T.links = []; snd('tick'); redraw(); });
@@ -351,6 +405,22 @@
     on('#tcMake', 'click', () => { const err = makeLinks(); if(err){ T.links = []; T.msg = err; snd('gentle'); } else { T.msg = (T.links.length === 1 ? '1 link is ready.' : T.links.length + ' links are ready, one per child.') + ' Each holds the task and your words, and nothing else.'; snd('ding'); } redraw(); });
     on('#tcCopyAll', 'click', e => { const t = T.links.map(x => x.c + '\t' + x.l).join('\n'); try{ navigator.clipboard.writeText(t); e.target.textContent = 'Copied ✓'; }catch(err){ e.target.textContent = 'Copy each link below'; } });
     all('[data-tccopy]', b => { const x = T.links.find(l => l.c === b.dataset.tccopy); if(!x) return; try{ navigator.clipboard.writeText(x.l); b.textContent = 'Copied ✓'; }catch(err){ const i = b.parentNode.querySelector('input'); if(i) i.select(); b.textContent = 'Press Ctrl+C'; } });
+    all('[data-tcidea]', b => { const x = B().themes[T.label] && B().themes[T.label][Number(b.dataset.tcidea)]; if(!x) return; const ex = x[0].indexOf('explore:') === 0;
+      T.kind = !x[0] ? 'c' : ex ? 't' : 'a'; T.pick = ex ? x[0].slice(8) : x[0]; T.text = x[1]; T.sub = 'all'; T.st = 'all'; T.links = []; T.msg = ''; snd('tick'); redraw(); });
+    /* set tasks, the library and profiles */
+    all('[data-tctv]', b => { T.tv = b.dataset.tctv; snd('tick'); redraw(); });
+    all('[data-tclib]', b => { T.lib = T.lib === b.dataset.tclib ? '' : b.dataset.tclib; T.lrm = ''; snd('tick'); redraw(); });
+    on('#tcLibLook', 'click', () => FabBooklets.open(T.lib, 1, { teach:true, back:'screen-teach' }));
+    on('#tcLibAssign', 'click', () => choose('b:L:' + T.lib));
+    on('#tcLibRm', 'click', () => { if(T.lrm !== T.lib){ T.lrm = T.lib; redraw(); return; } FabBooklets.remove(T.lib); T.lib = ''; T.lrm = ''; snd('tick'); redraw(); });
+    on('#tcBrief', 'click', e => { try{ navigator.clipboard.writeText(FabBooklets.brief); e.target.textContent = 'Copied ✓ Paste it into Claude'; }catch(err){ e.target.textContent = 'Copying is blocked here'; } });
+    on('#tcLtext', 'input', e => { T.ltext = e.target.value; });
+    on('#tcLfile', 'change', e => { const f = e.target.files && e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = () => { T.ltext = String(r.result || '').slice(0, 60000); T.lmsg = []; T.lok = ''; redraw(); }; r.readAsText(f); });
+    on('#tcLadd', 'click', () => { T.lok = ''; let d = null; const raw = String(T.ltext || '').replace(/^\s*```(?:json)?/i, '').replace(/```\s*$/, '').trim();
+      try{ d = JSON.parse(raw); }catch(err){ T.lmsg = [raw ? 'This is not a whole booklet file yet: it should start with { and end with }. Ask Claude for “the JSON only”.' : 'Paste the booklet first, or choose its file.']; snd('gentle'); redraw(); return; }
+      const r = FabBooklets.add(d); if(!r.ok){ T.lmsg = r.errors; snd('gentle'); redraw(); return; }
+      T.lmsg = []; T.ltext = ''; T.lib = r.id; T.sub = 'all'; T.st = 'all'; T.lok = '“' + r.def.t + '” is in your library. Look inside, then assign it.'; snd('ding'); redraw(); });
+    all('[data-tcnext]', b => { const i = b.dataset.tcnext.indexOf('|'); T.cls = 'one'; T.one = b.dataset.tcnext.slice(0, i); choose(b.dataset.tcnext.slice(i + 1)); try{ window.scrollTo(0, 0); }catch(e){} });
     /* my booklets */
     on('#tcBadd', 'click', () => { T.badd = true; T.bt = ''; T.bmsg = ''; T.bsub = T.sub === 'all' ? '' : T.sub; T.bst = T.st === 'auto' || T.st === 'all' ? '' : T.st; snd('tick'); redraw(); const i = document.getElementById('tcBt'); if(i) i.focus(); });
     on('#tcBt', 'input', e => { T.bt = e.target.value.slice(0, 40); });
@@ -398,6 +468,7 @@
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv' })); a.download = 'fab-app-ideas-bank-' + today() + '.csv'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); e.target.textContent = 'Downloaded ✓'; }catch(err){ e.target.textContent = 'Downloading is blocked here: use Copy'; } });
     /* more */
     on('#tcStaff', 'click', () => { const bk = document.querySelector('#screen-staff .btn-back'); if(bk) bk.dataset.go = 'screen-teach'; showScreen('screen-staff'); });
+    on('#tcPointer', 'click', () => { if(!window.FabSpot) return; FabSpot.show(!FabSpot.shown()); snd('ding'); redraw(); });
     on('#tcAll', 'click', () => { if(B()) B().openAll(); else showScreen('screen-learn'); });
   }
 
@@ -427,8 +498,15 @@
 .teach-door .btn{display:inline-flex;align-items:center;gap:8px}.teach-door svg{width:1.3em;height:1.3em}
 #screen-teach .me-card{text-align:left}#screen-teach .me-card h2{display:flex;align-items:center;gap:10px}#screen-teach .me-card h2 svg{width:1.4em;height:1.4em;flex:none}
 .tc-top{text-align:center;margin:4px 0 12px}
-.tc-home{grid-template-columns:repeat(2,minmax(0,1fr));max-width:820px}
-@media (max-width:620px){.tc-home{grid-template-columns:1fr}}
+.tc-home{grid-template-columns:repeat(3,minmax(0,1fr));max-width:980px;margin:0 auto;gap:14px}
+@media (max-width:760px){.tc-home{grid-template-columns:1fr}}
+.tc-sec{max-width:980px;margin:0 auto 16px}.tc-sech{font-size:1.2rem;margin:0 0 8px;text-align:left;color:#4A2A18;border-bottom:3px solid #2B1A12;padding-bottom:4px}
+.tc-home .tc-tile{padding-top:16px;padding-bottom:16px}.tc-home .tc-tile h2{font-size:1.25rem}.tc-home .tc-tile p{font-size:.95rem}.tc-home .tc-tile .emoji{font-size:1.9rem}
+.tc-tasklist{list-style:none;margin:10px 0;padding:0;display:grid;gap:8px}.tc-tasklist li{background:#fff;border:3px solid #E3C9A0;border-radius:14px;padding:8px 14px}.tc-tasklist b{display:block;font-size:1.1rem}.tc-tasklist span{display:block}
+.tc-tags i,.tc-ideas0 span{font-style:normal}.tc-tags i{display:inline-block;background:#CFE7F2;border:2px solid #2B1A12;border-radius:999px;padding:0 9px;margin:4px 6px 0 0;font-size:.85rem;font-weight:700}
+.tc-ideas0{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.tc-pages{margin:6px 0;padding-left:1.4em;columns:2}.tc-how{padding-left:1.3em;display:grid;gap:4px}.tc-file{cursor:pointer}.tc-paste{display:grid;gap:4px;margin:8px 0}.tc-paste textarea{width:100%;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;border:2px solid #2B1A12;border-radius:12px;padding:8px 10px;background:#fff;box-sizing:border-box}
+.tc-errs{background:#FFF1EC;border:2px solid #D8402B;border-radius:12px;padding:8px 12px 8px 28px;margin:8px 0}.tc-ptable td{vertical-align:middle}
 .tc-tile .emoji svg,.tc-tile .emoji .fi{width:1.5em;height:1.5em}
 .tc-foot{max-width:820px;margin:18px auto 0;background:transparent;border:0;box-shadow:none;padding:0}.tc-foot .st-row{justify-content:center}
 .tc-foot .btn{display:inline-flex;align-items:center;gap:8px}.tc-foot .btn svg{width:1.2em;height:1.2em}

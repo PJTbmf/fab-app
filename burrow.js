@@ -58,7 +58,9 @@
     'Anti-Bullying Week': [['studio', 'Make a kindness poster'], ['world', 'Pop a bubble and pick a kind thing to do today'], ['', 'Tell your teacher about a good friend']],
     'Children in Need': [['studio', 'Make a spotty picture'], ['sanct', 'Run the sanctuary for a day and share some berries'], ['music', 'Make a cheerful beat for a fundraising day']],
     'World Book Day': [['canvas', 'Draw your favourite book character'], ['', 'Tell your teacher about a book you love']],
-    'Safer Internet Day': [['canvas', 'Draw three ways to stay safe online']]
+    'Safer Internet Day': [['canvas', 'Draw three ways to stay safe online']],
+    'National Coding Week': [['code:bush', 'Solve a Fox Blocks puzzle'], ['code:dance', 'Code a dance for Fab'], ['code:tap', 'Make Fab do something when you tap']],
+    'Make More FAB': [['studio', 'Make a picture to go with your Make More FAB box'], ['', 'Show your teacher something you made from your box']]
   };
   function extraOK(x){ return !!(x && (x.t || (x.a && actOf(x.a)))); }
   function extraTitle(x){ const a = actOf(x.a); return x.t || (a ? a.n : ''); }

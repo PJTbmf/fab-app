@@ -40,7 +40,7 @@
     ['found', 'Slips on the easier + and − questions', 'Go back to the foundations before column methods: the My Number Toolkit booklet (counting on and counting back first).'],
     ['hinge', 'A hinge letter that is not the right one', 'Look at what that letter tells you (above). The same letter from several children means re-teach that misconception as a group, with place value counters.']
   ];
-  const Y34 = { id:'four-ops-y34', t:'Four Operations Check-In: Year 3/4', short:'Four Operations Check-In (Y3/4)', sub:'Maths', st:['lks2'], app:true, time:'About 30 minutes',
+  const Y34 = { afl:true, harder:'four-ops-y56', id:'four-ops-y34', t:'Four Operations Check-In: Year 3/4', short:'Four Operations Check-In (Y3/4)', sub:'Maths', st:['lks2'], app:true, time:'About 30 minutes',
     about:'Assessment for learning in eight short pages: confidence, quick questions, hinge questions, spot the mistake, choose your challenge and an exit ticket. Pages 1 and 8 bookend the session, so you can compare confidence before and after.',
     pages:[
       conf('c1', 'Four Operations Check-In', 'How confident do you feel? Tap a number for each one.'),
@@ -64,7 +64,7 @@
       ['6', 'Choose Your Challenge', '8 min', 'Where they place themselves; accuracy at that level', 'Let them choose; nudge up or down'],
       ['7', 'Always, Sometimes, Never', '3 min', 'Depth: reasoning and proof', 'Early finishers or whole-class talk'],
       ['8', 'Exit ticket', '2 min', 'Confidence change; what they want help with', 'Private; compare with page 1']] } };
-  const Y56 = { id:'four-ops-y56', t:'Four Operations Check-In: Year 5/6', short:'Four Operations Check-In (Y5/6)', sub:'Maths', st:['uks2'], app:true, time:'About 30 to 40 minutes',
+  const Y56 = { afl:true, id:'four-ops-y56', t:'Four Operations Check-In: Year 5/6', short:'Four Operations Check-In (Y5/6)', sub:'Maths', st:['uks2'], app:true, time:'About 30 to 40 minutes',
     about:'The same check-in for older children, with four Watch Me pages (I do, we do, you do) for column addition and subtraction, long multiplication and short division. You won’t need every page: use the confidence check to choose which Watch Me pages to start with.',
     pages:[
       conf('c1', 'Four Operations Check-In', 'How confident do you feel? Tap a number for each one.'),
@@ -101,9 +101,53 @@
 
   /* ---------- the library: BMF's booklets. Those not yet rebuilt as pages are opened on the board from the teacher's own files ---------- */
   const board = (id, t, sub, st, pages, about, care) => ({ id, t, short:t, sub, st, app:false, about, care:care || '', parts:pages });
+  /* My Number Toolkit, rebuilt as pages (Patrick, 28 Nov: "Yes"). Watch me → Let's do it together → My turn, one strategy at a time. */
+  const W = 'Watch me', G = 'Let’s do it together', M = 'My turn';
+  const TOOLS = ['Ten frame', 'Count on', 'Count back', 'Part-whole', 'Count up'], FACES = ['Tricky', 'Getting there', 'Got it'];
+  const TOOLKIT = { id:'number-toolkit', t:'My Number Toolkit: tools to add and take away', short:'My Number Toolkit', sub:'Maths', st:['ks1', 'lks2'], app:true, time:'Two or three pages a session',
+    about:'Back to the foundations, one strategy at a time: Watch me → Let’s do it together → My turn. For any class where counting is not yet secure. Pages 3 and 4 (counting on and counting back) are the priority.',
+    notes:['Watch me: you model and say every step aloud. Together: share the pen. My turn: they finish alone; one question is enough on a low-energy day.', 'Use real objects beside the screen: fingers, counters, bricks, coins.', 'Say teen numbers as “ten and two” for 12, so the 1 (the ten) is written first. Praise noticing and fixing a reversal.', 'Note which tool they choose on page 8: it shows the strategy they trust.', 'Next steps, only when secure: number bonds to 10 and 20 recalled, not counted; bridging through 10 (8 + 5 = 8 + 2 + 3); tens and ones; then column methods, with real objects first.'],
+    pages:[
+      { kind:'steps', t:'Counting Warm-Up', strap:'Say each number out loud as you point to it.', s:'Counting', parts:[
+        { h:G, say:'Count forwards. Fill in the missing numbers.', seq:[0, 1, 2, 3, '_4', 5, 6, 7, '_8', 9, 10, '_11', 12, 13, 14, '_15', 16, 17, 18, '_19', 20] },
+        { h:M, say:'Count backwards. Say them as you go: twenty, nineteen, eighteen…', seq:[20, 19, 18, '_17', 16, 15, 14, '_13', 12, 11, 10, '_9', 8, 7, '_6', 5, 4, 3, '_2', 1, 0] },
+        { h:M, say:'Tap the right one. Read it out loud first!', items:[{ q:'twelve', a:'12', opts:['12', '21'] }, { q:'thirteen', a:'13', opts:['31', '13'] }, { q:'fifteen', a:'15', opts:['15', '51'] }] }] },
+      { kind:'steps', t:'Ten Frames', strap:'How many dots? How many more to make 10?', s:'Number bonds to 10', parts:[
+        { h:W, aid:{ type:'frame', n:7 }, say:'I can see 7 dots. There are 3 empty spaces. So 7 + 3 = 10. Say: “5 on the top row, and 2 more makes 7.”' },
+        { h:G, aid:{ type:'frame', n:6 }, items:[{ q:'How many dots?', a:6 }, { q:'How many more to make 10?', a:4 }] },
+        { h:G, aid:{ type:'frame', n:9 }, items:[{ q:'How many dots?', a:9 }, { q:'How many more to make 10?', a:1 }] },
+        { h:M, say:'Finish the sums. You can draw the dots on paper first.', items:[{ q:'4 + ? = 10', a:6 }, { q:'8 + ? = 10', a:2 }] }] },
+      { kind:'steps', t:'Counting On', strap:'Start at the bigger number. Hop forwards.', s:'Counting on', parts:[
+        { h:W, aid:{ type:'line', from:0, to:10, at:5, hop:3 }, say:'5 + 3: I put 5 in my head, then hop on 3: 6, 7, 8. So 5 + 3 = 8' },
+        { h:G, aid:{ type:'line', from:0, to:10, at:6, hop:1 }, say:'6 + 4: We start at 6. I’ve done the first hop. Can you do the rest?', items:[{ q:'6 + 4', a:10 }] },
+        { h:M, aid:{ type:'line', from:0, to:12 }, items:[{ q:'7 + 2', a:9 }, { q:'9 + 3', a:12 }] }] },
+      { kind:'steps', t:'Counting Back', strap:'Take away means hop backwards. Count the hops.', s:'Counting back', parts:[
+        { h:W, aid:{ type:'line', from:0, to:10, at:9, hop:-3 }, say:'9 − 3: I start on 9. I hop back 3 times: 8, 7, 6. So 9 − 3 = 6' },
+        { h:G, aid:{ type:'line', from:0, to:20 }, say:'12 − 3: Put your finger on 12. Hold up 3 fingers and fold one down for each hop.', items:[{ q:'12 − 3', a:9 }] },
+        { h:M, aid:{ type:'line', from:0, to:17 }, items:[{ q:'10 − 3', a:7 }, { q:'7 − 3', a:4 }, { q:'15 − 3', a:12 }] }] },
+      { kind:'steps', t:'Jumping Back in 3s', strap:'Every jump goes back 3. Use your fingers to help.', s:'Counting back', parts:[
+        { h:W, aid:{ type:'line', from:0, to:20, at:20, hop:-3 }, say:'Start at 20. Count back 3 each time: 19, 18, 17. Land on 17! Then again from 17…' },
+        { h:G, say:'Keep jumping back 3. Fill in where we land.', seq:[20, 17, 14, '_11', '_8', '_5', '_2'] },
+        { h:M, say:'Which number is 3 less?', items:[{ q:'3 less than 6', a:3 }, { q:'3 less than 10', a:7 }, { q:'3 less than 13', a:10 }] },
+        { h:'Ready for more?', say:'What do you notice? 20, 17, 14, 11… Can you see a pattern? Tell your teacher.' }] },
+      { kind:'steps', t:'Part-Whole', strap:'Two parts make the whole. One picture, four number sentences!', s:'Part-whole', parts:[
+        { h:W, aid:{ type:'pw', w:10, a:7, b:3 }, say:'7 + 3 = 10 · 3 + 7 = 10 · 10 − 3 = 7 · 10 − 7 = 3' },
+        { h:G, aid:{ type:'pw', w:9, a:6, b:'?' }, say:'What is the missing part? Use your fingers: 6 and how many more make 9?', items:[{ q:'9 − 6', a:3 }] },
+        { h:M, aid:{ type:'pw', w:8, a:5, b:'?' }, say:'Find the missing part. Then write the four number sentences.', items:[{ q:'The missing part', a:3 }, { q:'5 + 3', a:8 }, { q:'3 + 5', a:8 }, { q:'8 − 5', a:3 }, { q:'8 − 3', a:5 }] }] },
+      { kind:'steps', t:'Counting Up', strap:'When the numbers are close together, count up from the smaller one.', s:'Counting up', parts:[
+        { h:W, aid:{ type:'line', from:0, to:15, at:9, hop:2 }, say:'11 − 9: 9 and 11 are close! I start on 9 and count up to 11: 10, 11. That’s 2 hops. So 11 − 9 = 2' },
+        { h:G, aid:{ type:'line', from:0, to:15 }, say:'13 − 10: Start on 10. Hop up until you reach 13. Count the hops together.', items:[{ q:'13 − 10', a:3 }] },
+        { h:M, aid:{ type:'line', from:10, to:20 }, items:[{ q:'15 − 12', a:3 }, { q:'20 − 17', a:3 }] }] },
+      { kind:'steps', t:'Choose Your Tool', strap:'Pick the tool that helps you most. There’s no wrong choice!', parts:[
+        { h:'Warm', items:[{ q:'6 + 3', a:9 }, { q:'My tool for 6 + 3', opts:TOOLS }, { q:'8 − 3', a:5 }, { q:'My tool for 8 − 3', opts:TOOLS }] },
+        { h:'Warmer', items:[{ q:'14 − 3', a:11 }, { q:'My tool for 14 − 3', opts:TOOLS }, { q:'7 + 5', a:12 }, { q:'My tool for 7 + 5', opts:TOOLS }] },
+        { h:'Hot', items:[{ q:'16 − 13', a:3 }, { q:'My tool for 16 − 13', opts:TOOLS }, { q:'12 − 4', a:8 }, { q:'My tool for 12 − 4', opts:TOOLS }] }] },
+      { kind:'steps', t:'How Did I Get On?', strap:'Tap the words that match how you feel.', parts:[
+        { h:'How it felt', items:['Counting forwards and back', 'Ten frames', 'Counting on', 'Counting back', 'Part-whole', 'Counting up'].map(q => ({ q, opts:FACES })) },
+        { h:'In my own words', items:[{ q:'My favourite tool is…' }, { q:'Something I want to practise again:' }] }] }
+    ] };
   const LIB = [Y34, Y56,
-    board('number-toolkit', 'My Number Toolkit: tools to add and take away', 'Maths', ['ks1', 'lks2'], ['Page 2: Counting Warm-Up', 'Page 3: Ten Frames', 'Page 4: Counting On', 'Page 5: Counting Back', 'Page 6: Jumping Back in 3s', 'Page 7: Part-Whole', 'Page 8: Counting Up', 'Page 9: Choose Your Tool', 'Page 10: How Did I Get On?'],
-      'Back to the foundations, one strategy at a time: Watch me → Let’s do it together → My turn. Two or three pages a session is plenty; pages 4 and 5 are the priority. For any class where counting is not yet secure.'),
+    TOOLKIT,
     board('year4-challenge', 'Year 4 Challenge Booklet: maths and English', ['Maths', 'English'], ['lks2'], ['Page 2: Number Detective', 'Page 3: Multiplication Masters', 'Page 4: Fraction & Decimal Challenge', 'Page 5: Shape Investigator', 'Page 6: Logic Lab', 'Page 7: Dickens’ Foggy Street (reading)', 'Page 8: Reading Detective', 'Page 9: Grammar Workshop', 'Page 10: Writer’s Challenge'],
       'Every page starts with a Quick start, then a Challenge and a Stretch. Each box is a natural stopping point, and the maths ends with a planned break. Stretch boxes go beyond Year 4.'),
     board('victorian-schools', 'Victorian Schools (Adventurers)', 'Topic', ['lks2'], ['Page 1: Victorian Schools (starter, who went to school?)', 'Page 2: In the Classroom (same or different, choose your challenge)'],
@@ -114,17 +158,20 @@
     board('warm-up-3', 'Warm-Up Cards 3: sounds, tricky words, sentences', 'Phonics', ['eyfs', 'ks1'], ['Card 1: Sound Spotter', 'Card 2: Tricky Words', 'Card 3: Read It!'], 'Three quick cards to open a reading session: say the sounds, spot the tricky bit, read a sentence.'),
     board('maths-cards-3', 'Maths Cards 3: counting', 'Maths', ['eyfs', 'ks1'], ['Card 1: Count with Me', 'Card 2: Count and Match', 'Card 3: Give Me…', 'Card 4: Did Rex Count Right?'], 'Counting each object once and knowing the last number tells you how many. Card 4 is the stretch: can they spot the mistake?')
   ];
-  const all = () => LIB;
-  const byId = id => LIB.find(b => b.id === id) || null;
+  /* booklets a teacher has added in this browser, or that arrived in a child's link (made with Claude from the booklet brief) */
+  const DK = 'fab-booklet-defs';
+  const mine = () => { const v = ls.json(DK, []); return Array.isArray(v) ? v.filter(d => d && d.id && Array.isArray(d.pages)) : []; };
+  const all = () => LIB.concat(mine());
+  const byId = id => all().find(b => b.id === id) || null;
   /* how the Burrow sees a booklet task: 'bk:<id>' or 'bk:<id>:<page number>' */
-  function act(actId){ const b = byId(String(actId || '').split(':')[1]); return b ? { id:'bk:' + b.id, n:'Booklet: ' + b.short, ic:'books', e:'📚', show:b.app ? '' : 'Your teacher will open this booklet with you.' } : null; }
+  function act(actId){ const b = byId(String(actId || '').split(':')[1]); return b ? { id:'bk:' + b.id, n:'Booklet: ' + (b.short || b.t), ic:'books', e:'📚', show:b.app ? '' : 'Your teacher will open this booklet with you.' } : null; }
 
   /* ---------- answers: kept in the child's own viewer, under their Fab code ---------- */
   const KEY = (id, code) => 'fab-booklet-' + id + '-' + code;
   const read = (id, code) => { const v = CODE_RE.test(code) ? ls.json(KEY(id, code), null) : null; return v && typeof v === 'object' && v.a ? v : { a:{}, p:0, t:0 }; };
   const S = { b:null, i:0, code:'', back:'screen-hub', teach:false, A:{}, lv:'' };
   function save(){ if(S.b && CODE_RE.test(S.code)) ls.set(KEY(S.b.id, S.code), { a:S.A, p:S.i, t:Date.now(), n:S.b.pages.length }); }
-  function known(code){ return LIB.filter(b => b.app).map(b => ({ b, d:read(b.id, code) })).filter(x => x.d.t); }
+  function known(code){ return all().filter(b => b.app).map(b => ({ b, d:read(b.id, code) })).filter(x => x.d.t); }
   function codes(){ const out = new Set(); try{ for(let i = 0; i < localStorage.length; i++){ const m = /^fab-booklet-.+-([a-z]{2,12}-\d{3})$/.exec(localStorage.key(i) || ''); if(m) out.add(m[1]); } }catch(e){} return [...out]; }
   const num = v => { const s = String(v == null ? '' : v).replace(/[\s,]/g, ''); return s === '' || isNaN(Number(s)) ? null : Number(s); };
   const right = (v, a) => { const n = num(v); return n == null ? null : Math.abs(n - a) < 1e-9; };
@@ -143,8 +190,8 @@
   }
   function pageHTML(p){
     if(p.kind === 'conf' || p.kind === 'exit') return confHTML(p);
-    if(p.kind === 'quick') return `<div class="bk-grid2">${p.items.map(q => `<div class="bk-card bk-q"><b class="bk-letter">${q.id}</b>${opDot(q.op)}<span class="bk-sum">${h(q.q)} =</span>${box('q.' + q.id, q.q)}</div>`).join('')}</div>`;
-    if(p.kind === 'hinge') return `<div class="bk-grid2">${p.items.map(q => `<div class="bk-card bk-h"><p class="bk-sum">${opDot(q.op)} ${h(q.q)} = ?</p><div class="bk-opts">${q.opts.map((o, i) => { const L = 'ABCD'[i], k = 'h.' + q.op, on = S.A[k] === L;
+    if(p.kind === 'quick') return `<div class="bk-grid2">${p.items.map(q => `<div class="bk-card bk-q"><b class="bk-letter">${h(q.id)}</b>${q.op ? opDot(q.op) : ''}<span class="bk-sum">${h(q.q)} =</span>${box('q.' + q.id, q.q)}</div>`).join('')}</div>`;
+    if(p.kind === 'hinge') return `<div class="bk-grid2">${p.items.map(q => `<div class="bk-card bk-h"><p class="bk-sum">${q.op ? opDot(q.op) + ' ' : ''}${h(q.q)}${q.op ? ' = ?' : ''}</p><div class="bk-opts">${q.opts.map((o, i) => { const L = 'ABCD'[i], k = 'h.' + (q.id || q.op), on = S.A[k] === L;
       return `<button type="button" class="bk-opt ${on ? 'on' : ''}" data-k="${k}" data-v="${L}" aria-pressed="${on}"><b>${L}</b> ${h(o)}</button>`; }).join('')}</div></div>`).join('')}</div>`;
     if(p.kind === 'mistake') return `<div class="bk-grid2">${p.items.map(m => `<div class="bk-card"><h3>${h(m.head)}:</h3>${m.col ? colHTML(m.col) : `<div class="bk-wrong">${m.lines.map(l => `<p>${h(l[0])}<b>${h(l[1])}</b></p>`).join('')}</div>`}
       <label class="bk-lines"><span>Pip’s mistake was…</span>${box(m.id, 'Pip’s mistake was', true)}</label></div>`).join('')}</div>`;
@@ -155,10 +202,12 @@
       return `<button type="button" class="bk-opt ${on ? 'on' : ''}" data-k="${k}" data-v="${v}" aria-pressed="${on}">${v}</button>`; }).join('')}</div>${box('asn.' + i + '.why', 'Prove it with an example', true).replace('<input', '<input placeholder="Prove it with an example"')}</div>`).join('')}</div>`;
     if(p.kind === 'model') return `<div class="bk-watch"><div class="bk-card"><h3>${opDot(p.op)} I do: ${h(p.ido)}</h3><div class="bk-ido">${colHTML(p.col)}<ol>${p.steps.map(s => `<li>${h(s)}</li>`).join('')}</ol></div></div>
       <div class="bk-card bk-you"><h3>You do:</h3><p class="bk-sum">${h(p.you)} =</p>${box('m.' + p.op, p.you)}<p class="bk-soft">Use paper or the board for your working. Your teacher can start it with you.</p></div></div>`;
+    if(p.kind === 'steps') return stepsHTML(p, S.i);
+    if(p.kind === 'text') return `<div class="bk-card bk-text">${(p.body || []).map(x => `<p>${h(x)}</p>`).join('')}${(p.words || []).length ? `<div class="bk-words"><b>Word bank</b>${p.words.map(w => `<span><i>${h(w[0])}</i> ${h(w[1])}</span>`).join('')}</div>` : ''}</div>`;
     return '';
   }
   function tnoteHTML(i){
-    const r = S.b.run, p = S.b.pages[i], n = i + 1;
+    const r = S.b.run || { rows:[], head:[] }, p = S.b.pages[i], n = i + 1;
     const row = r.rows.find(x => { const m = String(x[0]).split('–').map(Number); return m.length === 1 ? m[0] === n : n >= m[0] && n <= m[1]; });
     let extra = '';
     if(p.kind === 'hinge') extra = p.items.map(q => `<p><b>${h(q.q)}</b>: ${q.opts.map((o, k) => `${'ABCD'[k]} ${h(o)}: ${h(q.why[k])}`).join(' · ')}</p>`).join('');
@@ -167,19 +216,20 @@
     else if(p.kind === 'levels') extra = `<p>Answers: ${Object.keys(p.lv).map(L => L + ' ' + p.lv[L].map(q => q[1].toLocaleString('en-GB')).join(' · ')).join(' | ')}</p>`;
     else if(p.kind === 'asn') extra = `<p>${p.items.map(q => h(q.q) + ' <b>' + q.a + '</b>' + (q.why ? ' (' + h(q.why) + ')' : '')).join(' · ')}</p>`;
     else if(p.kind === 'model') extra = `<p>You do: ${h(p.you)} = ${p.a.toLocaleString('en-GB')}</p>`;
+    else if(p.kind === 'steps') extra = `<p>Answers: ${markItems({ pages:[p] }, {}).map(x => h(x.label === 'gap' ? '' : x.label + ' ') + '<b>' + h([].concat(x.a).join(' or ')) + '</b>').join(' · ') || 'nothing on this page is marked'}</p>${i === 0 && S.b.notes ? S.b.notes.map(x => `<p>${h(x)}</p>`).join('') : ''}`;
     return `<details class="bk-tnote"><summary>For the teacher: this page</summary>${row ? `<p>${row.slice(1).map((c, k) => `<b>${h(r.head[k + 1].replace(/…$/, ''))}:</b> ${h(c)}`).join(' · ')}</p>` : ''}${extra}<p>Nothing on these pages is marked in front of the child. Their answers are read in the Teachers’ area, under View task progress.</p></details>`;
   }
   function render(){
     const box = document.getElementById('bookletBody'); if(!box || !S.b) return;
     const N = S.b.pages.length; S.i = Math.max(0, Math.min(N, S.i));
     document.querySelector('#screen-booklet .screen-title').textContent = S.b.short;
-    if(S.i === N){ box.innerHTML = `<div class="bk-page"><div class="bk-band"><h2>All done!</h2></div><div class="fab-say"><span class="fab-char fab" role="img" aria-label="Fab"></span><div class="bubble"><b>That is the whole booklet. Brilliant thinking!</b>Your teacher will look at it with you.</div></div>
+    if(S.i === N){ box.innerHTML = `<div class="bk-page"><div class="bk-band"><h2>All done!</h2></div><div class="fab-say"><span class="fab-char fab" role="img" aria-label="Fab"></span><div class="bubble"><b>Handed in. Brilliant thinking!</b>That is the whole booklet. Your teacher will look at it with you.</div></div>
       <div class="st-row bk-nav"><button type="button" class="btn soft" data-bkgo="${N - 1}">◀ Look back</button><button type="button" class="btn leaf" data-bkstop>${S.teach ? 'Back to the Teachers’ area' : 'Back to my Burrow'}</button></div></div>`; wire(box); return; }
     const p = S.b.pages[S.i];
     box.innerHTML = `<div class="bk-page" data-kind="${p.kind}"><div class="bk-band"><h2>${h(p.t)}</h2></div><p class="bk-strap">${h(p.strap)}</p>
       ${pageHTML(p)}
       ${S.teach ? tnoteHTML(S.i) : ''}
-      <div class="st-row bk-nav">${S.i ? `<button type="button" class="btn soft" data-bkgo="${S.i - 1}">◀ Back a page</button>` : ''}<span class="bk-count">Page ${S.i + 1} of ${N}</span><button type="button" class="btn leaf" data-bkgo="${S.i + 1}">${S.i === N - 1 ? 'Finish ⭐' : 'Next page ▶'}</button></div>
+      <div class="st-row bk-nav">${S.i ? `<button type="button" class="btn soft" data-bkgo="${S.i - 1}">◀ Back a page</button>` : ''}<span class="bk-count">Page ${S.i + 1} of ${N}</span><button type="button" class="btn leaf" data-bkgo="${S.i + 1}">${S.i === N - 1 ? 'Hand it in ⭐' : 'Next page ▶'}</button></div>
       <p class="bk-rest"><button type="button" class="btn small soft" data-bkstop>Stop here for today</button> <span>It is fine to stop after any page. Your place is kept${CODE_RE.test(S.code) ? '' : ' only while this page is open'}.</span></p></div>`;
     wire(box);
   }
@@ -187,7 +237,7 @@
     box.querySelectorAll('input[data-k]').forEach(el => el.addEventListener('input', () => { S.A[el.dataset.k] = el.value.slice(0, 120); save(); }));
     box.querySelectorAll('button[data-k]').forEach(b => b.addEventListener('click', () => { const k = b.dataset.k; S.A[k] = S.A[k] === b.dataset.v && k !== 'lv' ? '' : b.dataset.v; snd('tick'); save(); render(); }));
     box.querySelectorAll('[data-bkgo]').forEach(b => b.addEventListener('click', () => { const to = Number(b.dataset.bkgo), N = S.b.pages.length; S.i = to; save();
-      if(to === N){ snd('jingle'); if(!S.teach && CODE_RE.test(S.code)){ S.A.done = 1; save(); try{ FabBurrow.actDone(S.code, 'bk:' + S.b.id); }catch(e){} } } else snd('tick');
+      if(to === N){ snd('jingle'); if(!S.teach && CODE_RE.test(S.code)){ S.A.done = Date.now(); save(); try{ FabBurrow.actDone(S.code, 'bk:' + S.b.id); }catch(e){} } } else snd('tick');
       render(); try{ window.scrollTo(0, 0); }catch(e){} }));
     box.querySelectorAll('[data-bkstop]').forEach(b => b.addEventListener('click', () => { save(); snd('tick'); close(); }));
   }
@@ -223,8 +273,10 @@
   const tick = v => v == null ? '<span class="bk-na">–</span>' : v ? '<b class="bk-yes">✓</b>' : '<b class="bk-no">✗</b>';
   function teacherHTML(code, id){
     const b = byId(id), d = read(id, code); if(!b || !b.app) return '';
+    if(!b.afl) return marksHTML(code, b, d);
     const R = afl(b, d.a), LIGHT = { G:'Secure', A:'Developing', R:'Needs support' };
     return `<div class="bk-afl" data-bkafl="${h(id)}"><h3>${ic('books', '📚')} ${h(b.t)} <small>${h(code)}${d.t ? ' · last opened ' + h(new Date(d.t).toLocaleDateString('en-GB', { day:'numeric', month:'short' })) + ' · reached page ' + Math.min(b.pages.length, (d.p || 0) + 1) + ' of ' + b.pages.length : ' · not opened yet'}</small></h3>
+      ${marksLine(b, d)}
       <div style="overflow-x:auto"><table class="st-table bk-atable"><thead><tr><th>Operation</th><th>Confidence before</th>${R.ops[0].hasTwin ? '<th>You do (after the model)</th>' : ''}<th>Quick Fire, easier</th><th>Quick Fire, harder</th><th>Hinge letter and what it tells you</th><th>Confidence after</th><th>Draft traffic light</th></tr></thead><tbody>
       ${R.ops.map(x => `<tr><td class="bk-opn">${opDot(x.o)} ${OPS[x.o].n}</td><td>${x.c1 || '–'}</td>${x.hasTwin ? `<td>${tick(x.twin)}</td>` : ''}<td>${tick(x.easy)}</td><td>${tick(x.hard)}</td><td>${x.L ? `<b>${x.L}</b> ${x.hOK ? '<b class="bk-yes">✓</b> ' : ''}${h(x.why)}` : '–'}</td><td>${x.c8 ? x.c8 + (x.c1 ? (x.c8 > x.c1 ? ' ▲' : x.c8 < x.c1 ? ' ▼' : ' =') : '') : '–'}</td><td>${x.light ? `<span class="bk-light ${x.light}">${LIGHT[x.light]}</span>` : '–'}</td></tr>`).join('')}</tbody></table></div>
       <div class="bk-two"><div><b>Spot the Mistake</b> (can they reason, not just calculate?)${R.mk.map(m => `<p>${h(m.head)}: ${m.v ? '“' + h(m.v) + '”' : '<span class="bk-na">nothing written</span>'}<br><small>${h(m.fix)}</small></p>`).join('')}</div>
@@ -236,6 +288,161 @@
         ${b.run.say ? `<p><b>Modelling for a child with low confidence</b></p><ul>${b.run.say.map(r => `<li>${h(r[0])}: ${h(r[1])}</li>`).join('')}</ul>` : ''}</details>
       <p class="hint">The traffic light and next steps are worked out from the answers on this device only, as a starting point for your own judgement. Nothing here is shown to the child.</p></div>`;
   }
+
+  /* ---------- pages made of parts: Watch me, together, my turn (the shape a teacher-made booklet uses most) ---------- */
+  function aidHTML(a){
+    if(!a) return '';
+    if(a.type === 'frame'){ const n = Math.max(0, Math.min(10, Number(a.n) || 0)); let g = '';
+      for(let i = 0; i < 10; i++){ const x = 6 + (i % 5) * 44, y = 6 + Math.floor(i / 5) * 44; g += `<rect x="${x}" y="${y}" width="44" height="44" fill="#fff" stroke="#2B1A12" stroke-width="2.5"/>${i < n ? `<circle cx="${x + 22}" cy="${y + 22}" r="15" fill="#E8432D" stroke="#2B1A12" stroke-width="2"/>` : ''}`; }
+      return `<svg class="bk-aid frame" viewBox="0 0 232 100" role="img" aria-label="A ten frame with ${n} dots">${g}</svg>`; }
+    if(a.type === 'line'){ const f = Number(a.from) || 0, t = Math.max(f + 1, Math.min(f + 30, Number(a.to) || 10)), n = t - f, w = 640, x = v => 20 + (v - f) * (w - 40) / n; let g = `<line x1="14" y1="54" x2="${w - 14}" y2="54" stroke="#2B1A12" stroke-width="3"/>`;
+      for(let v = f; v <= t; v++) g += `<line x1="${x(v)}" y1="46" x2="${x(v)}" y2="62" stroke="#2B1A12" stroke-width="2.5"/><text x="${x(v)}" y="82" text-anchor="middle" font-size="${n > 16 ? 15 : 18}" fill="#2B1A12">${v}</text>`;
+      const hop = Number(a.hop) || 0, at = Number(a.at);
+      for(let k = 0; k < Math.abs(hop) && !isNaN(at); k++){ const v0 = at + Math.sign(hop) * k, v1 = v0 + Math.sign(hop); if(v0 < f || v0 > t || v1 < f || v1 > t) break; g += `<path d="M${x(v0)},44 Q${(x(v0) + x(v1)) / 2},8 ${x(v1)},44" fill="none" stroke="#E8432D" stroke-width="3"/>`; }
+      if(!isNaN(at) && at >= f && at <= t) g += `<circle cx="${x(at)}" cy="54" r="8" fill="#FFD483" stroke="#2B1A12" stroke-width="2.5"/>`;
+      return `<svg class="bk-aid line" viewBox="0 0 ${w} 92" role="img" aria-label="A number line from ${f} to ${t}">${g}</svg>`; }
+    if(a.type === 'pw'){ const c = (cx, cy, v) => `<circle cx="${cx}" cy="${cy}" r="30" fill="#fff" stroke="#2F5458" stroke-width="3.5"/><text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="24" font-weight="700" fill="#2B1A12">${h(v)}</text>`;
+      return `<svg class="bk-aid pw" viewBox="0 0 220 170" role="img" aria-label="A part-whole picture: the whole is ${h(a.w)}, the parts are ${h(a.a)} and ${h(a.b)}"><line x1="110" y1="40" x2="52" y2="128" stroke="#2F5458" stroke-width="3.5"/><line x1="110" y1="40" x2="168" y2="128" stroke="#2F5458" stroke-width="3.5"/>${c(110, 38, a.w)}${c(52, 130, a.a)}${c(168, 130, a.b)}</svg>`; }
+    return '';
+  }
+  const isSum = q => /^[\d.,]+ [+−×÷] [\d.,]+$/.test(q);
+  function stepsHTML(p, i){
+    let n = 0; const tone = hd => hd === W ? 'w' : hd === G ? 'g' : hd === M ? 'm' : '';
+    return (p.parts || []).map(pt => `<div class="bk-card bk-part ${tone(pt.h)}">${pt.h ? `<h3>${h(pt.h)}</h3>` : ''}${pt.say ? `<p class="bk-say">${h(pt.say)}</p>` : ''}${aidHTML(pt.aid)}
+      ${pt.seq ? `<div class="bk-seq">${pt.seq.map(x => typeof x === 'string' && x[0] === '_' ? box('p' + i + '.' + (n++), 'A missing number').replace('class="bk-in ', 'class="bk-in gap ') : `<span>${h(x)}</span>`).join('')}</div>` : ''}
+      ${(pt.items || []).map(q => { const k = 'p' + i + '.' + (n++);
+        if(q.opts) return `<div class="bk-item"><p>${h(q.q)}</p><div class="bk-opts many">${q.opts.map(o => { const on = S.A[k] === String(o); return `<button type="button" class="bk-opt ${on ? 'on' : ''}" data-k="${k}" data-v="${h(o)}" aria-pressed="${on}">${h(o)}</button>`; }).join('')}</div></div>`;
+        const numeric = q.a != null && !Array.isArray(q.a) && num(q.a) != null;
+        return `<div class="bk-item bk-q"><span class="bk-sum ${numeric ? '' : 'words'}">${h(q.q)}${isSum(q.q) ? ' =' : ''}</span>${box(k, q.q, !numeric)}</div>`; }).join('')}</div>`).join('');
+  }
+
+  /* ---------- marking: done when the booklet is handed in or opened by the teacher, never in front of the child ---------- */
+  const strandOf = q => q.op && OPS[q.op] ? OPS[q.op].n : (m => m ? { '+':'Adding', '−':'Subtracting', '×':'Multiplying', '÷':'Dividing' }[m[1]] : '')(/^[\d.,]+ ([+−×÷]) [\d.,]+$/.exec(q.q || ''));
+  const norm = v => String(v == null ? '' : v).toLowerCase().replace(/[\s,]+/g, ' ').trim();
+  const same = (v, a) => [].concat(a).some(x => num(x) != null && num(v) != null ? Math.abs(num(v) - num(x)) < 1e-9 : norm(v) === norm(x));
+  function markItems(b, A){
+    const out = [], sub = [].concat(b.sub || '')[0] || '';
+    b.pages.forEach((p, i) => { const add = (k, label, a, s) => out.push({ i, k, label, a, s:s || '', v:A[k] == null ? '' : String(A[k]) });
+      if(p.kind === 'quick') p.items.forEach(q => add('q.' + q.id, q.q, q.a, q.s || strandOf(q)));
+      else if(p.kind === 'model') add('m.' + p.op, p.you, p.a, OPS[p.op].n);
+      else if(p.kind === 'hinge') p.items.forEach(q => add('h.' + (q.id || q.op), q.q, q.ok, q.s || strandOf(q)));
+      else if(p.kind === 'levels'){ const L = A.lv; if(L && p.lv[L]) p.lv[L].forEach((q, n) => add('lv.' + L + '.' + n, q[0], q[1], strandOf({ q:q[0] }))); }
+      else if(p.kind === 'asn') p.items.forEach((q, n) => add('asn.' + n, q.q, q.a, 'Reasoning'));
+      else if(p.kind === 'steps'){ let n = 0; (p.parts || []).forEach(pt => { (pt.seq || []).forEach(x => { if(typeof x === 'string' && x[0] === '_') add('p' + i + '.' + (n++), 'gap', x.slice(1), pt.s || p.s); });
+        (pt.items || []).forEach(q => { const k = 'p' + i + '.' + (n++); if(q.a != null) add(k, q.q, q.a, q.s || pt.s || p.s || strandOf(q)); }); }); } });
+    return out.map(it => Object.assign(it, { s:it.s || sub, ok:it.v === '' ? null : same(it.v, it.a) }));
+  }
+  /* what a child wrote that only a person can read (open questions and choices with no right answer) */
+  function openItems(b, A){
+    const out = []; b.pages.forEach((p, i) => { if(p.kind !== 'steps') return; let n = 0; (p.parts || []).forEach(pt => { (pt.seq || []).forEach(x => { if(typeof x === 'string' && x[0] === '_') n++; });
+      (pt.items || []).forEach(q => { const k = 'p' + i + '.' + (n++); if(q.a == null && A[k]) out.push({ i, label:q.q, v:String(A[k]) }); }); }); });
+    return out;
+  }
+  function mark(b, A){
+    const items = markItems(b, A), strands = {}, pages = {};
+    items.forEach(it => { const S1 = strands[it.s] = strands[it.s] || { got:0, tried:0, of:0 }, P = pages[it.i] = pages[it.i] || { got:0, tried:0, of:0 };
+      [S1, P].forEach(x => { x.of++; if(it.ok != null) x.tried++; if(it.ok) x.got++; }); });
+    return { items, strands, pages, of:items.length, tried:items.filter(x => x.ok != null).length, got:items.filter(x => x.ok).length };
+  }
+  const BANDS = { G:'Secure', A:'Developing', R:'Needs support' };
+  const band = x => x.tried < 2 ? '' : x.got / x.tried >= .8 ? 'G' : x.got / x.tried >= .5 ? 'A' : 'R';
+  const when = t => new Date(t).toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+  function marksLine(b, d){ const m = mark(b, d.a); return `<p class="bk-marks"><b>Marks: ${m.got} of ${m.tried} answered</b> (${m.of} questions are marked by the app) · ${d.a.done ? 'handed in ' + h(when(d.a.done)) : 'not handed in yet'}</p>`; }
+  function marksHTML(code, b, d){
+    const m = mark(b, d.a), open = openItems(b, d.a);
+    return `<div class="bk-afl" data-bkafl="${h(b.id)}"><h3>${ic('books', '📚')} ${h(b.t)} <small>${h(code)}${d.t ? ' · last opened ' + h(when(d.t)) + ' · reached page ' + Math.min(b.pages.length, (d.p || 0) + 1) + ' of ' + b.pages.length : ' · not opened yet'}</small></h3>
+      ${marksLine(b, d)}
+      <div style="overflow-x:auto"><table class="st-table bk-atable"><thead><tr><th>Page</th><th>Marks</th><th>Answers (the child’s answer, then the right one where it differs)</th></tr></thead><tbody>
+      ${b.pages.map((p, i) => { const P = m.pages[i], its = m.items.filter(x => x.i === i); return P ? `<tr><td>${i + 1}. ${h(p.t)}</td><td>${P.got} of ${P.tried}${P.tried < P.of ? ' <small>(' + (P.of - P.tried) + ' left)</small>' : ''}</td><td>${its.filter(x => x.ok != null).map(x => `<span class="bk-ans">${x.label === 'gap' ? '' : h(x.label) + ': '}<b>${h(x.v)}</b> ${x.ok ? '<b class="bk-yes">✓</b>' : '<b class="bk-no">✗</b> <small>(' + h([].concat(x.a).join(' or ')) + ')</small>'}</span>`).join(' ') || '<span class="bk-na">–</span>'}</td></tr>` : ''; }).join('')}</tbody></table></div>
+      ${open.length ? `<div class="bk-next"><b>In the child’s own words and choices</b> (for you to read)<ul>${open.map(o => `<li>${h(o.label)} <b>${h(o.v)}</b></li>`).join('')}</ul></div>` : ''}
+      <p class="hint">Marks are worked out on this device from the answers kept in this viewer. Nothing here is shown to the child.</p></div>`;
+  }
+  /* an assessment profile for one Fab code: every booklet on this device, strand by strand, with a draft next step */
+  const NEXTFOR = { Adding:'maths-flightpath-addition-subtraction', Subtracting:'maths-flightpath-addition-subtraction', Multiplying:'maths-flightpath-multiplication-division', Dividing:'maths-flightpath-multiplication-division',
+    Counting:'maths-flightpath-place-value', 'Number bonds to 10':'maths-flightpath-addition-subtraction', 'Counting on':'maths-flightpath-addition-subtraction', 'Counting back':'maths-flightpath-addition-subtraction', 'Part-whole':'maths-flightpath-addition-subtraction', 'Counting up':'maths-flightpath-addition-subtraction' };
+  function profile(code){
+    const rows = {}, books = [];
+    known(code).forEach(x => { const m = mark(x.b, x.d.a), sub = [].concat(x.b.sub || '')[0] || 'Other';
+      books.push({ id:x.b.id, t:x.b.short || x.b.t, got:m.got, tried:m.tried, of:m.of, done:x.d.a.done || 0, last:x.d.t });
+      Object.keys(m.strands).forEach(s => { const key = sub + '|' + s, r = rows[key] = rows[key] || { sub, s, got:0, tried:0, of:0, from:[], harder:'' }; const v = m.strands[s];
+        r.got += v.got; r.tried += v.tried; r.of += v.of; if(v.tried) r.from.push(x.b.short || x.b.t); if(x.b.harder && byId(x.b.harder)) r.harder = x.b.harder; }); });
+    const list = Object.keys(rows).map(k => { const r = rows[k], bd = band(r), fp = NEXTFOR[r.s] || '', next = [];
+      if(bd === 'R'){ if(fp) next.push({ k:'p:' + fp, l:'Support: the flightpath, from an earlier step' }); if(/^(Adding|Subtracting)$/.test(r.s)) next.push({ k:'b:L:number-toolkit', l:'Support: My Number Toolkit' }); }
+      else if(bd === 'A'){ if(fp) next.push({ k:'p:' + fp, l:'Practice: the flightpath' }); }
+      else if(bd === 'G'){ if(r.harder) next.push({ k:'b:L:' + r.harder, l:'Challenge: ' + byId(r.harder).short }); else if(fp) next.push({ k:'p:' + fp, l:'Challenge: the flightpath, from a later step' }); }
+      return Object.assign(r, { band:bd, bandName:BANDS[bd] || 'Not enough yet', next }); });
+    return { code, rows:list, books };
+  }
+
+  /* ---------- booklets made by teachers with Claude: checked here before they are kept ---------- */
+  const IMPORT_KINDS = ['conf', 'exit', 'quick', 'hinge', 'levels', 'asn', 'steps', 'text'];
+  const calc = q => { const m = /^([\d.,]+) ([+−×÷]) ([\d.,]+)$/.exec(String(q || '')); if(!m) return null; const a = Number(m[1].replace(/,/g, '')), b = Number(m[3].replace(/,/g, '')); return Math.round((m[2] === '+' ? a + b : m[2] === '−' ? a - b : m[2] === '×' ? a * b : a / b) * 1000) / 1000; };
+  function check(d){
+    const E = [], str = (v, n) => typeof v === 'string' && v.trim().length > 0 && v.length <= n, arr = v => Array.isArray(v) ? v : [];
+    if(!d || typeof d !== 'object' || Array.isArray(d)) return { ok:false, errors:['This is not a booklet file. It should start with { and have a title and pages.'] };
+    if(!str(d.t, 80)) E.push('The booklet needs a title ("t"), up to 80 letters.');
+    if(!Array.isArray(d.pages) || !d.pages.length || d.pages.length > 24) E.push('The booklet needs between 1 and 24 pages.');
+    let big = 0; try{ big = JSON.stringify(d).length; }catch(e){ big = 1e9; } if(big > 40000) E.push('The booklet is too big to keep. Split it into two shorter booklets.');
+    const sum = (q, a, where) => { const c = calc(q); if(c != null && num(a) != null && Math.abs(c - num(a)) > 1e-9) E.push(`${where}: “${q}” is ${c}, not ${a}.`); };
+    arr(d.pages).forEach((p, i) => { const at = 'Page ' + (i + 1);
+      if(!p || typeof p !== 'object'){ E.push(at + ' is empty.'); return; }
+      if(!IMPORT_KINDS.includes(p.kind)){ E.push(`${at}: the kind “${String(p.kind).slice(0, 20)}” is not one the app knows. Use ${IMPORT_KINDS.join(', ')}.`); return; }
+      if(!str(p.t, 60)) E.push(at + ' needs a title ("t"), up to 60 letters.');
+      if(p.kind === 'conf' || p.kind === 'exit'){ p.k = p.kind === 'conf' ? 'c1' : 'c8'; }
+      if(p.kind === 'quick'){ if(!arr(p.items).length || p.items.length > 12) E.push(at + ' needs 1 to 12 questions.'); arr(p.items).forEach((q, n) => { if(!q || !str(q.q, 60) || num(q.a) == null) E.push(`${at}, question ${n + 1} needs words ("q") and a number answer ("a").`); else { q.id = 'ABCDEFGHIJKL'[n]; q.a = num(q.a); if(q.op && !OPS[q.op]) delete q.op; sum(q.q, q.a, at); } }); }
+      if(p.kind === 'hinge'){ if(!arr(p.items).length || p.items.length > 4) E.push(at + ' needs 1 to 4 questions.'); arr(p.items).forEach((q, n) => { const o = arr(q && q.opts).map(String), ok = 'ABCD'.indexOf(q && q.ok);
+        if(!q || !str(q.q, 120) || o.length < 2 || o.length > 4 || ok < 0 || ok >= o.length) E.push(`${at}, question ${n + 1} needs words, 2 to 4 options and the right letter ("ok").`); else { q.opts = o; q.id = 'i' + i + 'n' + n; if(q.op && !OPS[q.op]) delete q.op; q.why = o.map((x, k) => k === ok ? 'Correct' : String(arr(q.why)[k] || 'Not yet right').slice(0, 120)); const c = calc(q.q); if(c != null && num(o[ok]) != null && Math.abs(c - num(o[ok])) > 1e-9) E.push(`${at}: “${q.q}” is ${c}, but option ${q.ok} says ${o[ok]}.`); } }); }
+      if(p.kind === 'levels'){ const L = p.lv && typeof p.lv === 'object' ? Object.keys(p.lv) : []; if(L.length < 2 || L.length > 3) E.push(at + ' needs two or three levels.'); L.forEach(k => { if(!/^[A-Za-z ]{1,12}$/.test(k) || !arr(p.lv[k]).length || p.lv[k].length > 6) E.push(`${at}: the level “${k}” needs a short name and 1 to 6 questions.`); arr(p.lv[k]).forEach(q => { if(!Array.isArray(q) || !str(q[0], 60) || num(q[1]) == null) E.push(`${at}, level ${k}: each question is ["words", number].`); else { q[1] = num(q[1]); sum(q[0], q[1], at); } }); }); }
+      if(p.kind === 'asn'){ if(!arr(p.items).length || p.items.length > 6) E.push(at + ' needs 1 to 6 statements.'); arr(p.items).forEach((q, n) => { if(!q || !str(q.q, 140) || !['always', 'sometimes', 'never'].includes(q.a)) E.push(`${at}, statement ${n + 1} needs words and an answer: always, sometimes or never.`); }); }
+      if(p.kind === 'text'){ if(!arr(p.body).length || !arr(p.body).every(x => str(x, 900))) E.push(at + ' needs one or more paragraphs ("body").'); p.words = arr(p.words).filter(w => Array.isArray(w) && str(w[0], 40) && str(w[1], 120)).slice(0, 14); }
+      if(p.kind === 'steps'){ if(!arr(p.parts).length || p.parts.length > 8) E.push(at + ' needs 1 to 8 parts.'); arr(p.parts).forEach((pt, n) => { const w = `${at}, part ${n + 1}`;
+        if(!pt || typeof pt !== 'object'){ E.push(w + ' is empty.'); return; }
+        ['h', 'say', 's'].forEach(f => { if(pt[f] != null && !str(pt[f], f === 'say' ? 400 : 40)) E.push(`${w}: “${f}” is too long or empty.`); });
+        if(pt.aid != null && !(pt.aid && ['frame', 'line', 'pw'].includes(pt.aid.type))) E.push(w + ': a picture ("aid") is a frame, a line or pw.');
+        if(pt.seq != null && !(Array.isArray(pt.seq) && pt.seq.length <= 24 && pt.seq.every(x => typeof x === 'number' || /^_-?[\d.]+$/.test(x)))) E.push(w + ': a sequence is numbers, with "_7" for a gap whose answer is 7.');
+        arr(pt.items).forEach((q, k) => { if(!q || !str(q.q, 140)){ E.push(`${w}, question ${k + 1} needs words ("q").`); return; }
+          if(q.opts != null){ q.opts = arr(q.opts).map(String).slice(0, 6); if(q.opts.length < 2) E.push(`${w}, question ${k + 1}: choices need at least two options.`); else if(q.a != null && !q.opts.includes(String(q.a))) E.push(`${w}, question ${k + 1}: the answer must be one of the options.`); }
+          if(q.a != null && !Array.isArray(q.a)) sum(q.q, q.a, w); });
+        if(arr(pt.items).length > 10) E.push(w + ' has more than 10 questions.'); }); } });
+    return { ok:!E.length, errors:E.slice(0, 12) };
+  }
+  const STK = ['eyfs', 'ks1', 'lks2', 'uks2'], SUBS = ['Maths', 'English', 'Phonics', 'Science', 'Topic'];
+  function add(d){
+    let v; try{ v = JSON.parse(JSON.stringify(d)); }catch(e){ return { ok:false, errors:['This file could not be read.'] }; }
+    const c = check(v); if(!c.ok) return c;
+    const t = String(v.t).replace(/[<>]/g, '').trim(), id = 't-' + (t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 32) || 'booklet');
+    if(LIB.some(b => b.id === id)) return { ok:false, errors:['A booklet with that name is already built into the app.'] };
+    const def = { id, t, short:t.slice(0, 42), sub:SUBS.includes(v.sub) ? v.sub : '', st:(Array.isArray(v.st) ? v.st : []).filter(x => STK.includes(x)), app:true, mine:true, time:String(v.time || '').slice(0, 40), about:String(v.about || 'A booklet made by a BMF teacher.').slice(0, 400), care:String(v.care || '').slice(0, 200), notes:(Array.isArray(v.notes) ? v.notes : []).filter(x => typeof x === 'string').map(x => x.slice(0, 400)).slice(0, 8), pages:v.pages };
+    const L = mine().filter(b => b.id !== id); L.push(def); ls.set(DK, L.slice(-20)); return { ok:true, id, def };
+  }
+  function remove(id){ ls.set(DK, mine().filter(b => b.id !== id)); }
+  /* a teacher-made booklet is not on the app's site, so it travels to the child after the # in their link (never sent to any server) */
+  const enc = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const dec = s0 => { try{ let x = String(s0).replace(/-/g, '+').replace(/_/g, '/'); while(x.length % 4) x += '='; return JSON.parse(decodeURIComponent(escape(atob(x)))); }catch(e){ return null; } };
+  function hashFor(id){ const b = mine().find(x => x.id === id); return b ? '#bk=' + enc({ t:b.t, sub:b.sub, st:b.st, time:b.time, about:b.about, care:b.care, notes:b.notes, pages:b.pages }) : ''; }
+  function fromHash(){ try{ const m = /[#&]bk=([A-Za-z0-9_-]+)/.exec(location.hash || ''); if(!m) return; const d = dec(m[1]); if(d) add(d); history.replaceState(null, '', location.pathname + location.search); }catch(e){} }
+  /* what a teacher gives Claude (in the Teaching Studio) to get a booklet file back */
+  const BRIEF = `Please write a BMF booklet as a JSON file for the Fab App.
+
+Who it is for: [year group or class], [subject], [the gap or goal]. Describe the group only, never a child.
+
+BMF rules: wellbeing first; short pages a tired child can finish; British English; no timers or scores in the wording; start with early success; every sum checked.
+
+The file is one JSON object:
+{ "t": "Title", "sub": "Maths | English | Phonics | Science | Topic", "st": ["eyfs" | "ks1" | "lks2" | "uks2"], "time": "About 20 minutes", "about": "One or two sentences for the teacher", "notes": ["How to run it", "What to look for"], "pages": [ ... up to 12 pages ... ] }
+
+Page kinds (each page has "kind", "t" (title) and "strap" (one line for the child)):
+- "conf": How confident do you feel? (first page). "exit": the same again plus two sentences (last page).
+- "steps": { "s": "strand name, e.g. Fractions", "parts": [ { "h": "Watch me", "say": "the model, step by step" }, { "h": "Let’s do it together", "say": "...", "items": [ { "q": "6 + 4", "a": 10 } ] }, { "h": "My turn", "items": [ { "q": "7 + 2", "a": 9 }, { "q": "Which is a noun?", "a": "fox", "opts": ["ran", "fox", "quickly"] }, { "q": "Tell me how you know." } ] } ] }
+  A part may also have "seq": [20, 17, 14, "_11", "_8"] (a gap is "_answer") or "aid": { "type": "line", "from": 0, "to": 10, "at": 5, "hop": 3 } | { "type": "frame", "n": 7 } | { "type": "pw", "w": 10, "a": 7, "b": "?" }.
+  A question with "a" is marked by the app; with no "a" it is for the teacher to read. "a" may be a list of accepted answers.
+- "quick": { "items": [ { "q": "46 + 23", "a": 69 } ] } up to 12 quick questions with number answers.
+- "hinge": { "items": [ { "q": "358 + 167", "opts": ["415", "525", "425", "625"], "ok": "B", "why": ["No carrying at all", "Correct", "Carried to tens, not hundreds", "Carried too much"] } ] } each wrong option stands for one misconception.
+- "levels": { "lv": { "Mild": [["34 + 25", 59]], "Spicy": [["368 + 145", 513]], "Hot": [["2,476 + 1,385", 3861]] } } the child chooses.
+- "asn": { "items": [ { "q": "Multiplying makes a number bigger.", "a": "sometimes", "why": "not × 1 or × 0" } ] } always, sometimes or never.
+- "text": { "body": ["A paragraph to read."], "words": [["bleak", "cold, grey and miserable"]] } for reading; public-domain texts only.
+
+Write sums with spaces and these signs: + − × ÷. Give me the JSON only, in a code block, so I can save it as a .json file.`;
 
   /* ---------- the screen ---------- */
   function build(){
@@ -277,9 +484,18 @@
 .bk-atable td{vertical-align:middle}.bk-opn{white-space:nowrap}.bk-atable .bk-op{font-size:.85em}.bk-yes{color:#3F7D3A}.bk-no{color:#D8402B}.bk-na{opacity:.6}
 .bk-light{border:2px solid #2B1A12;border-radius:999px;padding:1px 10px;font-weight:700;white-space:nowrap}.bk-light.G{background:#BFE3A8}.bk-light.A{background:#FFD483}.bk-light.R{background:#F6B6A6}
 .bk-two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:6px 22px;margin:10px 0}.bk-two p{margin:4px 0}
+
+.bk-part h3{display:inline-block;background:#DDF0CF;border:2px solid #2F5458;border-radius:999px;padding:1px 14px;font-size:1rem}.bk-part.w h3{background:#CFE7F2}.bk-part.g h3{background:#FFE7B0}
+.bk-say{font-size:1.15rem;margin:6px 0 8px}.bk-aid{display:block;max-width:100%;margin:6px 0 10px}.bk-aid.frame{width:232px}.bk-aid.line{width:640px}.bk-aid.pw{width:200px}
+.bk-seq{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 10px}.bk-seq span{display:grid;place-items:center;min-width:2.3em;height:2.3em;border:2px solid #C9D9D6;border-radius:8px;background:#F4F8F7;font-size:1.2rem;font-variant-numeric:tabular-nums}
+.bk-in.gap{width:2.9em;padding:4px 4px;text-align:center;font-size:1.2rem;height:2.3em}
+.bk-item{margin:8px 0}.bk-item p{margin:0 0 4px;font-size:1.15rem}.bk-sum.words{font-size:1.15rem;flex:1 1 100%}.bk-opts.many{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}.bk-opts.many .bk-opt{text-align:center}
+.bk-text p{font-size:1.2rem;line-height:1.55;margin:0 0 10px}.bk-words{display:grid;gap:4px;background:#EAF3F1;border-radius:12px;padding:8px 12px}.bk-words span i{font-weight:700;font-style:normal;margin-right:6px}
+.bk-marks{margin:4px 0 8px}.bk-ans{display:inline-block;margin:0 10px 2px 0;white-space:nowrap}
 .bk-next{background:#FFF6E6;border:2px solid #E3C9A0;border-radius:12px;padding:8px 12px}.bk-next ul{margin:6px 0 0;padding-left:1.2em}`;
     document.head.appendChild(st); return true;
   }
-  window.FabBooklets = { all, byId, act, open, read, known, codes, afl, teacherHTML, state:S, render };
+  fromHash();
+  window.FabBooklets = { all, byId, act, open, read, known, codes, afl, teacherHTML, state:S, render, mark, profile, check, add, remove, mine, hashFor, brief:BRIEF, bands:BANDS };
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();
 })();
