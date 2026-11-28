@@ -999,6 +999,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await page.locator('.mk-nav [data-mk="rstep"][data-id="4"]').click(); await page.locator('[data-mk="dpick"][data-id="train"]').click();
     assert(await page.locator('#mkChecks li.ok').count() === 5, 'the checklist ticks itself, got ' + await page.locator('#mkChecks li.ok').count());
     await page.locator('.mk-nav [data-mk="rstep"][data-id="5"]').click();
+    await page.mouse.move(2, 2);   /* the pointer was left on the edge of the next button, whose hover lift made it flicker under a resting mouse */
     await page.locator('[data-mk="open"][data-id="paper"]').click();
     const paper = await page.locator('.mk-paper').innerText();
     assert(/All about the Victorians/.test(paper) && /The steam train/.test(paper) && /The penny-farthing/.test(paper) && /Did you know\?/.test(paper), 'the report reads as a report: ' + paper.slice(0, 160));
@@ -2519,6 +2520,40 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(/^A Christmas Carol ?Write two sentences about Scrooge ?I did it ; From Monday, if you like ?A Christmas Carol ?Booklet: Four Operations Check-In \(Y3\/4\) ?Your teacher says: Pages 1 to 5 ?Start ➡️ ?I did it \|\| One thing to do today/.test(tue), 'on Tuesday the child sees Tuesday’s main task, with Monday’s unfinished one marked “if you like”; no practice or extras from Monday: ' + tue);
     assert(/Write two sentences about Scrooge ?⭐ Done ; If you finish ?Draw Scrooge and label him ?I did it ; From Monday, if you like.*\|\| All done for today/.test(tueDone), 'when the main task is done, “if you finish” appears and the day still counts as done: ' + tueDone);
     assert(/^A Christmas Carol ?the Victorians: Visit the schoolroom and ask Ada two questions|^A Christmas Carol ?Visit the schoolroom and ask Ada two questions/.test(thu) && /From Monday, if you like/.test(thu) && !/Draw Scrooge/.test(thu) && again === 6, 'Thursday brings Thursday’s topic by itself; Tuesday’s extras have gone: ' + thu + ' ' + again);
+  });
+  await test('World Explorers: explain-how posters and same-but-different charts are finished pieces on their own, and slot into the report', async () => {
+    const ctx = await browser.newContext(); const c = await ctx.newPage(); await c.setViewportSize({ width:1366, height:900 });
+    c.on('pageerror', e => errors.push('explain it: ' + e.message));
+    await c.goto(base + '/index.html?learner=test-950&class=1&quiet=1'); await c.waitForFunction(() => window.FabExplore && window.FabMake && window.FabBurrow); await c.waitForTimeout(400);
+    const r = await c.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {}, X = FabExplore;
+      const tap = async q => { document.querySelector(q).click(); await wait(140); };
+      const openMake = async id => { X.open('screen-me', id); X.state.tab = 'make'; FabMake.home(); X.render(); await wait(200); };
+      out.data = X.order.map(id => id + ':' + ((X.worlds[id].make.how || []).length) + (X.worlds[id].make.same ? 's' : '')).join();
+      out.sizes = X.order.every(id => (X.worlds[id].make.how || []).every(t => t.steps.length === 5 && t.steps.every(x => x.length <= 95) && t.fact && t.lead) && (!X.worlds[id].make.same || (X.worlds[id].make.same.cards.length >= 8 && ['a', 'b', 'both'].every(k => X.worlds[id].make.same.cards.some(c => c[1] === k)))));
+      await openMake('egypt'); out.cards = [...document.querySelectorAll('.mk-cards [data-id^="how:"] b')].map(b => b.textContent).join('|');
+      await tap('[data-mk="open"][data-id="how:papyrus"]'); const t = X.worlds.egypt.make.how[0];
+      const chip = i => [...document.querySelectorAll('.mk-pool [data-mk="howput"]')].find(b => b.textContent === t.steps[i]);
+      chip(3).click(); await wait(140); out.wrong = document.querySelector('.tm-notebox').textContent.replace(/\s+/g, ' ').trim() + '|' + document.querySelectorAll('.mk-howsteps.build li:not(.mk-slot)').length;
+      chip(0).click(); await wait(140); await tap('[data-mk="hownext"]'); out.helped = document.querySelectorAll('.mk-howsteps.build li:not(.mk-slot)').length + '|' + /Fab put that one in/.test(document.querySelector('.tm-notebox').textContent);
+      for(const i of [2, 3, 4]){ chip(i).click(); await wait(140); }
+      out.poster = !!document.querySelector('.mk-howp') + '|' + [...document.querySelectorAll('.mk-howp .mk-howsteps li')].map(li => li.textContent).join(' ').length + '|' + /You can explain it!/.test(document.querySelector('.tm-notebox').textContent) + '|' + /How papyrus was made/.test(document.querySelector('.mk-howp').textContent);
+      const y = document.getElementById('mkWhy'); y.value = 'it turned a <b>plant</b> into paper'; await tap('[data-mk="howwhy"]'); out.why = /I think it was clever because ?it turned a bplant\/b into paper/.test(document.querySelector('.mk-howp').textContent.replace(/\s+/g, ' ')) + '|' + !document.querySelector('.mk-howp b b');
+      await tap('[data-mk="home"]'); out.tick = !!document.querySelector('[data-id="how:papyrus"].done') + '|' + !document.querySelector('[data-id="how:pyramid"].done');
+      await tap('[data-mk="open"][data-id="how:papyrus"]'); out.reopen = !!document.querySelector('.mk-howp');
+      await tap('[data-mk="open"][data-id="report"]'); await tap('[data-mk="lvl"][data-id="1"]'); FabMake.state.rstep = 5; X.render(); await wait(150); out.goesIn = /Your explanation poster is in your report/.test(document.querySelector('.mk-in-list').textContent); await tap('[data-mk="open"][data-id="paper"]'); out.inReport = /How papyrus was made/.test(document.querySelector('.mk-paper').textContent) + '|' + document.querySelectorAll('.mk-paper .mk-howsteps li').length;
+      /* Ancient Greece: the same but different */
+      await openMake('greece'); await tap('[data-mk="open"][data-id="same"]'); const S = X.worlds.greece.make.same; let slips = 0, n = 0;
+      while(document.querySelector('.mk-samecard') && n++ < 30){ const text = document.querySelector('.mk-samecard').textContent, card = S.cards.find(x => x[0] === text);
+        if(n === 1){ document.querySelector('[data-mk="sameput"][data-id="' + (card[1] === 'a' ? 'b' : 'a') + '"]').click(); await wait(120); slips += /Have another think/.test(document.querySelector('.tm-notebox').textContent) ? 1 : 0; }
+        if(n === 2){ await tap('[data-mk="samehelp"]'); continue; }
+        document.querySelector('[data-mk="sameput"][data-id="' + card[1] + '"]').click(); await wait(120); }
+      out.same = slips + '|' + !!document.querySelector('.mk-samep') + '|' + [...document.querySelectorAll('.mk-samep .mk-col')].map(x => x.querySelector('h4').textContent + ' ' + x.querySelectorAll('li').length).join(', ') + '|' + JSON.parse(localStorage.getItem('fab-make-test-950')).greece.same.done;
+      showScreen('screen-me'); await wait(300); out.made = [...document.querySelectorAll('#screen-me button')].map(b => b.textContent.replace(/\s+/g, ' ').trim()).filter(x => /poster|chart/.test(x)).join(' ; ');
+      return out; });
+    await ctx.close();
+    assert(r.data === 'rome:1,egypt:3,greece:0s,victorian:0s,space:0' && r.sizes && r.cards === 'How papyrus was made|How a scribe wrote a royal name|How the pyramids were built', 'each history world has pieces to explain: ' + JSON.stringify([r.data, r.sizes, r.cards]));
+    assert(/^Not that one yet\. ?Think about what the paper makers needed.*\|0$/.test(r.wrong) && r.helped === '2|true' && /^true\|\d{3}\|true\|true$/.test(r.poster) && r.why === 'true|true' && r.tick === 'true|true' && r.reopen, 'a wrong step gets a tip and never a cross, Fab can place a step, and the finished steps become a poster with the child’s own “because”: ' + JSON.stringify(r));
+    assert(r.goesIn && r.inReport === 'true|5' && /^1\|true\|Ancient Greece 4, Both 3, Today 3\|1$/.test(r.same) && /an explanation poster/i.test(r.made) && /a same-but-different chart/i.test(r.made), 'the poster slots into the report, the chart sorts ten cards into then, both and now, and both show in Things I made: ' + JSON.stringify([r.inReport, r.same, r.made]));
   });
   await test('Several children: Help and low energy reach Fab Fox World, Fox Blocks and Fab’s Sanctuary', async () => {
     const ap = await classPage('?learner=class-t1&class=1');
