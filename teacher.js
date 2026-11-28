@@ -233,13 +233,26 @@
   function planEntries(p, wk){
     const out = [], mineIds = new Set();
     p.days.forEach((d, i) => { const day = addDays(wk, i), m = d.main || '', mt = words(d.mt, 60);
-      if(m.indexOf('b:') === 0){ const b = lib().find(x => x.id === m.slice(2)); if(b){ out.push({ a:'bk:' + b.id, t:b.app ? '' : mt, n:b.app ? mt : '', th:p.unit, d:day, r:'m' }); if(b.mine) mineIds.add(b.id); } }
+      if(m.indexOf('b:') === 0){ const b = lib().find(x => x.id === m.slice(2)), ses = b && b.app && Array.isArray(b.sessions) ? b.sessions.find(x => mt.toLowerCase().indexOf(String(x[0]).toLowerCase()) === 0) : null; if(b){ out.push({ a:'bk:' + b.id + (ses ? ':' + ses[1] : ''), t:b.app ? '' : mt, n:b.app ? mt : '', th:p.unit, d:day, r:'m' }); if(b.mine) mineIds.add(b.id); } }
       else if(m.indexOf('t:') === 0){ const [w, ...pc] = m.slice(2).split(':'); out.push({ a:pc.length ? 'mk:' + w + ':' + pc.join(':') : 'explore:' + w, t:mt, n:'', th:p.unit, d:day, r:'m' }); }
       else if(m.indexOf('a:') === 0) out.push({ a:m.slice(2), t:mt, n:'', th:p.unit, d:day, r:'m' });
       else if(m === 'c' && mt) out.push({ a:'', t:mt, n:'', th:p.unit, d:day, r:'m' });
       if(d.prac) out.push({ a:'fp:' + d.prac, t:'', n:'', th:'', d:day, r:'p' });
       if(words(d.fin, 60)) out.push({ a:'', t:words(d.fin, 60), n:'', th:'', d:day, r:'f' }); });
     return { out, mine:[...mineIds] };
+  }
+  /* fill a week from a unit's sessions: the next sessions go on the days chosen (about two English sessions a week) */
+  const unitList = () => { try{ return Object.keys(FabBooklets.units).map(k => ({ k, n:FabBooklets.units[k], s:FabBooklets.sessionsOf(k) })).filter(u => u.s.length); }catch(e){ return []; } };
+  function nextSession(cn, u){ const P = plans(); let max = 0; Object.keys(P).filter(k => k.indexOf(cn + '|') === 0).forEach(k => (P[k].days || []).forEach(d => { const m = /^Session (\d+)/.exec(d && d.mt || ''); if(m && d.main && u.s.some(x => 'b:' + x.id === d.main)) max = Math.max(max, Number(m[1])); })); return Math.min(u.s.length, max + 1); }
+  function unitFillHTML(p, wk){
+    const U = unitList(); if(!U.length) return '';
+    const C = classes(), c = C[T.pc], u = U.find(x => x.k === T.uk) || U[0], from = T.un || (c ? nextSession(c.n, u) : 1), days = T.ud || [0, 3];
+    return `<details class="tp-unit" ${T.uopen ? 'open' : ''}><summary>Fill this week from a unit</summary><div class="bw-row">
+      <label><span>Unit</span><select id="tpUk">${U.map(x => `<option value="${h(x.k)}" ${x.k === u.k ? 'selected' : ''}>${h(x.n)} (${x.s.length} sessions)</option>`).join('')}</select></label>
+      <label><span>Start at</span><select id="tpUn">${u.s.map(x => `<option value="${x.n}" ${x.n === from ? 'selected' : ''}>${h(x.label)}</option>`).join('')}</select></label></div>
+      <div class="tc-chips" id="tpUd">${DAYS.map((n, k) => chip('data-tpud', k, n, days.includes(k))).join('')}</div>
+      <div class="st-row"><button type="button" class="btn small leaf" id="tpUfill">Put the next ${days.length === 1 ? 'session' : days.length + ' sessions'} on these days</button></div>
+      <p class="hint">Each chosen day gets the next session as its main task, and the booklet opens at that session’s first page. It does not change the other parts of the day.</p></details>`;
   }
   function planHTML(){
     const C = classes(); if(!C[T.pc]) T.pc = 0; const c = C[T.pc], wk = week();
@@ -251,7 +264,7 @@
       <label><span>or</span><input type="text" list="tpGames" data-tp="c2" data-day="${i}" maxlength="30" value="${h(d.c2)}" placeholder="Charades"></label>
       <label class="wide"><span>I do, we do, on the carpet (your own note)</span><input type="text" data-tp="teach" data-day="${i}" maxlength="160" value="${h(d.teach)}" placeholder="Read the extract twice; word bank; answer the first question together"></label>
       <label><span>You do: the main task</span><select data-tp="main" data-day="${i}" id="tpMain${i}">${opt('', 'Nothing set', d.main)}<optgroup label="Booklets">${lib().map(b => opt('b:' + b.id, (b.short || b.t) + (b.app ? '' : ' (on the board)'), d.main)).join('')}</optgroup>${topicsList().map(a => `<optgroup label="${h(a.n)}">${opt('t:' + a.id.slice(8), 'The whole world: the child chooses', d.main)}${piecesOf(a.id.slice(8)).map(x => opt('t:' + a.id.slice(8) + ':' + x[0], x[1], d.main)).join('')}</optgroup>`).join('')}<optgroup label="Activities in the app">${actsList().map(a => opt('a:' + a.id, a.n, d.main)).join('')}</optgroup>${opt('c', 'A challenge in my own words', d.main)}</select></label>
-      <label><span>Which part, or the challenge</span><input type="text" data-tp="mt" data-day="${i}" id="tpMt${i}" maxlength="60" value="${h(d.mt)}" placeholder="Pages 1 to 5"></label>
+      <label><span>Which part, or the challenge</span><input type="text" data-tp="mt" data-day="${i}" id="tpMt${i}" maxlength="60" value="${h(d.mt)}" placeholder="Pages 1 to 5" list="tpSes${i}"></label><datalist id="tpSes${i}">${(((d.main || '').indexOf('b:') === 0 && (lib().find(z => z.id === d.main.slice(2)) || {}).sessions) || []).map(x => `<option value="${h(x[0])}">`).join('')}</datalist>
       <label><span>Practise (${slot[1][3]} min): a flightpath</span><select data-tp="prac" data-day="${i}" id="tpPrac${i}">${opt('', 'None', d.prac)}${packs.map(k => opt(k.id, k.title + (k.years ? ' (' + k.years + ')' : ''), d.prac)).join('')}</select></label>
       <label><span>If you finish</span><input type="text" data-tp="fin" data-day="${i}" id="tpFin${i}" maxlength="60" value="${h(d.fin)}" placeholder="Draw the foggy street and label three things"></label>
       <label class="wide"><span>Low energy, and where to stop (your own note)</span><input type="text" data-tp="low" data-day="${i}" maxlength="160" value="${h(d.low)}" placeholder="Two questions aloud, teacher scribes. Stop after Quick start"></label></div></div>`;
@@ -261,6 +274,7 @@
         <span class="tp-slot">${h(c.n)}${SLOT[st] ? ': usually ' + slot[0] : ''}</span></div>
       <div class="bw-row"><label><span>Unit or theme (a tag on each main task)</span><input type="text" data-tp="unit" maxlength="30" list="tcLabels2" value="${h(p.unit)}" placeholder="A Christmas Carol"></label></div>
       <datalist id="tpGames">${GAMES.map(g => `<option value="${h(g)}">`).join('')}</datalist><datalist id="tcLabels2">${(B() ? Object.keys(B().themes) : []).map(t => `<option value="${h(t)}">`).join('')}</datalist>
+      ${unitFillHTML(p, wk)}
       ${p.days.map(day).join('')}
       <div class="st-row"><button type="button" class="btn leaf" id="tpMake">Make one link per child for the week</button>${T.plinks.length > 1 ? '<button type="button" class="btn small soft" id="tpCopyAll">Copy all links</button>' : ''}<button type="button" class="btn small soft" data-tcview="today">See today’s session</button></div>
       <p class="learn-msg" id="tpMsg" aria-live="polite">${h(T.pmsg)}</p>
@@ -410,7 +424,7 @@
         <div class="bw-row">
         ${po ? `<label><span>Start at</span><select id="tcStep"><option value="own" ${T.step === 'own' ? 'selected' : ''}>Each child’s own step</option>${po.s.steps.map((s, i) => `<option value="${i}" ${String(T.step) === String(i) ? 'selected' : ''}>${i + 1}. ${h(s.name)}${s.year ? ' (' + h(s.year) + ')' : ''}</option>`).join('')}</select></label>` : ''}
         ${T.kind === 't' && p ? `<label><span>Which piece? (optional)</span><select id="tcPiece"><option value="">The whole world: the child chooses</option>${piecesOf(p.id).map(x => `<option value="${h(x[0])}" ${T.piece === x[0] ? 'selected' : ''}>${h(x[1])}</option>`).join('')}</select></label>` : ''}
-        ${T.kind === 'b' && p.lib && p.lib.app ? `<label><span>Start at</span><select id="tcStep"><option value="own" ${T.step === 'own' ? 'selected' : ''}>Where each child left off</option>${p.lib.pages.map((pg, i) => `<option value="${i}" ${String(T.step) === String(i) ? 'selected' : ''}>Page ${i + 1}: ${h(pg.t)}</option>`).join('')}</select></label>` : ''}
+        ${T.kind === 'b' && p.lib && p.lib.app ? `<label><span>Start at</span><select id="tcStep"><option value="own" ${T.step === 'own' ? 'selected' : ''}>Where each child left off</option>${p.lib.pages.map((pg, i) => { const ses = (p.lib.sessions || []).find(x => x[1] === i + 1); return `<option value="${i}" ${String(T.step) === String(i) ? 'selected' : ''}>${ses ? h(ses[0]) + ': ' : ''}Page ${i + 1}: ${h(pg.t)}</option>`; }).join('')}</select></label>` : ''}
         ${T.kind === 'b' && !(p.lib && p.lib.app) ? `<label class="bw-note"><span>Which part? (a page, a section or one activity)</span><input type="text" id="tcPart" maxlength="${p.lib ? 60 : 38}" list="tcParts" value="${h(T.part)}" placeholder="${p.lib ? h(p.lib.parts[0]) : 'Pages 4 and 5: tens and ones'}"></label><datalist id="tcParts">${(p.lib ? p.lib.parts : []).map(x => `<option value="${h(x)}">`).join('')}</datalist>` : ''}
         ${T.kind === 't' || T.kind === 'a' || T.kind === 'c' || T.kind === 'k' ? `<label class="bw-note"><span>${T.kind === 'k' ? 'What the well done is for' : T.kind === 'c' ? 'The challenge, in your own words' : 'A challenge to go with it (optional)'}</span><input type="text" id="tcText" maxlength="60" value="${h(T.text)}" placeholder="${T.kind === 'k' ? 'Super effort with your times tables' : 'Find three facts about Victorian schools'}"></label>` : ''}
         ${T.kind !== 'k' ? `<label><span>Half term or theme (optional)</span><input type="text" id="tcLabel" maxlength="30" list="tcLabels" value="${h(T.label)}" placeholder="Autumn 1"></label>
@@ -526,6 +540,13 @@
     try{ FabBooklets.notesWire(box); }catch(e){}
     all('[data-bkpraise]', b => { const [cd, bk] = b.dataset.bkpraise.split('|'); T.cls = 'one'; T.one = cd; choose('k'); T.text = ('working so hard on ' + bk).slice(0, 60); render(); try{ window.scrollTo(0, 0); }catch(e){} });
     all('[data-ttc]', b => { const L = connectLog(), k = b.dataset.ttc; L[k] = L[k] ? 0 : 1; if(!L[k]) delete L[k]; try{ localStorage.setItem('fab-teach-connect', JSON.stringify(L)); }catch(e){} snd('tick'); render(); });
+    on('#tpUk', 'change', e => { T.uk = e.target.value; T.un = 0; T.uopen = true; render(); });
+    on('#tpUn', 'change', e => { T.un = Number(e.target.value) || 1; T.uopen = true; });
+    all('[data-tpud]', b => { const k = Number(b.dataset.tpud), D = (T.ud || [0, 3]).slice(), at = D.indexOf(k); if(at >= 0) D.splice(at, 1); else D.push(k); T.ud = D.sort(); T.uopen = true; render(); });
+    on('#tpUfill', 'click', () => { const C = classes(), c = C[T.pc]; if(!c) return; const wk = week(), p = planOf(c.n, wk), U = unitList(), u = U.find(x => x.k === T.uk) || U[0]; if(!u) return;
+      let n = T.un || nextSession(c.n, u); const D = (T.ud || [0, 3]).slice().sort(); let put = 0;
+      D.forEach(k => { const x = u.s.find(z => z.n === n); if(!x) return; p.days[k].main = 'b:' + x.id; p.days[k].mt = x.label; n++; put++; });
+      if(!p.unit) p.unit = u.n.slice(0, 30); savePlan(c.n, wk, p); T.un = 0; T.uopen = false; T.links = []; T.plinks = []; T.pmsg = put ? `Put ${put === 1 ? '1 session' : put + ' sessions'} into the week. Make the links again for the children.` : 'That was the last session of the unit.'; snd('tick'); render(); });
     on('#tcGuideHide', 'click', () => { try{ localStorage.setItem('fab-teach-guide', 'hide'); }catch(e){} render(); });
     on('#tcGuideShow', 'click', () => { try{ localStorage.removeItem('fab-teach-guide'); }catch(e){} render(); });
     on('#tcMoveMake', 'click', () => { T.move = moveCode(); T.mmsg = ''; render(); });
@@ -678,6 +699,7 @@
 @media (max-width:700px){.tp-grid{grid-template-columns:1fr}}
 .tt-table th{text-align:left;white-space:nowrap;vertical-align:top;width:13em}.tt-table td{text-align:left}
 .tc-pages{margin:6px 0;padding-left:1.4em;columns:2}.tc-how{padding-left:1.3em;display:grid;gap:4px}.tc-file{cursor:pointer}.tc-paste{display:grid;gap:4px;margin:8px 0}.tc-paste textarea{width:100%;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;border:2px solid #2B1A12;border-radius:12px;padding:8px 10px;background:#fff;box-sizing:border-box}
+.tp-unit{background:#FFF6E6;border:2px dashed #E3C9A0;border-radius:14px;padding:8px 12px;margin:10px 0}.tp-unit summary{font-weight:700;cursor:pointer}
 .tt-connect{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}.tc-guide ol{margin:6px 0}.tc-move{margin:10px 0}.tc-move summary{font-weight:700;cursor:pointer}.tc-movecode{width:100%;box-sizing:border-box;font:12px/1.3 ui-monospace,Menlo,monospace;height:64px}
 .tc-errs{background:#FFF1EC;border:2px solid #D8402B;border-radius:12px;padding:8px 12px 8px 28px;margin:8px 0}.tc-ptable td{vertical-align:middle}
 .tc-tile .emoji svg,.tc-tile .emoji .fi{width:1.5em;height:1.5em}
