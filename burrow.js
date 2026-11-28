@@ -52,7 +52,9 @@
     { id:'booklet', n:'Booklet', ic:'books', e:'📚', show:'Your teacher will open this booklet with you.' }
   ];
   /* a booklet from the library travels as 'bk:<id>' or 'bk:<id>:<page>' (booklets.js): one rebuilt as pages opens in the app, the others are opened on the board */
-  const actOf = id => ACTS.find(a => a.id === id) || (String(id || '').indexOf('bk:') === 0 && window.FabBooklets ? FabBooklets.act(id) : null);
+  const actOf = id => ACTS.find(a => a.id === id) || (String(id || '').indexOf('bk:') === 0 && window.FabBooklets ? FabBooklets.act(id) : String(id || '').indexOf('fp:') === 0 ? fpAct(id) : null);
+  /* a flightpath set as the day's practice in a week plan: 'fp:<pack id>', at the child's own step */
+  function fpAct(id){ let p = null; try{ p = packById(String(id).slice(3)); }catch(e){} return p && pathOf(p) ? { id:'fp:' + p.id, n:'Flightpath: ' + p.title, ic:'map', e:'🗺️' } : null; }
   /* theme weeks: a few gentle starters a teacher can tap (drafts for a teacher to check and change) */
   const THEMES = {
     'Anti-Bullying Week': [['studio', 'Make a kindness poster'], ['world', 'Pop a bubble and pick a kind thing to do today'], ['', 'Tell your teacher about a good friend']],
@@ -68,6 +70,7 @@
     const [k, v, pg] = String(id || '').split(':');
     try{
       if(k === 'bk'){ FabBooklets.open(v, pg || null, { code, back:'screen-me' }); return; }
+      if(k === 'fp'){ const p = packById(String(id).slice(3)); if(p) openPack(p); return; }
       if(k === 'explore') FabExplore.open('screen-me', v);
       else if(k === 'code'){ window.fabCodeFrom = 'screen-me'; showScreen('screen-code'); document.getElementById('codeFrame').src = 'code.html?embed=1&back=app&learner=' + encodeURIComponent(code) + '&project=' + encodeURIComponent(v); }
       else if(k === 'sanct'){ fabOpenSanct(); window.fabSanctFrom = 'screen-me'; }
@@ -84,7 +87,7 @@
       const s = r[1] == null || r[1] === '' ? null : Math.max(0, Math.min(po.s.steps.length - 1, Number(r[1]) || 0));
       return { p:p.id, s, d:/^\d{4}-\d\d-\d\d$/.test(String(r[2] || '')) ? String(r[2]) : '', n:String(r[3] || '').replace(/[<>]/g, '').slice(0, 80), th:clean(r[4], 30) }; }).filter(Boolean);
     const free = arr(o.f).slice(0, 8).map(String).filter(id => pathOf(packById(id)));
-    const extras = arr(o.x).slice(0, 4).map(r => { r = arr(r); const a = String(r[0] || ''); return { a:actOf(a) ? a : '', t:clean(r[1], a === 'booklet' || a.indexOf('bk:') === 0 ? 80 : 60), n:clean(r[2], 80), th:clean(r[3], 30), d:/^\d{4}-\d\d-\d\d$/.test(String(r[4] || '')) ? String(r[4]) : '' }; }).filter(extraOK);
+    const extras = arr(o.x).slice(0, o.w ? 30 : 4).map(r => { r = arr(r); const a = String(r[0] || ''); return { r:['m', 'p', 'f'].includes(r[5]) ? r[5] : '', a:actOf(a) ? a : '', t:clean(r[1], a === 'booklet' || a.indexOf('bk:') === 0 ? 80 : 60), n:clean(r[2], 80), th:clean(r[3], 30), d:/^\d{4}-\d\d-\d\d$/.test(String(r[4] || '')) ? String(r[4]) : '' }; }).filter(extraOK);
     /* a well done from the teacher, in their own words (the Teachers' area) */
     const praise = arr(cur0(code).praise).concat(arr(o.k).slice(0, 3).map(r => ({ t:clean(arr(r)[0], 60), d:today() })).filter(x => x.t));
     const t = Number(o.t) || 0, cur = read(code);
@@ -92,9 +95,9 @@
     if(o.m){ /* a class link adds to what the child already has; it never takes work away */
       const its = cur.items.slice(), exs = cur.extras.slice(), fr = arr(cur.free).slice();
       items.forEach(n => { if(!its.some(x => x.p === n.p && x.s === n.s)) its.push(n); });
-      extras.forEach(n => { if(!exs.some(x => x.a === n.a && x.t === n.t && x.th === n.th)) exs.push(n); });
+      extras.forEach(n => { if(!exs.some(x => x.a === n.a && x.t === n.t && x.th === n.th && (!n.r || (x.d === n.d && x.r === n.r)))) exs.push(n); });
       free.forEach(id => { if(!fr.includes(id)) fr.push(id); });
-      ls.set(KEY(code), { t, items:its.slice(-10), free:fr.slice(-8), extras:exs.slice(-10), praise:praise.slice(-5) }); return true; }
+      ls.set(KEY(code), { t, items:its.slice(-10), free:fr.slice(-8), extras:exs.slice(-60), praise:praise.slice(-5) }); return true; }
     ls.set(KEY(code), { t, items, free, extras, praise:praise.slice(-5) }); return true;
   }
   function cur0(code){ return ls.json(KEY(code), null) || {}; }
@@ -112,7 +115,16 @@
     return { pack, po, pr, done, started:!!it.st || (!!pr && it.s == null) };
   }
   function todays(code){ const d = today(); return read(code).items.map((it, i) => Object.assign({ i }, it)).filter(it => !it.d || it.d <= d); }
-  function todaysExtras(code){ const d = today(); return read(code).extras.map((x, i) => Object.assign({ i }, x)).filter(x => !x.d || x.d <= d); }
+  /* Set work shows from its day onwards. Work from a WEEK PLAN (it has a role) belongs to its own day: today's main task and practice;
+     "if you finish" only once today's main task is done; a main task not finished earlier in the week stays, marked "if you like". */
+  function todaysExtras(code){
+    const d = today(), all = read(code).extras.map((x, i) => Object.assign({ i }, x)), t0 = new Date(); t0.setDate(t0.getDate() - 6);
+    const since = t0.getFullYear() + '-' + String(t0.getMonth() + 1).padStart(2, '0') + '-' + String(t0.getDate()).padStart(2, '0');
+    const mains = all.filter(x => x.r === 'm' && x.d === d), mainsDone = mains.length > 0 && mains.every(x => x.dn);
+    return all.filter(x => !x.r ? (!x.d || x.d <= d) : x.d === d ? (x.r !== 'f' || mainsDone || x.dn) : (x.r === 'm' && !x.dn && x.d < d && x.d >= since))
+      .map(x => Object.assign(x, { late:!!x.r && x.d < d })).sort((a, b) => (a.late ? 1 : 0) - (b.late ? 1 : 0) || 'mpf'.indexOf(a.r || 'm') - 'mpf'.indexOf(b.r || 'm'));
+  }
+  const dayName = d => { const m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(d || ''); return m ? new Date(m[1], m[2] - 1, m[3]).toLocaleDateString('en-GB', { weekday:'long' }) : ''; };
   function extraDone(code, idx){
     const b = read(code), x = b.extras[idx]; if(!x || x.dn) return;
     x.dn = today(); ls.set(KEY(code), b);
@@ -200,12 +212,13 @@
     const xs = todaysExtras(code);
     const xrows = xs.map(x => { const a = actOf(x.a) || ACTS[0];
       return `<li class="bw-item bw-x ${x.dn ? 'done' : ''}"><span class="bw-xic" aria-hidden="true">${ic(a.ic, a.e)}</span>
-        <div class="bw-what">${x.th ? `<span class="bw-theme">${h(x.th)}</span>` : ''}<b>${h(extraTitle(x))}</b>${x.t && x.a ? `<span>${h(a.n)}</span>` : ''}${a.show ? `<span class="bw-show">${h(a.show)}</span>` : ''}${x.n ? `<em>Your teacher says: ${h(x.n)}</em>` : ''}</div>
+        <div class="bw-what">${x.r === 'f' ? '<span class="bw-theme bw-role">If you finish</span>' : x.late ? `<span class="bw-theme bw-role">From ${h(dayName(x.d))}, if you like</span>` : x.r === 'p' ? '<span class="bw-theme bw-role">Practise</span>' : ''}${x.th ? `<span class="bw-theme">${h(x.th)}</span>` : ''}<b>${h(extraTitle(x))}</b>${x.t && x.a ? `<span>${h(a.n)}</span>` : ''}${a.show ? `<span class="bw-show">${h(a.show)}</span>` : ''}${x.n ? `<em>Your teacher says: ${h(x.n)}</em>` : ''}</div>
         ${x.dn ? '<span class="bw-status">⭐ Done</span>' : ''}
         ${x.a && !a.show ? `<button type="button" class="btn ${x.dn ? 'soft small' : 'leaf'}" data-bwxgo="${x.i}">${x.dn ? 'Do more' : 'Start ➡️'}</button>` : ''}
         ${x.dn ? '' : `<button type="button" class="btn soft small" data-bwxdone="${x.i}">I did it</button>`}</li>`; }).join('');
-    const total = list.length + xs.length;
-    const nDone = list.filter(it => statusOf(code, it).done).length + xs.filter(x => x.dn).length, all = total && nDone === total;
+    const xn = xs.filter(x => !x.late && x.r !== 'f');
+    const total = list.length + xn.length;
+    const nDone = list.filter(it => statusOf(code, it).done).length + xn.filter(x => x.dn).length, all = total && nDone === total;
     const say = !total ? (homeOn() ? '<p class="bw-none">Nothing is set for today yet. Your teacher will choose something with you.</p>' : '<p class="bw-none">Nothing is set for today. Choose anything you like.</p>')
       : all ? '<div class="fab-say"><span class="fab-char elder" role="img" aria-label="Mr Elder, the head teacher"></span><div class="bubble"><b>All done for today. Brilliant!</b>Your stars are waiting in Fab Fox World.</div></div>'
       : `<div class="fab-say"><span class="fab-char fab" role="img" aria-label="Fab"></span><div class="bubble"><b>${total === 1 ? 'One thing to do today' : total + ' things to do today'}</b>Start at the top. You can stop for a rest at any time.</div></div>`;
@@ -243,10 +256,11 @@
   function linkFor(code, rows, free, opt){
     const a = rows.filter(r => r.p).map(r => { const row = [r.p, r.s == null ? null : Number(r.s), r.d || '', (r.n || '').trim().slice(0, 80)]; if(r.th) row.push(clean(r.th, 30)); return row; });
     opt = opt || {};
-    const x = arr(opt.extras).map(e => ({ a:actOf(e.a) ? e.a : '', t:clean(e.t, e.a === 'booklet' || String(e.a).indexOf('bk:') === 0 ? 80 : 60), n:clean(e.n, 80), th:clean(e.th, 30), d:e.d || '' })).filter(extraOK).slice(0, 4).map(e => [e.a, e.t, e.n, e.th, e.d]);
+    const x = arr(opt.extras).map(e => ({ a:actOf(e.a) ? e.a : '', t:clean(e.t, e.a === 'booklet' || String(e.a).indexOf('bk:') === 0 ? 80 : 60), n:clean(e.n, 80), th:clean(e.th, 30), d:e.d || '', r:['m', 'p', 'f'].includes(e.r) ? e.r : '' })).filter(extraOK).slice(0, opt.week ? 30 : 4).map(e => e.r ? [e.a, e.t, e.n, e.th, e.d, e.r] : [e.a, e.t, e.n, e.th, e.d]);
     const o = { t:Date.now(), a, f:free }; if(x.length) o.x = x;
     const k = clean(opt.praise, 60); if(k) o.k = [[k]];
     if(opt.merge || k) o.m = 1;
+    if(opt.week) o.w = 1;
     return location.origin + location.pathname + '?learner=' + encodeURIComponent(code) + (opt.cls ? '&class=1&quiet=1' : '') + (opt.home ? '&home=burrow' : '') + '&burrow=' + enc(o);
   }
   function staffHTML(){
@@ -351,6 +365,7 @@
 .bw-xic{display:grid;place-items:center;width:52px;height:52px;flex:none;background:#FFD483;border:2.5px solid #2B1A12;border-radius:12px;font-size:1.6rem}.bw-xic svg{width:38px;height:38px}
 .bw-praise ul{margin:6px 0 0;padding-left:1.3em;text-align:left}.bw-praise li{font-weight:700;margin:3px 0}
 .bw-show{font-style:italic;opacity:.85}
+.bw-theme.bw-role{background:#CFE7F2;margin-right:6px}
 .bw-theme{align-self:flex-start;background:#CFE7F2;border:2px solid #2B1A12;border-radius:999px;padding:1px 10px;font-size:.85rem;font-weight:700}
 .bw-opts{display:grid;gap:6px;margin:8px 0}.bw-opts label{display:flex;gap:10px;align-items:flex-start;background:#fffdf6;border-radius:12px;padding:8px 10px}.bw-opts input{width:22px;height:22px;flex:none;margin-top:2px}
 .bw-h{display:flex;align-items:center;gap:8px}.bw-h svg{width:1.6em;height:1.6em;flex:none}

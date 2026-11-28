@@ -70,8 +70,8 @@
 
   const T = { view:'home', cls:0, one:'', kind:'', sub:'all', st:'auto', pick:'', step:'own', text:'', part:'', label:'', day:'', note:'', links:[], msg:'',
     edit:null, en:'', ec:'', emsg:'', rm:-1, open:'', own:'', badd:false, bt:'', bsub:'', bst:'', bmsg:'', brm:-1,
-    iw:'', ik:'A booklet', isub:'', ist:'', iy:'', imsg:'', irm:-1, iclear:0, tv:'active', lib:'', ladd:false, ltext:'', lmsg:[], lok:'', lrm:'' };
-  const TITLES = { home:'Teachers’ area', assign:'Assign a task', tasks:'Set tasks', library:'Booklet library', progress:'View task progress', profile:'Assessment profiles', suggest:'Suggest a resource', print:'Print achievements', classes:'My classes' };
+    iw:'', ik:'A booklet', isub:'', ist:'', iy:'', imsg:'', irm:-1, iclear:0, tv:'active', pw:'', pc:0, plinks:[], pmsg:'', td:-1, lib:'', ladd:false, ltext:'', lmsg:[], lok:'', lrm:'' };
+  const TITLES = { home:'Teachers’ area', plan:'Plan a week', today:'Today’s session', assign:'Assign a task', tasks:'Set tasks', library:'Booklet library', progress:'View task progress', profile:'Assessment profiles', suggest:'Suggest a resource', print:'Print achievements', classes:'My classes' };
 
   /* ---------- assign: who, what kind, which one ---------- */
   function targets(){ const C = classes(); if(T.cls === 'one') return CODE_RE.test(T.one) ? [T.one] : []; if(T.cls === 'all') return [...new Set([].concat(...C.map(c => c.codes)))]; const c = C[Number(T.cls)]; return c ? c.codes : []; }
@@ -173,7 +173,9 @@
     const tile = (id, v, name, emoji, t, p) => `<button type="button" class="tile category-tile tc-tile" id="${id}" ${v ? `data-tcview="${v}"` : ''}><span class="emoji">${ic(name, emoji)}</span><h2>${t}</h2><p>${p}</p></button>`;
     const sec = (id, t, tiles) => `<section class="tc-sec" id="${id}"><h2 class="tc-sech">${t}</h2><div class="hub-grid tc-home">${tiles}</div></section>`;
     return `<p class="tc-top"><b>Fab codes only, never a child’s name.</b> Everything on these pages stays in this browser.</p>
-      ${sec('tcSecTeach', 'Teach', tile('tcGoAssign', 'assign', 'target', '📌', 'Assign a task', 'A booklet, flightpath, topic or activity, for a class, one child or everyone')
+      ${sec('tcSecTeach', 'Plan and teach', tile('tcGoPlan', 'plan', 'map', '🗓️', 'Plan a week', 'Each day’s session for a class. One link per child for the whole week')
+        + tile('tcGoToday', 'today', 'sun', '☀️', 'Today’s session', 'Connect, teach, you do, practise, goodbye: today’s plan for each class')
+        + tile('tcGoAssign', 'assign', 'target', '📌', 'Assign a task', 'A booklet, flightpath, topic or activity, for a class, one child or everyone')
         + tile('tcGoTasks', 'tasks', 'pencil', '🗓️', 'Set tasks', 'What is coming up, active and past')
         + tile('tcGoLibrary', 'library', 'books', '📚', 'Booklet library', nb + ' booklets. Look inside, assign one or add your own'))}
       ${sec('tcSecData', 'Children’s work and data', tile('tcGoProgress', 'progress', 'map', '🗺️', 'View task progress', 'What is set, started and finished, and booklet marks')
@@ -196,6 +198,94 @@
       ${L.length ? `<ul class="tc-tasklist">${L.map(r => `<li><div><b>${h(r.w)}</b><span>Set for: ${h(r.c)} (${Number(r.n) === 1 ? '1 child' : (Number(r.n) || 0) + ' children'})${r.d ? ' · shows from ' + h(day(r.d)) : ''} · set on ${h(new Date(r.t).toLocaleDateString('en-GB', { day:'numeric', month:'short' }))}</span>
         <span class="tc-tags">${[r.k, r.sub, r.l].filter(Boolean).map(x => `<i>${h(x)}</i>`).join('')}</span></div></li>`).join('')}</ul>` : `<p class="hint">Nothing ${T.tv === 'future' ? 'coming up' : T.tv === 'past' ? 'older than four weeks' : 'active'} yet.</p>`}
       <p class="hint">This lists what was set from this browser (the last 60). How many children have done each task can only be counted once progress is saved online; today, open View task progress on a child’s viewer.</p></div>`;
+  }
+
+  /* ---------- plan a week, and today's session (28 Nov: the model Patrick agreed) ----------
+     A session = Connect (a third of it: games, wellbeing, confidence) → I do, we do (the carpet) → You do (the child's own viewer)
+     → Practise (one flightpath step) → Goodbye. A week is planned once for a class and travels in ONE link per child: each day's
+     main task and practice appear in the child's Today on their day, and "if you finish" appears when the main task is done.
+     Connect choices and the teacher's own notes stay in this browser: they are for the teacher, not sent to the child. */
+  const PK = 'fab-teach-plans', DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  /* BMF's morning timetable (Patrick, 28 Nov): the usual time and the minutes for connect, carpet, you do, practise, goodbye */
+  const SLOT = { eyfs:['9:00 to 9:30', [10, 7, 8, 3, 2]], ks1:['9:45 to 10:30', [15, 10, 12, 5, 3]], lks2:['10:45 to 11:30', [15, 10, 12, 5, 3]], uks2:['11:45 to 12:30', [15, 10, 12, 5, 3]] };
+  const GAMES = ['Fab Fox Pairs', 'Charades', 'Connect 4', 'Noughts and crosses', 'Bingo', 'Word Detective', 'Rainbow Words', 'Countdown', 'Chatter Corner', 'Fab Faves', 'Uno', 'Checkers', 'Fab’s Sanctuary', 'A walk in Fab Fox World', 'The breathing circle', 'Bubbles', 'Feeling faces', 'Story dice', 'Colour by numbers', 'Music'];
+  const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const monday = () => { const d = new Date(), w = d.getDay(); d.setDate(d.getDate() + (w === 0 ? 1 : w === 6 ? 2 : 1 - w)); return iso(d); };
+  const addDays = (s0, n) => { const m = String(s0).split('-').map(Number); return iso(new Date(m[0], m[1] - 1, m[2] + n)); };
+  const niceDay = s0 => { const m = String(s0).split('-').map(Number); return new Date(m[0], m[1] - 1, m[2]).toLocaleDateString('en-GB', { day:'numeric', month:'long' }); };
+  const blankDay = () => ({ c1:'', c2:'', teach:'', main:'', mt:'', prac:'', fin:'', low:'' });
+  const plans = () => { const v = ls.json(PK, {}); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; };
+  const week = () => /^\d{4}-\d\d-\d\d$/.test(T.pw) ? T.pw : monday();
+  function planOf(cn, wk){ const p = plans()[cn + '|' + wk] || {}, days = arr(p.days).slice(0, 5); while(days.length < 5) days.push({}); return { unit:words(p.unit, 30), days:days.map(d => Object.assign(blankDay(), d)) }; }
+  function savePlan(cn, wk, p){ const all = plans(); all[cn + '|' + wk] = p; const keys = Object.keys(all).sort((a, b) => a.split('|')[1] < b.split('|')[1] ? -1 : 1); while(keys.length > 40) delete all[keys.shift()]; ls.set(PK, all); }
+  const topicsList = () => B() ? B().acts.filter(a => a.id.indexOf('explore:') === 0) : [];
+  const actsList = () => B() ? B().acts.filter(a => a.id && a.id !== 'booklet' && a.id.indexOf('explore:') !== 0) : [];
+  function mainName(d){
+    const m = d.main || '', mt = words(d.mt, 60);
+    if(m.indexOf('b:') === 0){ const b = lib().find(x => x.id === m.slice(2)); return b ? 'Booklet: ' + (b.short || b.t) + (mt ? ' (' + mt + ')' : '') + (b.app ? '' : ', on the board') : ''; }
+    if(m.indexOf('t:') === 0){ const a = topicsList().find(x => x.id === 'explore:' + m.slice(2)); return a ? a.n + (mt ? ': ' + mt : '') : ''; }
+    if(m.indexOf('a:') === 0){ const a = actsList().find(x => x.id === m.slice(2)); return a ? a.n + (mt ? ': ' + mt : '') : ''; }
+    return m === 'c' ? mt : '';
+  }
+  const pracName = d => { const p = d.prac && B() ? B().packById(d.prac) : null; return p ? p.title + ', each child’s own step' : ''; };
+  function planEntries(p, wk){
+    const out = [], mineIds = new Set();
+    p.days.forEach((d, i) => { const day = addDays(wk, i), m = d.main || '', mt = words(d.mt, 60);
+      if(m.indexOf('b:') === 0){ const b = lib().find(x => x.id === m.slice(2)); if(b){ out.push({ a:'bk:' + b.id, t:b.app ? '' : mt, n:b.app ? mt : '', th:p.unit, d:day, r:'m' }); if(b.mine) mineIds.add(b.id); } }
+      else if(m.indexOf('t:') === 0) out.push({ a:'explore:' + m.slice(2), t:mt, n:'', th:p.unit, d:day, r:'m' });
+      else if(m.indexOf('a:') === 0) out.push({ a:m.slice(2), t:mt, n:'', th:p.unit, d:day, r:'m' });
+      else if(m === 'c' && mt) out.push({ a:'', t:mt, n:'', th:p.unit, d:day, r:'m' });
+      if(d.prac) out.push({ a:'fp:' + d.prac, t:'', n:'', th:'', d:day, r:'p' });
+      if(words(d.fin, 60)) out.push({ a:'', t:words(d.fin, 60), n:'', th:'', d:day, r:'f' }); });
+    return { out, mine:[...mineIds] };
+  }
+  function planHTML(){
+    const C = classes(); if(!C[T.pc]) T.pc = 0; const c = C[T.pc], wk = week();
+    if(!c) return `<div class="me-card" id="tcPlan"><h2>${ic('map', '🗓️')} Plan a week</h2><p>Set up a class first: a class name and its children’s Fab codes.</p><div class="st-row"><button type="button" class="btn leaf" data-tcview="classes">Add a class</button></div></div>`;
+    const p = planOf(c.n, wk), st = usualStage(c.n), slot = SLOT[st] || SLOT.lks2, packs = B() ? B().paths() : [];
+    const opt = (v, label, cur) => `<option value="${h(v)}" ${cur === v ? 'selected' : ''}>${h(label)}</option>`;
+    const day = (d, i) => `<div class="tp-day" data-day="${i}"><h3>${DAYS[i]} <small>${h(niceDay(addDays(wk, i)))}</small></h3><div class="tp-grid">
+      <label><span>Connect (${slot[1][0]} min): choose from</span><input type="text" list="tpGames" data-tp="c1" data-day="${i}" maxlength="30" value="${h(d.c1)}" placeholder="Fab Fox Pairs"></label>
+      <label><span>or</span><input type="text" list="tpGames" data-tp="c2" data-day="${i}" maxlength="30" value="${h(d.c2)}" placeholder="Charades"></label>
+      <label class="wide"><span>I do, we do, on the carpet (your own note)</span><input type="text" data-tp="teach" data-day="${i}" maxlength="160" value="${h(d.teach)}" placeholder="Read the extract twice; word bank; answer the first question together"></label>
+      <label><span>You do: the main task</span><select data-tp="main" data-day="${i}" id="tpMain${i}">${opt('', 'Nothing set', d.main)}<optgroup label="Booklets">${lib().map(b => opt('b:' + b.id, (b.short || b.t) + (b.app ? '' : ' (on the board)'), d.main)).join('')}</optgroup><optgroup label="World Explorers">${topicsList().map(a => opt('t:' + a.id.slice(8), a.n.replace('Explorer Worlds: ', ''), d.main)).join('')}</optgroup><optgroup label="Activities in the app">${actsList().map(a => opt('a:' + a.id, a.n, d.main)).join('')}</optgroup>${opt('c', 'A challenge in my own words', d.main)}</select></label>
+      <label><span>Which part, or the challenge</span><input type="text" data-tp="mt" data-day="${i}" id="tpMt${i}" maxlength="60" value="${h(d.mt)}" placeholder="Pages 1 to 5"></label>
+      <label><span>Practise (${slot[1][3]} min): a flightpath</span><select data-tp="prac" data-day="${i}" id="tpPrac${i}">${opt('', 'None', d.prac)}${packs.map(k => opt(k.id, k.title + (k.years ? ' (' + k.years + ')' : ''), d.prac)).join('')}</select></label>
+      <label><span>If you finish</span><input type="text" data-tp="fin" data-day="${i}" id="tpFin${i}" maxlength="60" value="${h(d.fin)}" placeholder="Draw the foggy street and label three things"></label>
+      <label class="wide"><span>Low energy, and where to stop (your own note)</span><input type="text" data-tp="low" data-day="${i}" maxlength="160" value="${h(d.low)}" placeholder="Two questions aloud, teacher scribes. Stop after Quick start"></label></div></div>`;
+    return `<div class="me-card" id="tcPlan"><h2>${ic('map', '🗓️')} Plan a week</h2>
+      <div class="tc-chips" id="tpCls">${C.map((x, i) => chip('data-tpcls', i, h(x.n) + ' (' + x.codes.length + ')', T.pc === i)).join('')}</div>
+      <div class="tp-week"><button type="button" class="btn small soft" data-tpwk="-7" aria-label="The week before">◀</button><b id="tpWeek">Week beginning Monday ${h(niceDay(wk))}</b><button type="button" class="btn small soft" data-tpwk="7" aria-label="The week after">▶</button>
+        <span class="tp-slot">${h(c.n)}${SLOT[st] ? ': usually ' + slot[0] : ''}</span></div>
+      <div class="bw-row"><label><span>Unit or theme (a tag on each main task)</span><input type="text" data-tp="unit" maxlength="30" list="tcLabels2" value="${h(p.unit)}" placeholder="A Christmas Carol"></label></div>
+      <datalist id="tpGames">${GAMES.map(g => `<option value="${h(g)}">`).join('')}</datalist><datalist id="tcLabels2">${(B() ? Object.keys(B().themes) : []).map(t => `<option value="${h(t)}">`).join('')}</datalist>
+      ${p.days.map(day).join('')}
+      <div class="st-row"><button type="button" class="btn leaf" id="tpMake">Make one link per child for the week</button>${T.plinks.length > 1 ? '<button type="button" class="btn small soft" id="tpCopyAll">Copy all links</button>' : ''}<button type="button" class="btn small soft" data-tcview="today">See today’s session</button></div>
+      <p class="learn-msg" id="tpMsg" aria-live="polite">${h(T.pmsg)}</p>
+      ${T.plinks.length ? `<div class="cl-links">${T.plinks.map(x => `<div><b>${h(x.c)}</b><input readonly value="${h(x.l)}" aria-label="Week link for ${h(x.c)}"><button type="button" class="btn small soft" data-tpcopy="${h(x.c)}">Copy link</button></div>`).join('')}</div>` : ''}
+      <p class="hint">The plan saves as you type, in this browser. <b>Paste each child’s link into their viewer once.</b> Each day they see that day’s main task and practice; “if you finish” appears when the main task is done; a main task from earlier in the week stays, marked “if you like”. Connect choices and your notes are for you and are not sent. Change the plan later? Make the links again: new work is added and nothing a child has done is lost.</p></div>`;
+  }
+  function todayHTML(){
+    const C = classes(), now = new Date(), wd = now.getDay(), wk = monday(), i = T.td >= 0 ? T.td : (wd >= 1 && wd <= 5 ? wd - 1 : 0);
+    const order = ['eyfs', 'ks1', 'lks2', 'uks2'], L = C.map((c, k) => ({ c, k, st:usualStage(c.n) })).sort((a, b) => (order.indexOf(a.st) + 9) % 9 - (order.indexOf(b.st) + 9) % 9);
+    const card = x => { const p = planOf(x.c.n, wk), d = p.days[i], slot = SLOT[x.st] || SLOT.lks2, mn = slot[1], m = mainName(d), pr = pracName(d), any = m || pr || d.teach || d.c1 || d.c2;
+      const b = (d.main || '').indexOf('b:') === 0 ? lib().find(z => z.id === d.main.slice(2)) : null;
+      const row = (t, v) => `<tr><th>${t}</th><td>${v}</td></tr>`;
+      return `<div class="me-card tt-card" data-ttcls="${h(x.c.n)}"><h2>${h(x.c.n)} <small>${SLOT[x.st] ? h(slot[0]) : ''}${p.unit ? ' · ' + h(p.unit) : ''}</small></h2>
+        ${any ? `<table class="st-table tt-table"><tbody>
+          ${row('Connect (' + mn[0] + ')', 'Today’s Hello and Energy today, then the children choose: <b>' + h(d.c1 || 'a game') + '</b>' + (d.c2 ? ' or <b>' + h(d.c2) + '</b>' : ''))}
+          ${row('I do, we do (' + mn[1] + ')', h(d.teach) || '<span class="bk-na">No note</span>')}
+          ${row('You do (' + mn[2] + ')', m ? '<b>' + h(m) + '</b>' : '<span class="bk-na">Nothing set</span>')}
+          ${row('Practise (' + mn[3] + ')', h(pr) || '<span class="bk-na">None</span>')}
+          ${row('If you finish', h(d.fin) || '<span class="bk-na">Nothing set: a child who finishes has only the games</span>')}
+          ${row('Low energy; where to stop', h(d.low) || '<span class="bk-na">No note</span>')}
+          ${row('Goodbye (' + mn[4] + ')', 'Goodbye Circle: one thing I can do now')}</tbody></table>
+          <div class="st-row">${b && b.app ? `<button type="button" class="btn small leaf" data-ttlook="${h(b.id)}">Open the booklet to teach from</button>` : ''}<button type="button" class="btn small soft" data-ttplan="${x.k}">Change this plan</button></div>`
+          : `<p class="hint">Nothing planned for ${DAYS[i]}.</p><div class="st-row"><button type="button" class="btn small leaf" data-ttplan="${x.k}">Plan this week</button></div>`}</div>`; };
+    return `<div class="me-card" id="tcToday"><h2>${ic('sun', '☀️')} ${T.td < 0 && wd >= 1 && wd <= 5 ? 'Today' : DAYS[i]}: ${h(niceDay(addDays(wk, i)))}</h2>
+      <div class="tc-chips" id="ttDays">${DAYS.map((n, k) => chip('data-ttday', k, n, k === i)).join('')}</div>
+      <p class="hint">Every session: a third for connection, games and confidence, then the learning. Switch on <b>Look here</b> (Admin) to point on the carpet.</p></div>
+      ${L.length ? L.map(card).join('') : '<div class="me-card"><p>Set up a class first.</p><div class="st-row"><button type="button" class="btn leaf" data-tcview="classes">Add a class</button></div></div>'}`;
   }
 
   /* ---------- the booklet library ---------- */
@@ -373,7 +463,7 @@
     const ttl = document.querySelector('#screen-teach .screen-title'); if(ttl) ttl.textContent = TITLES[T.view];
     const bk = document.querySelector('#screen-teach .btn-back'); if(bk) bk.textContent = T.view === 'home' ? '← Back' : '← Teachers’ area';
     box.dataset.view = T.view;
-    box.innerHTML = T.view === 'assign' ? assignHTML() : T.view === 'tasks' ? tasksHTML() : T.view === 'library' ? libraryHTML() : T.view === 'profile' ? profileHTML() : T.view === 'progress' ? progressHTML() : T.view === 'print' ? printHTML() : T.view === 'suggest' ? suggestHTML() : T.view === 'classes' ? classesHTML() : homeHTML();
+    box.innerHTML = T.view === 'plan' ? planHTML() : T.view === 'today' ? todayHTML() : T.view === 'assign' ? assignHTML() : T.view === 'tasks' ? tasksHTML() : T.view === 'library' ? libraryHTML() : T.view === 'profile' ? profileHTML() : T.view === 'progress' ? progressHTML() : T.view === 'print' ? printHTML() : T.view === 'suggest' ? suggestHTML() : T.view === 'classes' ? classesHTML() : homeHTML();
     wire(box);
   }
   function go(v){ T.view = TITLES[v] ? v : 'home'; T.lmsg = []; T.lok = ''; T.lrm = ''; if(v === 'library' && T.st === 'auto') T.st = 'all'; T.rm = -1; T.irm = -1; T.iclear = 0; T.brm = -1; if(v !== 'classes'){ T.edit = null; T.emsg = ''; } render(); try{ window.scrollTo(0, 0); }catch(e){} }
@@ -407,6 +497,25 @@
     all('[data-tccopy]', b => { const x = T.links.find(l => l.c === b.dataset.tccopy); if(!x) return; try{ navigator.clipboard.writeText(x.l); b.textContent = 'Copied ✓'; }catch(err){ const i = b.parentNode.querySelector('input'); if(i) i.select(); b.textContent = 'Press Ctrl+C'; } });
     all('[data-tcidea]', b => { const x = B().themes[T.label] && B().themes[T.label][Number(b.dataset.tcidea)]; if(!x) return; const ex = x[0].indexOf('explore:') === 0;
       T.kind = !x[0] ? 'c' : ex ? 't' : 'a'; T.pick = ex ? x[0].slice(8) : x[0]; T.text = x[1]; T.sub = 'all'; T.st = 'all'; T.links = []; T.msg = ''; snd('tick'); redraw(); });
+    /* plan a week; today's session */
+    all('[data-tpcls]', b => { T.pc = Number(b.dataset.tpcls); T.plinks = []; T.pmsg = ''; snd('tick'); redraw(); });
+    all('[data-tpwk]', b => { T.pw = addDays(week(), Number(b.dataset.tpwk)); T.plinks = []; T.pmsg = ''; snd('tick'); redraw(); });
+    const planBox = $('#tcPlan'); if(planBox){ const keep = e => { const el = e.target, f = el && el.dataset ? el.dataset.tp : ''; if(!f) return; const c = classes()[T.pc]; if(!c) return; const p = planOf(c.n, week());
+      if(f === 'unit') p.unit = words(el.value, 30); else { const d = p.days[Number(el.dataset.day)]; if(d) d[f] = f === 'main' || f === 'prac' ? el.value : String(el.value || '').replace(/[<>]/g, '').slice(0, 160); }
+      savePlan(c.n, week(), p); T.plinks = []; }; planBox.addEventListener('input', keep); planBox.addEventListener('change', keep); }
+    on('#tpMake', 'click', () => { const c = classes()[T.pc], p = c ? planOf(c.n, week()) : null, E = p ? planEntries(p, week()) : { out:[], mine:[] };
+      if(!c || !c.codes.length){ T.pmsg = 'This class has no Fab codes yet (My classes).'; T.plinks = []; snd('gentle'); redraw(); return; }
+      if(!E.out.length){ T.pmsg = 'Nothing is planned for the children yet. Choose a main task or a flightpath for at least one day.'; T.plinks = []; snd('gentle'); redraw(); return; }
+      if(E.mine.length > 1){ T.pmsg = 'One booklet you made yourself can travel in a week’s link. This week has ' + E.mine.length + ': set the others with Assign a task.'; T.plinks = []; snd('gentle'); redraw(); return; }
+      const tail = E.mine.length ? FabBooklets.hashFor(E.mine[0]) : '';
+      T.plinks = c.codes.map(code => ({ c:code, l:B().linkFor(code, [], [], { cls:true, merge:true, week:true, extras:E.out }) + tail }));
+      const days = new Set(E.out.map(x => x.d)).size, log = arr(ls.json(LK, [])); log.unshift({ t:Date.now(), c:c.n, w:'Week plan: ' + days + (days === 1 ? ' day' : ' days') + (p.unit ? ', ' + p.unit : ''), l:p.unit, n:c.codes.length, d:week(), k:'week plan', sub:'' }); ls.set(LK, log.slice(0, 60));
+      T.pmsg = (T.plinks.length === 1 ? '1 link is ready' : T.plinks.length + ' links are ready, one per child') + ', for ' + days + (days === 1 ? ' day' : ' days') + ' of work.'; snd('ding'); redraw(); });
+    on('#tpCopyAll', 'click', e => { try{ navigator.clipboard.writeText(T.plinks.map(x => x.c + '\t' + x.l).join('\n')); e.target.textContent = 'Copied ✓'; }catch(err){ e.target.textContent = 'Copy each link below'; } });
+    all('[data-tpcopy]', b => { const x = T.plinks.find(l => l.c === b.dataset.tpcopy); if(!x) return; try{ navigator.clipboard.writeText(x.l); b.textContent = 'Copied ✓'; }catch(err){ const i = b.parentNode.querySelector('input'); if(i) i.select(); b.textContent = 'Press Ctrl+C'; } });
+    all('[data-ttday]', b => { T.td = Number(b.dataset.ttday); snd('tick'); redraw(); });
+    all('[data-ttplan]', b => { T.pc = Number(b.dataset.ttplan); T.pw = ''; T.plinks = []; T.pmsg = ''; go('plan'); });
+    all('[data-ttlook]', b => FabBooklets.open(b.dataset.ttlook, 1, { teach:true, back:'screen-teach' }));
     /* set tasks, the library and profiles */
     all('[data-tctv]', b => { T.tv = b.dataset.tctv; snd('tick'); redraw(); });
     all('[data-tclib]', b => { T.lib = T.lib === b.dataset.tclib ? '' : b.dataset.tclib; T.lrm = ''; snd('tick'); redraw(); });
@@ -505,6 +614,12 @@
 .tc-tasklist{list-style:none;margin:10px 0;padding:0;display:grid;gap:8px}.tc-tasklist li{background:#fff;border:3px solid #E3C9A0;border-radius:14px;padding:8px 14px}.tc-tasklist b{display:block;font-size:1.1rem}.tc-tasklist span{display:block}
 .tc-tags i,.tc-ideas0 span{font-style:normal}.tc-tags i{display:inline-block;background:#CFE7F2;border:2px solid #2B1A12;border-radius:999px;padding:0 9px;margin:4px 6px 0 0;font-size:.85rem;font-weight:700}
 .tc-ideas0{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.tp-week{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:12px 0 4px}.tp-slot{opacity:.8}
+.tp-day{border:3px solid #E3C9A0;border-radius:16px;background:#fff;padding:10px 14px;margin:12px 0}.tp-day h3{margin:0 0 8px}.tp-day h3 small,.tt-card h2 small{font-weight:400;font-size:.75em;opacity:.8}
+.tp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}.tp-grid label{display:grid;gap:3px}.tp-grid label.wide{grid-column:1 / -1}.tp-grid span{font-weight:700;font-size:.92rem}
+.tp-grid input,.tp-grid select{font:inherit;width:100%;box-sizing:border-box;border:2px solid #2B1A12;border-radius:10px;padding:6px 9px;background:#FFFDF6}
+@media (max-width:700px){.tp-grid{grid-template-columns:1fr}}
+.tt-table th{text-align:left;white-space:nowrap;vertical-align:top;width:13em}.tt-table td{text-align:left}
 .tc-pages{margin:6px 0;padding-left:1.4em;columns:2}.tc-how{padding-left:1.3em;display:grid;gap:4px}.tc-file{cursor:pointer}.tc-paste{display:grid;gap:4px;margin:8px 0}.tc-paste textarea{width:100%;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;border:2px solid #2B1A12;border-radius:12px;padding:8px 10px;background:#fff;box-sizing:border-box}
 .tc-errs{background:#FFF1EC;border:2px solid #D8402B;border-radius:12px;padding:8px 12px 8px 28px;margin:8px 0}.tc-ptable td{vertical-align:middle}
 .tc-tile .emoji svg,.tc-tile .emoji .fi{width:1.5em;height:1.5em}
