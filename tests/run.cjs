@@ -2281,7 +2281,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       set('tcPart', 'Pages 4 and 5'); out.booklet = await links(); await wait(5);
       await tap('[data-tckind="k"]'); await tap('#tcMake'); out.kNone = document.getElementById('tcMsg').textContent;
       set('tcText', 'Super effort this <i>week</i>'); out.praise = await links();
-      FabTeach.go('progress'); await wait(150); out.log = document.querySelectorAll('.tc-log tbody tr').length + '|' + [...document.querySelectorAll('.tc-log tbody tr')].map(r => r.textContent).join(' ; ');
+      FabTeach.form.seeMarks = true; FabTeach.go('progress'); await wait(150); out.log = document.querySelectorAll('.tc-log tbody tr').length + '|' + [...document.querySelectorAll('.tc-log tbody tr')].map(r => r.textContent).join(' ; ');
       out.empty = /No child has used this browser yet/.test(document.getElementById('tcProgress').textContent);
       /* suggest a resource: into the ideas bank, with nothing sent until the teacher sends it */
       FabTeach.go('suggest'); await wait(150); await tap('#tcIsave'); out.iNone = document.getElementById('tcImsg').textContent;
@@ -2297,7 +2297,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     assert(/Type a Fab code/.test(t.none) && t.clsView === 'classes' && /Not a Fab code: sam/.test(t.bad) && /Adventurers ?2 children: test-501, test-502 · usually Lower KS2/.test(t.cls) && !/sam/i.test(t.cls.split('|')[1]) && t.backHome === 'screen-teach|home', 'a class is a name and Fab codes; a name is refused; Back returns to the four cards: ' + JSON.stringify([t.none, t.bad, t.cls, t.backHome]));
     assert(t.usual === 'Lower KS2|14|true' && t.ks1 === 12 && t.phonics === 'Phonics flightpath' && t.nothing && t.all === '19|true', 'flightpaths are sorted by subject and key stage, with the class’s usual stage first and never forced: ' + JSON.stringify([t.usual, t.ks1, t.phonics, t.nothing, t.all]));
     assert(t.topics === 'the Victorians|Ancient Egypt|Ancient Greece|the Romans|the Space Station' && t.topic.length === 2 && /\?learner=test-501&class=1&quiet=1&burrow=[A-Za-z0-9_-]+$/.test(t.topic[0]) && /learner=test-502/.test(t.topic[1]) && t.path.length === 2 && /own step/.test(t.steps), 'one link per child: ' + JSON.stringify([t.topics, t.topic]));
-    assert(/^9\|(In the app,){3}On the board(,On the board){5}$/.test(t.noBk) && /Choose a booklet first/.test(t.bkNone) && /title first/.test(t.bkBlank) && /^\[\{"t":"Place value: Year 1","sub":"Maths","st":"ks1"\}\]\|Place value: Year 1 ?Maths · KS1 ?My own list$/.test(t.bk) && t.booklet.length === 2, 'the class’s usual stage shows BMF’s booklets first; a teacher can add a title of their own, and its subject and stage are read from the title when left empty: ' + JSON.stringify([t.noBk, t.bkNone, t.bkBlank, t.bk]));
+    assert(/^10\|(In the app,){4}On the board(,On the board){5}$/.test(t.noBk) && /Choose a booklet first/.test(t.bkNone) && /title first/.test(t.bkBlank) && /^\[\{"t":"Place value: Year 1","sub":"Maths","st":"ks1"\}\]\|Place value: Year 1 ?Maths · KS1 ?My own list$/.test(t.bk) && t.booklet.length === 2, 'the class’s usual stage shows BMF’s booklets first; a teacher can add a title of their own, and its subject and stage are read from the title when left empty: ' + JSON.stringify([t.noBk, t.bkNone, t.bkBlank, t.bk]));
     assert(/what the well done is for/i.test(t.kNone) && t.praise.length === 2 && /^4\|/.test(t.log) && /Adventurers/.test(t.log) && /Booklet: Place value: Year 1: Pages 4 and 5/.test(t.log) && t.empty && t.staff === 'screen-staff' && t.staffBack === 'screen-teach|home', 'a well done needs words; what was set is listed; the older staff page comes back here: ' + JSON.stringify([t.kNone, t.log, t.empty, t.staff, t.staffBack]));
     assert(/what would help first/i.test(t.iNone) && t.idea === '[["=A Year 1 bplace value/b booklet","A booklet","Maths","KS1","After a long gap"]]|1|true' && /^mailto:teacher@bemorefab\.co\.uk\?subject=Fab App ideas bank: 1 idea&body=Ideas bank from the Fab App\n\n1\. =A Year 1/.test(t.mail) && t.clear1 === 1 && t.clear2 === 0, 'an idea is kept as plain words in this browser, the email is a draft the teacher sends, and emptying the bank takes two taps: ' + JSON.stringify([t.iNone, t.idea, t.mail, t.clear1, t.clear2]));
     const ctx = await browser.newContext(); const c = await ctx.newPage(); await c.setViewportSize({ width:1366, height:900 });
@@ -2316,7 +2316,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       [...document.querySelectorAll('#bwToday .bw-item')].find(x => /Place value/.test(x.textContent)).querySelector('[data-bwxdone]').click(); await wait(300);
       showScreen('screen-hub'); await wait(250); const b = document.getElementById('teachDoor');
       b.click(); await wait(200); out.arm = on() + '|' + /tap again/.test(b.textContent); b.click(); await wait(300); out.in = on() + '|' + document.getElementById('teachBody').dataset.view;
-      document.getElementById('tcGoProgress').click(); await wait(200);
+      FabTeach.form.seeMarks = true; document.getElementById('tcGoProgress').click(); await wait(200);
       const row = document.querySelector('#tcProgress tbody tr'); out.row = row.textContent.replace(/\s+/g, ' ');
       out.tasks = [...document.querySelectorAll('#tcProgress .tc-tasks li')].map(li => li.textContent.replace(/\s+/g, ' ').trim()).join(' ; ');
       document.querySelector('#screen-teach .btn-back').click(); await wait(200); document.getElementById('tcGoPrint').click(); await wait(200);
@@ -2378,7 +2378,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       return out; });
     await tp.close();
     assert(/^9[0-9]\|$/.test(t.sums) || /^[1-9]\d\|$/.test(t.sums), 'every sum in the check-ins has the right answer, and each hinge question has exactly one right letter: ' + t.sums);
-    assert(t.lib === 'four-ops-y34*,four-ops-y56*,number-toolkit*,year4-challenge,victorian-schools,victorian-work,rex-duck,warm-up-3,maths-cards-3|true', 'the library lists BMF’s booklets; three are built into the app: ' + t.lib);
+    assert(t.lib === 'four-ops-y34*,four-ops-y56*,christmas-carol-y34*,number-toolkit*,year4-challenge,victorian-schools,victorian-work,rex-duck,warm-up-3,maths-cards-3|true', 'the library lists BMF’s booklets; four are built into the app: ' + t.lib);
     assert(t.about === 'true|9' && t.look === 'screen-booklet|Four Operations Check-In|true|true' && t.lookBack === 'screen-teach|assign|0' && t.care && t.parts === '9|true|true', 'a teacher can look inside (nothing is kept), sees a note where care is needed, and picks a part of a booklet that is opened on the board: ' + JSON.stringify(t));
     const ctx = await browser.newContext(); const c = await ctx.newPage(); await c.setViewportSize({ width:1366, height:900 });
     c.on('pageerror', e => errors.push('booklets child: ' + e.message));
@@ -2402,7 +2402,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       await pick('c8.add', 4); await pick('c8.sub', 4); type('x.can', 'take away with exchanging'); type('x.help', 'dividing'); await next();
       out.end = /whole booklet/.test(document.getElementById('bookletBody').textContent) + '|' + (JSON.parse(localStorage.getItem('fab-booklet-four-ops-y34-test-601')).a.done > 1e12) + '|' + /Handed in/.test(document.getElementById('bookletBody').textContent);
       document.querySelector('[data-bkstop]').click(); await wait(300); out.back = on(); out.after = rows();
-      FabTeach.open(); FabTeach.go('progress'); await wait(250); const A = document.getElementById('tcAfl');
+      FabTeach.form.seeMarks = true; FabTeach.open(); FabTeach.go('progress'); await wait(250); const A = document.getElementById('tcAfl');
       out.afl = [...A.querySelectorAll('.bk-atable tbody tr')].map(tr => [...tr.children].map(td => td.textContent.replace(/\s+/g, ' ').trim()).join('/')).join(' ; ');
       out.next = [...A.querySelectorAll('.bk-next li i')].map(x => x.textContent).join(' ');
       out.words = /“Pip forgot to bcarry\/b”/.test(A.textContent.replace(/<|>/g, '')) + '|' + !A.querySelector('.bk-two b b') + '|' + /Chose Spicy: 1 right of 2 answered/.test(A.textContent) + '|' + /adds? two odd numbers.*never ✓/i.test(A.textContent) + '|' + /bigger\. always \(it is sometimes\)/.test(A.textContent) + '|' + /“dividing”/.test(A.textContent);
@@ -2415,7 +2415,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       PF.querySelector('[data-tcnext$="b:L:four-ops-y56"]').click(); await wait(250); out.nextGo = document.getElementById('teachBody').dataset.view + '|' + FabTeach.form.cls + '|' + FabTeach.form.one + '|' + document.querySelector('#tcPicks .tc-pick.on b').textContent;
       return out; });
     await ctx.close();
-    assert(/^Marks: 10 of 15 answered \(20 questions are marked by the app\) · handed in /.test(r.marks) && /^Maths\/Adding\/2 of 4\/Developing ; Maths\/Subtracting\/3 of 4\/Developing ; Maths\/Multiplying\/3 of 3\/Secure ; Maths\/Dividing\/1 of 2\/Developing ; Maths\/Reasoning\/1 of 2\/Developing$/.test(r.prof) && /test-601\|b:L:four-ops-y56/.test(r.nexts) && /test-601\|p:maths-flightpath-addition-subtraction/.test(r.nexts) && r.nextGo === 'assign|one|test-601|Four Operations Check-In: Year 5/6', 'a handed-in booklet is marked by the app, the marks build a profile by strand, and “set next” opens Assign a task for that child: ' + JSON.stringify([r.marks, r.prof, r.nexts, r.nextGo]));
+    assert(/^Marks: 10 of 15 answered \(20 questions are marked by the app\) · handed in /.test(r.marks) && /^Maths\/Adding\/2 of 4\/Early signs: developing ; Maths\/Subtracting\/3 of 4\/Early signs: developing ; Maths\/Multiplying\/3 of 3\/Early signs: secure ; Maths\/Dividing\/1 of 2\/Early signs: developing ; Maths\/Reasoning\/1 of 2\/Early signs: developing$/.test(r.prof) && r.nexts.split(' ; ').length === new Set(r.nexts.split(' ; ')).size && /test-601\|b:L:four-ops-y56/.test(r.nexts) && /test-601\|p:maths-flightpath-addition-subtraction/.test(r.nexts) && r.nextGo === 'assign|one|test-601|Four Operations Check-In: Year 5/6', 'a handed-in booklet is marked by the app, the marks build a profile by strand, and “set next” opens Assign a task for that child: ' + JSON.stringify([r.marks, r.prof, r.nexts, r.nextGo]));
     assert(/^Booklet: Four Operations Check-In \(Y3\/4\) ?Start ➡️ ?I did it \+start ; Page 2: Number Detective ?Booklet: Year 4 Challenge Booklet: maths and English ?Your teacher will open this booklet with you\. ?I did it$/.test(r.rows), 'Today lists a booklet in the app with Start, and a booklet on the board with no Start: ' + r.rows);
     assert(r.open === 'screen-booklet|Page 1 of 8|true' && r.plain && /^screen-me\|/.test(r.stop) && r.resume === 'Page 3 of 8|C' && r.levels === '4|Mild' && r.keptLv === '513', 'the child answers without ticks, crosses or a score, can stop on any page and comes back to the same place, and can move between challenge levels: ' + JSON.stringify(r));
     assert(r.end === 'true|true|true' && r.back === 'screen-me' && /Four Operations Check-In \(Y3\/4\) ?⭐ Done/.test(r.after), 'finishing the booklet marks the task done in the Burrow: ' + r.end + r.back + r.after);
@@ -2461,7 +2461,7 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     await tp.close();
     assert(t.nt === '9|48 of 48|true|Counting,Number bonds to 10,Counting on,Counting back,Part-whole,Counting up,Adding,Subtracting' && t.aids === '3|4|Watch me,Let’s do it together,My turn', 'My Number Toolkit is nine pages of Watch me, together, my turn, with number lines; every box is marked: ' + JSON.stringify([t.nt, t.aids]));
     assert(/“6 \+ 6” is 12, not 13/.test(t.bad) && /“20 ÷ 4” is 5, but option B says 16/.test(t.bad) && /“video” is not one the app knows/.test(t.bad) && t.none === 'false|false' && /Paste the booklet first/.test(t.empty) && /^3\|0$/.test(t.refused), 'a booklet file is checked: wrong sums, a wrong hinge letter and unknown pages are refused with plain reasons: ' + JSON.stringify([t.bad, t.none, t.empty, t.refused]));
-    assert(/^Booklet library\|9$/.test(t.libTitle) && /^“Halves and quarters” is in your library.*\|t-halves-and-quarters:Halves and quarters:ks1\|Made by a teacher\|2$/.test(t.added), 'a good booklet joins the library on this browser as plain words: ' + JSON.stringify([t.libTitle, t.added]));
+    assert(/^Booklet library\|10$/.test(t.libTitle) && /^“Halves and quarters” is in your library.*\|t-halves-and-quarters:Halves and quarters:ks1\|Made by a teacher\|2$/.test(t.added), 'a good booklet joins the library on this browser as plain words: ' + JSON.stringify([t.libTitle, t.added]));
     assert(/^assign\|Halves/.test(t.assign) && t.all === 'Everyone (3)|true' && t.links === '3|true', 'Everyone sets a task for every child in every class once, and a teacher-made booklet travels after the # in each link: ' + JSON.stringify([t.assign, t.all, t.links]));
     assert(t.ideas === 'Solve a Fox Blocks puzzle|Code a dance for Fab|Make Fab do something when you tap' && t.idea === 'a|code:bush|Solve a Fox Blocks puzzle' && /^Future \(0\),Active \(2\),Past \(0\)\|Fox Blocks: To the bramble bush: Solve a Fox Blocks puzzle \[activity in the app,National Coding Week\] true ; Booklet: Halves.* \[booklet,Maths\] true$/.test(t.tasks), 'a theme week offers ideas, and Set tasks lists what was set with its tags: ' + JSON.stringify([t.ideas, t.idea, t.tasks]));
     assert(t.spot0 === 'true|true' && /^true\|translate\(.+\) scale\(1\.6\)\|true\|1\|2147483000$/.test(t.spot) && t.spotOff && t.spotBtn === 'true|true|true' && t.spotOn, 'Shift + L brings a cloud of light that follows the pointer and Esc puts it away; the button shows only when switched on: ' + JSON.stringify([t.spot0, t.spot, t.spotOff, t.spotBtn, t.spotOn]));
@@ -2474,12 +2474,12 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
       const type = (k, v) => { const e = document.querySelector('input[data-k="' + k + '"]'); e.value = v; e.dispatchEvent(new Event('input', { bubbles:true })); };
       type('p0.0', '6'); type('p0.1', '5'); type('p0.2', '13'); document.querySelector('button[data-k="p0.3"][data-v="1/2"]').click(); await wait(100); type('p0.4', 'two equal groups');
       document.querySelector('.bk-nav .btn.leaf').click(); await wait(150); document.querySelector('button[data-k="h.i1n0"][data-v="B"]').click(); await wait(100); document.querySelector('.bk-nav .btn.leaf').click(); await wait(200);
-      FabTeach.open(); FabTeach.go('progress'); await wait(250); const A = document.querySelector('[data-bkafl="t-halves-and-quarters"]'); out.marks = A.querySelector('.bk-marks').textContent.replace(/\s+/g, ' ') + '|' + [...A.querySelectorAll('.bk-atable tbody tr')].map(tr => tr.children[1].textContent.trim()).join() + '|' + /Tell me how you know\. two equal groups/.test(A.textContent) + '|' + /6 \+ 6: 13 ✗ \(12\)/.test(A.textContent.replace(/\s+/g, ' '));
+      FabTeach.form.seeMarks = true; FabTeach.open(); FabTeach.go('progress'); await wait(250); const A = document.querySelector('[data-bkafl="t-halves-and-quarters"]'); out.marks = A.querySelector('.bk-marks').textContent.replace(/\s+/g, ' ') + '|' + [...A.querySelectorAll('.bk-atable tbody tr')].map(tr => tr.children[1].textContent.trim()).join() + '|' + /Tell me how you know\. two equal groups/.test(A.textContent) + '|' + /6 \+ 6: 13 ✗ \(12\)/.test(A.textContent.replace(/\s+/g, ' '));
       const p = FabBooklets.profile('test-701'); out.prof = p.rows.map(x => x.sub + '/' + x.s + '/' + x.got + ' of ' + x.tried + '/' + x.bandName).join(' ; ');
       return out; });
     await ctx.close();
     assert(r.url === '|t-halves-and-quarters' && /^Booklet: Halves and quarters ?Start/.test(r.today) && r.page === 'Half of a number|Page 1 of 2|true', 'the booklet arrives with the child’s link, the # is cleared, and it opens from Today: ' + JSON.stringify([r.url, r.today, r.page]));
-    assert(/^Marks: 3 of 5 answered \(5 questions are marked by the app\) · handed in .*\|3 of 4,0 of 1\|true\|true$/.test(r.marks) && r.prof === 'Maths/Fractions/3 of 4/Developing ; Maths/Dividing/0 of 1/Not enough yet', 'a teacher-made booklet is marked and feeds the profile; open answers are kept for the teacher to read: ' + JSON.stringify([r.marks, r.prof]));
+    assert(/^Marks: 3 of 5 answered \(5 questions are marked by the app\) · handed in .*\|3 of 4,0 of 1\|true\|true$/.test(r.marks) && r.prof === 'Maths/Fractions/3 of 4/Early signs: developing ; Maths/Dividing/0 of 1/Not enough yet', 'a teacher-made booklet is marked and feeds the profile; open answers are kept for the teacher to read: ' + JSON.stringify([r.marks, r.prof]));
   });
   await test('Plan a week: one link per child carries each day’s main task, practice and “if you finish”; Today’s session lays the session out for the teacher', async () => {
     const tctx = await browser.newContext(); await tctx.clock.setFixedTime(new Date('2026-12-01T09:00:00')); const tp = await tctx.newPage(); await tp.setViewportSize({ width:1366, height:900 });
@@ -2615,6 +2615,73 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     const world = fs.readFileSync(path.join(ROOT, 'games.js'), 'utf8');
     assert(/id:\\"artists\\",e:\\"🎨\\",n:\\"Artists and styles\\"/.test(world) && /artists:\(\)=>\{try\{window\.parent\.FabArt\.open\(\\"screen-world\\",null\)/.test(world) && /w===\\"studiocreate\\"\)\{mStudio\(\\"create\\"\)/.test(world) && /window\.parent\.fabArtIdea/.test(world), 'the Studio has an Artists and styles card, and opens its paper on the artist’s idea');
   });
+  await test('Round 40: A Christmas Carol booklet, reading and writing pages, confidence that fits the subject, marks behind a cover, early signs, Carry on, named World Explorers pieces, EYFS work and the teacher’s pointer link', async () => {
+    const ctx = await browser.newContext(); const c = await ctx.newPage(); await c.setViewportSize({ width:1366, height:900 });
+    c.on('pageerror', e => errors.push('round 40: ' + e.message));
+    await c.goto(base + '/index.html?learner=test-990&class=1&quiet=1'); await c.waitForFunction(() => window.FabBooklets && window.FabTeach && window.FabMake && window.FabBurrow); await c.waitForTimeout(400);
+    const r = await c.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {}, B = FabBooklets.byId('christmas-carol-y34');
+      out.lib = B.app + '|' + B.pages.length + '|' + B.pages.map(p => p.kind).join(',') + '|' + B.unit.rows.length + '|' + B.st.join() + '|' + B.sub;
+      out.gentle = !/Marley was dead|did not live|died|grave/i.test(JSON.stringify(B.pages)) && /did NOT die/.test(JSON.stringify(B.unit));
+      const plain = JSON.parse(JSON.stringify(B)); delete plain.run; delete plain.unit; out.check = JSON.stringify(FabBooklets.check(plain).errors);
+      /* the confidence page fits the subject */
+      FabBooklets.open(B.id, 1, { code:'test-990', back:'screen-me' }); await wait(150);
+      out.conf = [...document.querySelectorAll('.bk-conf tbody th')].map(t => t.textContent.trim()).join('|');
+      document.querySelector('.bk-conf [data-v="2"]').click(); await wait(80);
+      const def = { t:'Owls: a reading booklet', sub:'English', st:['ks1'], pages:[{ kind:'conf', t:'How do you feel?', strap:'Tap a number.' }, { kind:'read', t:'Owls', strap:'Read about owls.', body:['Owls hunt at night.'], lv:{ 'Find it':[{ q:'When do owls hunt?', opts:['at night', 'at lunch'], a:'at night' }] } }, { kind:'write', t:'Write', strap:'Your turn.', task:'Write one fact about owls.', stems:['Owls'] }] };
+      const add = FabBooklets.add(def); out.add = add.ok + '|' + add.id; FabBooklets.open(add.id, 1, { code:'test-990', back:'screen-me' }); await wait(150);
+      out.conf2 = [...document.querySelectorAll('.bk-conf tbody th')].map(t => t.textContent.trim()).join('|');
+      FabBooklets.open('four-ops-y34', 1, { code:'test-990', back:'screen-me' }); await wait(150); out.conf3 = document.querySelectorAll('.bk-conf tbody th .bk-op').length;
+      /* reading: choose a level, answer; writing: starters and word bank go into the box, a checklist ticks */
+      FabBooklets.open(B.id, 3, { code:'test-990', back:'screen-me' }); await wait(150);
+      out.read = document.querySelectorAll('.bk-read p').length + '|' + document.querySelectorAll('.bk-words span').length + '|' + document.querySelectorAll('.bk-lv').length + '|' + !!document.querySelector('[data-bksay]') + '|' + !document.querySelector('#bkPad');
+      document.querySelector('.bk-lv[data-v="Find it"]').click(); await wait(100);
+      const opt = t => [...document.querySelectorAll('.bk-rq .bk-opt')].find(b => b.textContent === t); opt('blue').click(); await wait(80); opt('a robin').click(); await wait(80);
+      FabBooklets.open(B.id, 4, { code:'test-990', back:'screen-me' }); await wait(150);
+      document.querySelector('.bk-chips [data-bkins="Scrooge is"]').click(); document.querySelector('.bk-chips.bank [data-bkins="mean"]').click(); await wait(80);
+      const ta = document.querySelector('.bk-ta'); ta.value += 'and cold.'; ta.dispatchEvent(new Event('input')); document.querySelector('.bk-tickb').click(); await wait(100);
+      out.write = document.querySelector('.bk-ta').value + '|' + document.querySelectorAll('.bk-tickb.on').length + '|' + /One sentence is plenty/.test(document.querySelector('.bk-write').textContent);
+      /* the last page hands it in */
+      FabBooklets.open(B.id, 10, { code:'test-990', back:'screen-me' }); await wait(120); document.querySelector('[data-bkgo="10"]').click(); await wait(150);
+      out.handed = /Handed in/.test(document.querySelector('#bookletBody').textContent) + '|' + !/Marks|of \d+ answered/.test(document.querySelector('#bookletBody').textContent);
+      /* a maths page has a working-out space */
+      FabBooklets.open('four-ops-y34', 3, { code:'test-990', back:'screen-me' }); await wait(150); out.pad = !!document.querySelector('#bkPad'); document.querySelector('.bk-opt').click(); await wait(80);
+      /* the teacher: marks wait behind a cover, then the writing and choices are there to read */
+      FabTeach.open(); FabTeach.go('progress'); await wait(200); out.cover = !!document.getElementById('tcCover') + '|' + !document.getElementById('tcProgress');
+      document.getElementById('tcSeeMarks').click(); await wait(200); const A = document.querySelector('[data-bkafl="christmas-carol-y34"]');
+      out.afl = /Marks: 1 of 2 answered/.test(A.textContent) + '|' + /Scrooge is mean and cold\./.test(A.textContent) + '|' + /chose the questions Find it/.test(A.textContent) + '|' + /Ticked for themselves I wrote about how Scrooge looks/.test(A.textContent) + '|' + /The whole unit: 12 sessions/.test(A.textContent);
+      FabTeach.go('profile'); await wait(150); out.prof = [...document.querySelectorAll('#tcProfile [data-tcprof="test-990"] tbody tr')].map(tr => [...tr.children].map(td => td.textContent.trim()).join('/')).join(' ; ');
+      /* Carry on for a booklet begun */
+      out.started = FabBooklets.started('four-ops-y34', 'test-990') + '|' + FabBooklets.started('christmas-carol-y34', 'test-990');
+      /* named World Explorers pieces in Plan a week and Assign */
+      localStorage.setItem('fab-teach-classes', JSON.stringify([{ n:'Adventurers', codes:['test-990'] }])); FabTeach.go('plan'); await wait(200); const sel = document.getElementById('tpMain0');
+      out.plan = [...sel.querySelectorAll('optgroup')].filter(g => /Ancient Egypt/.test(g.label)).map(g => [...g.querySelectorAll('option')].map(o => o.value).join(',')).join('');
+      FabTeach.choose('a:explore:egypt'); await wait(150); out.assign = !!document.getElementById('tcPiece') + '|' + [...document.querySelectorAll('#tcPiece option')].map(o => o.textContent).slice(0, 3).join('|');
+      out.mkname = (FabBurrow.act('mk:greece:same') || {}).n + '|' + (FabBurrow.act('mk:nowhere:same') || 'none') + '|' + (FabBurrow.act('eyfs:talk') || {}).n;
+      return out; });
+    assert(/^true\|10\|conf,steps,read,write,steps,steps,read,steps,write,exit\|12\|lks2\|English$/.test(r.lib) && r.gentle && r.check === '[]', 'A Christmas Carol is ten pages over two sessions, with a gentle twelve-session outline, and passes the checker: ' + JSON.stringify([r.lib, r.gentle, r.check]));
+    assert(r.conf === 'Reading an old story|Finding answers in the text|Describing a character' && r.add === 'true|t-owls-a-reading-booklet' && r.conf2 === 'Reading the text|Answering questions about it|Writing my own sentences' && r.conf3 === 4, 'the confidence page asks about the subject of the booklet, not always the four operations: ' + JSON.stringify([r.conf, r.add, r.conf2, r.conf3]));
+    assert(r.read === '6|7|3|true|true' && r.write === 'Scrooge is mean and cold.|1|true' && r.handed === 'true|true' && r.pad, 'reading and writing pages work, hand-in shows no marks, and maths pages have a working-out space: ' + JSON.stringify([r.read, r.write, r.handed, r.pad]));
+    assert(r.cover === 'true|true' && r.afl === 'true|true|true|true|true' && /Reading: finding facts\/Not enough yet|Early signs/.test(r.prof) && !/Reading: finding facts\/Needs support/.test(r.prof) && r.started === 'true|false', 'marks wait behind a cover; writing, choices and ticks are there to read; thin evidence is not given a firm band: ' + JSON.stringify([r.cover, r.afl, r.prof, r.started]));
+    assert(r.plan === 't:egypt,t:egypt:order,t:egypt:art,t:egypt:map,t:egypt:how:papyrus,t:egypt:how:cartouche,t:egypt:how:pyramid,t:egypt:report' && /^true\|The whole world: the child chooses\|Make an Egyptian timeline\|/.test(r.assign) && r.mkname === 'Explorer Worlds: Ancient Greece: the same-but-different chart|none|EYFS: Talk about a picture', 'a teacher can set one named piece of a world, and EYFS activities can be set: ' + JSON.stringify([r.plan, r.assign, r.mkname]));
+    /* a set poster opens straight away and ticks itself off; an EYFS activity opens in the EYFS Hub */
+    const link = await c.evaluate(() => FabBurrow.linkFor('test-991', [], [], { cls:true, extras:[{ a:'mk:egypt:how:papyrus', t:'', n:'', th:'', d:'' }, { a:'eyfs:sequence', t:'', n:'', th:'', d:'' }] }));
+    const d = await ctx.newPage(); await d.setViewportSize({ width:1366, height:900 }); d.on('pageerror', e => errors.push('round 40 child: ' + e.message));
+    await d.goto(link.replace(/^https?:\/\/[^/]+(\/fab-app)?/, base)); await d.waitForFunction(() => window.FabMake && window.FabBurrow); await d.waitForTimeout(400); await d.evaluate(() => showScreen('screen-me')); await d.waitForSelector('[data-bwxgo]', { timeout:8000 });
+    const s = await d.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
+      out.big = document.querySelectorAll('.bw-big .bw-pic').length;
+      document.querySelector('[data-bwxgo]').click(); await wait(400); out.open = document.querySelector('.screen.active').id + '|' + FabMake.state.view;
+      for(let i = 0; i < 5; i++){ document.querySelector('[data-mk="hownext"]').click(); await wait(100); }
+      out.done = FabBurrow.read('test-991').extras.map(x => x.a + ':' + (x.dn ? 1 : 0)).join();
+      showScreen('screen-me'); await wait(300); document.querySelectorAll('[data-bwxgo]')[1].click(); await wait(300); out.eyfs = document.querySelector('.screen.active').id + '|' + (getComputedStyle(document.getElementById('eyfsSequence')).display !== 'none');
+      return out; });
+    /* the teacher's own viewer link turns the pointer on */
+    const t = await ctx.newPage(); await t.goto(base + '/index.html?pointer=1'); await t.waitForTimeout(600);
+    const pt = await t.evaluate(() => { const b = document.getElementById('fabSpotBtn'); return !!b && !b.hidden; });
+    const staff = await c.evaluate(async () => { showScreen('screen-staff'); await new Promise(r => setTimeout(r, 300)); const i = document.querySelector('#clClass .cl-teach input'); return i ? i.value : ''; });
+    await ctx.close();
+    assert(s.big === 1 && s.open === 'screen-time|how:papyrus' && s.done === 'mk:egypt:how:papyrus:1,eyfs:sequence:0' && s.eyfs === 'screen-eyfs|true', 'a set poster opens straight away and ticks itself off; EYFS work has a big picture and opens in the EYFS Hub: ' + JSON.stringify(s));
+    assert(pt && /\?pointer=1/.test(staff), 'the teacher’s viewer link turns the Look here pointer on: ' + JSON.stringify([pt, staff]));
+  });
   await test('Several children: Help and low energy reach Fab Fox World, Fox Blocks and Fab’s Sanctuary', async () => {
     const ap = await classPage('?learner=class-t1&class=1');
     const r = await ap.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
@@ -2660,10 +2727,10 @@ function assert(c, msg){ if(!c) throw new Error(msg || 'assertion failed'); }
     const r = await page.evaluate(async () => { const wait = ms => new Promise(res => setTimeout(res, ms)), out = {};
       showScreen('screen-staff'); await wait(200);
       const ta = document.getElementById('clCodes'); ta.value = 'otter-482, robin-317\nBen'; ta.dispatchEvent(new Event('change')); await wait(100);
-      out.links = [...document.querySelectorAll('.cl-links input')].map(i => i.value.replace(location.origin + location.pathname, '')).join(' ');
+      out.links = [...document.querySelectorAll('.cl-links:not(.cl-teach) input')].map(i => i.value.replace(location.origin + location.pathname, '')).join(' ');
       out.bad = /Not a Fab code: ben/.test(document.getElementById('clClass').textContent);
       document.getElementById('clQuiet').click(); await wait(100);
-      out.noQuiet = [...document.querySelectorAll('.cl-links input')].every(i => !/quiet=1/.test(i.value) && /class=1/.test(i.value));
+      out.noQuiet = [...document.querySelectorAll('.cl-links:not(.cl-teach) input')].every(i => !/quiet=1/.test(i.value) && /class=1/.test(i.value));
       out.steps = document.querySelectorAll('#clClass ol li').length + '|' + /Always available/.test(document.getElementById('clClass').textContent);
       document.getElementById('clQuiet').click(); FabClass.form.text = ''; showScreen('screen-hub');
       return out; });
