@@ -199,7 +199,7 @@
         model:['Scrooge is a cold, mean old man. His nose is pointed and his thin lips are blue. He is as solitary as an oyster because he does not want any friends.'],
         stems:['Scrooge is', 'He looks', 'His face is', 'He is as solitary as', 'Nobody talks to him because'], bank:['mean', 'cold', 'grumpy', 'solitary', 'tight-fisted', 'pointed nose', 'thin lips', 'unfriendly'],
         sc:['I wrote about how Scrooge looks', 'I wrote about what Scrooge is like', 'I used a word from the word bank', 'I checked my capital letters and full stops'], low:CC_LOW },
-      { kind:'steps', t:'What do we know so far?', strap:'This is the end of session 1. A good place to stop.', s:'Reading: working things out', parts:[
+      { kind:'steps', t:'What do we know so far?', strap:'This is the end of session 1. A good place to stop.', s:'Reading: working things out', fin:'If you finish: open the Make More FAB Studio and draw Scrooge with his pointed nose and thin blue lips.', parts:[
         { h:M, say:'Two quick things, then you are done for today.', items:[ { q:'Which word best describes Scrooge so far?', opts:['kind', 'mean', 'jolly'], a:'mean' }, { q:'What do you think might happen to Scrooge? It is only a guess, so any idea is a good one.' } ] } ] },
       { kind:'steps', t:'Remember Scrooge?', strap:'Welcome back. Let’s warm up with what we already know.', s:'Remembering', parts:[
         { h:G, say:'Last time we met Scrooge. What do you remember?', items:[ { q:'Scrooge was as solitary as an…', opts:['oyster', 'owl', 'otter'], a:'oyster' }, { q:'Who wrote A Christmas Carol?', opts:['Charles Dickens', 'Queen Victoria', 'Fab Fox'], a:'Charles Dickens' }, { q:'Tell me one thing you remember about Scrooge.' } ] } ] },
@@ -216,14 +216,98 @@
         model:['“Christmas again!” thinks Scrooge. “Everybody wants a day off and a big dinner. What a waste of money! I wish they would all leave me alone with my work.”'],
         stems:['Scrooge thinks', '“Humbug!” thinks Scrooge.', 'He wishes', 'He does not like Christmas because'], bank:['humbug', 'waste of money', 'leave me alone', 'dismal', 'cross', 'nephew', 'work', 'cold'],
         sc:['I wrote what Scrooge is thinking', 'It sounds like grumpy Scrooge', 'I used a word from the word bank', 'I checked my capital letters and full stops'], low:CC_LOW },
-      { kind:'exit', k:'c8', t:'How do you feel now?', strap:'This is the end of session 2. Tap a number for each line, then tell me two things.', rows:CC_ROWS }
+      { kind:'exit', k:'c8', t:'How do you feel now?', strap:'This is the end of session 2. Tap a number for each line, then tell me two things.', rows:CC_ROWS, fin:'If you finish: write the nephew’s reply to Scrooge’s “Good afternoon.” What would he say?' }
     ] };
-  const LIB = [Y34, Y56, CAROL,
+  /* ---------- A Christmas Carol, sessions 3 and 4: the two gentlemen, Bob Cratchit's Christmas Eve, and Marley's warning. Dickens's own
+     words, cut down. With care: Scrooge's line about the "surplus population" is left out; Marley is met as an old friend with a warning,
+     and the wailing phantoms at the window are left out. ---------- */
+  const CAROL2 = { id:'christmas-carol-2-y34', t:'A Christmas Carol: Christmas Eve and Marley’s warning (sessions 3 and 4)', short:'A Christmas Carol: Marley’s warning', sub:'English', st:['lks2'], app:true, time:'Two English sessions of about 25 minutes',
+    about:'Sessions 3 and 4 of the twelve. Session 3: two gentlemen ask Scrooge to give to the poor, and Bob Cratchit asks for Christmas Day; the piece to keep is a character profile of Scrooge. Session 4: Jacob Marley’s warning and his chain; the piece to keep is a prediction.',
+    care:'Session 4 meets a ghost: Marley, Scrooge’s old business partner, who has died. The child’s page calls him a ghost who comes with a warning out of friendship, and leaves out the wailing phantoms. You may prefer to tell this part yourself in two sentences and go straight to the questions.',
+    notes:['Session 3 is pages 1 to 5 and session 4 is pages 6 to 10.', 'A child who missed sessions 1 and 2 can start here: page 1 is a short recap of Scrooge.'],
+    run:{ head:['Page', 'What it is', 'What to look for'], rows:[
+      ['1', 'Remember Scrooge?', 'A warm, easy start. Good for a child who missed sessions 1 and 2'],
+      ['2', 'Read: the two gentlemen', 'Do they see that Scrooge chooses to give nothing?'],
+      ['3', 'Read: Bob’s Christmas Eve', 'Can they compare Bob and Scrooge using a detail from each?'],
+      ['4', 'Write: Scrooge at the start', 'The character profile is the piece to keep. Three facts with evidence is success'],
+      ['5', 'Before next time', 'End of session 3'],
+      ['6', 'Old words', 'Knocker, ledger and forged are needed for the extract'],
+      ['7', 'Read: Marley’s warning', 'Do they understand why the chain is made of cash-boxes and purses?'],
+      ['8', 'Think about the chain', 'Early inference about a symbol. Every reasonable answer is welcome'],
+      ['9', 'Write: what will happen?', 'The prediction is the piece to keep. Any idea that fits the story is a good one'],
+      ['10', 'How do you feel now?', 'End of session 4. Compare with session 2’s answers'] ] },
+    pages:[
+      { kind:'steps', t:'Remember Scrooge?', strap:'Welcome back. Let’s warm up with what we know.', s:'Remembering', parts:[
+        { h:G, say:'Scrooge is a mean old man who works in a counting-house in London. On Christmas Eve his nephew wished him a merry Christmas, and Scrooge said “Bah! Humbug!”', items:[
+          { q:'What did Scrooge say about Christmas?', opts:['“Bah! Humbug!”', '“Hooray!”', '“Let’s have a party!”'], a:'“Bah! Humbug!”' },
+          { q:'Scrooge’s clerk had a fire so small it looked like…', opts:['one coal', 'a bonfire', 'a candle'], a:'one coal' } ] } ] },
+      { kind:'read', t:'Read: the two gentlemen', strap:'Two kind gentlemen are collecting money for people who are poor. What will Scrooge give?', src:'From A Christmas Carol by Charles Dickens, 1843 (made shorter).',
+        body:['“At this festive season of the year, Mr. Scrooge,” said the gentleman, taking up a pen, “it is more than usually desirable that we should make some slight provision for the Poor and destitute, who suffer greatly at the present time.”', '“What shall I put you down for?”', '“Nothing!” Scrooge replied.', '“You wish to be anonymous?”', '“I wish to be left alone,” said Scrooge.'],
+        words:[['festive', 'happy and full of celebration'], ['provision', 'help, such as food and warm things'], ['destitute', 'with no money or home'], ['anonymous', 'not giving your name']],
+        lv:{ 'Find it':[ { q:'What are the gentlemen collecting for?', opts:['the poor', 'a new office', 'a party'], a:'the poor', s:'Reading: finding facts' }, { q:'How much does Scrooge give?', opts:['nothing', 'a little', 'a lot'], a:'nothing', s:'Reading: finding facts' } ],
+          'Think about it':[ { q:'Scrooge says “I wish to be left alone.” How does he feel?', opts:['annoyed', 'excited', 'sleepy'], a:'annoyed', s:'Reading: working things out' }, { q:'What does this tell us about Scrooge?', opts:['He does not care about people who are poor', 'He has no money', 'He is very kind'], a:'He does not care about people who are poor', s:'Reading: working things out' } ],
+          'Dig deeper':[ { q:'Why do you think Dickens put this scene at Christmas time?' }, { q:'What would you say to Scrooge if you were one of the gentlemen?' } ] } },
+      { kind:'read', t:'Read: Bob’s Christmas Eve', strap:'Bob Cratchit is Scrooge’s clerk. Listen for how different he is.', src:'From A Christmas Carol by Charles Dickens, 1843 (made shorter).',
+        body:['“You’ll want all day to-morrow, I suppose?” said Scrooge.', '“If quite convenient, sir.”', '“It’s not convenient,” said Scrooge, “and it’s not fair. But I suppose you must have the whole day. Be here all the earlier next morning.”', 'The clerk promised that he would; and Scrooge walked out with a growl.', 'The clerk, with the long ends of his white comforter dangling below his waist (for he boasted no great-coat), went down a slide twenty times, in honour of its being Christmas Eve, and then ran home to Camden Town as hard as he could pelt, to play at blindman’s-buff.'],
+        words:[['convenient', 'easy for you, causing no trouble'], ['comforter', 'a long woolly scarf'], ['pelt', 'run very fast'], ['blindman’s-buff', 'a game where one person wears a blindfold and tries to catch the others']],
+        lv:{ 'Find it':[ { q:'What does Bob ask for?', opts:['Christmas Day off', 'more coal', 'a new coat'], a:'Christmas Day off', s:'Reading: finding facts' }, { q:'What game does Bob run home to play?', opts:['blindman’s-buff', 'hide and seek', 'football'], a:'blindman’s-buff', s:'Reading: finding facts' } ],
+          'Think about it':[ { q:'Bob has no great-coat. What does that tell us?', opts:['He does not have much money', 'He likes the cold', 'He lost it'], a:'He does not have much money', s:'Reading: working things out' }, { q:'Bob goes down a slide twenty times. How does he feel about Christmas?', opts:['happy and excited', 'grumpy', 'worried'], a:'happy and excited', s:'Reading: working things out' } ],
+          'Dig deeper':[ { q:'Bob is poor but joyful. Scrooge is rich but grumpy. Why do you think Dickens shows us both?' }, { q:'Find one word that shows Scrooge is cross. Why did you choose it?' } ] } },
+      { kind:'write', t:'Write: Scrooge at the start', strap:'A character profile tells the reader what someone is like, with evidence.', task:'Write three facts about Scrooge. For each one, say how you know.',
+        model:['Scrooge is mean. I know because he gives nothing to the poor.', 'Scrooge is unfriendly. I know because he tells the gentlemen to leave him alone.'],
+        stems:['Scrooge is', 'I know because', 'He does not', 'This shows that'], bank:['mean', 'grumpy', 'unfriendly', 'selfish', 'cold', 'gives nothing', 'growl', 'left alone'],
+        sc:['I wrote three facts about Scrooge', 'I said how I know for each one', 'I used “because”', 'I checked my capital letters and full stops'], low:'Tired? One fact and how you know is plenty. Or say it and your teacher will write it.' },
+      { kind:'steps', t:'Before next time', strap:'This is the end of session 3. A good place to stop.', s:'Reading: working things out', parts:[
+        { h:M, items:[ { q:'Who is kinder?', opts:['Bob Cratchit', 'Scrooge'], a:'Bob Cratchit' }, { q:'Next time, Scrooge has a surprise visitor. Who do you think it might be?' } ] } ], fin:'If you finish: open the Make More FAB Studio and draw Bob sliding home in his long white scarf.' },
+      { kind:'steps', t:'Old words', strap:'Three old words to know before we read.', s:'Vocabulary', parts:[
+        { h:W, say:'Tonight Scrooge goes home alone. Something strange happens at his front door.' },
+        { h:G, say:'Choose what each word means.', items:[
+          { q:'A door knocker is…', opts:['a metal handle you bang to knock on a door', 'a person who knocks things over', 'a kind of bell'], a:'a metal handle you bang to knock on a door' },
+          { q:'A ledger is…', opts:['a book where money is written down', 'a ladder', 'a coat'], a:'a book where money is written down' },
+          { q:'Forged means…', opts:['made by hammering metal', 'forgotten', 'found'], a:'made by hammering metal' } ] } ] },
+      { kind:'read', t:'Read: Marley’s warning', strap:'Scrooge’s old business partner, Jacob Marley, comes back as a ghost with a warning.', src:'From A Christmas Carol by Charles Dickens, 1843 (made shorter).',
+        body:['Scrooge, having his key in the lock of the door, saw in the knocker Marley’s face. It had a dismal light about it, like a bad lobster in a dark cellar.', 'Later that night, the ghost of Marley came in. The chain he drew was clasped about his middle. It was long, and wound about him like a tail; and it was made of cash-boxes, keys, padlocks, ledgers, deeds, and heavy purses wrought in steel.', '“I wear the chain I forged in life,” replied the Ghost. “I made it link by link, and yard by yard.”', '“I am here to-night to warn you, that you have yet a chance and hope of escaping my fate. A chance and hope of my procuring, Ebenezer.”', '“You will be haunted,” resumed the Ghost, “by Three Spirits.”'],
+        words:[['dismal', 'gloomy'], ['cash-box', 'a metal box for keeping money'], ['wrought', 'made, shaped'], ['fate', 'what will happen to you'], ['procuring', 'getting something for someone'], ['Ebenezer', 'Scrooge’s first name']],
+        lv:{ 'Find it':[ { q:'Where does Scrooge first see Marley’s face?', opts:['in the door knocker', 'in the window', 'in a mirror'], a:'in the door knocker', s:'Reading: finding facts' }, { q:'How many spirits will visit Scrooge?', opts:['three', 'one', 'ten'], a:'three', s:'Reading: finding facts' } ],
+          'Think about it':[ { q:'Marley says Scrooge has “a chance and hope”. A chance to do what?', opts:['to change and be kinder', 'to earn more money', 'to move house'], a:'to change and be kinder', s:'Reading: working things out' }, { q:'Is Marley trying to help Scrooge or frighten him?', opts:['help him', 'frighten him'], a:'help him', s:'Reading: working things out' } ],
+          'Dig deeper':[ { q:'Dickens compares the face to “a bad lobster in a dark cellar”. What picture does that put in your head?' }, { q:'Why do you think Marley came back to warn his old friend?' } ] } },
+      { kind:'steps', t:'Think about the chain', strap:'Marley’s chain is made of things. What do they tell us?', s:'Reading: the writer’s choices', parts:[
+        { h:W, say:'Marley’s chain is made of cash-boxes, keys, padlocks, ledgers and purses. These are all things to do with money. Marley says he made the chain himself, link by link, while he was alive.' },
+        { h:G, items:[ { q:'All the things on the chain are about…', opts:['money', 'food', 'toys'], a:'money' }, { q:'What do you think each link stands for?', opts:['a time he chose money over people', 'a present he gave', 'a friend he made'], a:'a time he chose money over people' } ] },
+        { h:M, items:[ { q:'If Scrooge does not change, what might happen to his chain? Tell me your idea.' } ] } ] },
+      { kind:'write', t:'Write: what will happen?', strap:'Make a prediction. Any idea that fits the story is a good one.', task:'Three spirits are coming. Write what you think will happen, and why.',
+        model:['I think the spirits will show Scrooge how unkind he has been, because Marley wants him to change before it is too late.'],
+        stems:['I think', 'because', 'The spirits might', 'Maybe Scrooge will'], bank:['spirits', 'change', 'kinder', 'warning', 'chain', 'Christmas', 'chance', 'hope'],
+        sc:['I wrote what I think will happen', 'I gave a reason with “because”', 'I used a word from the word bank', 'I checked my capital letters and full stops'], low:'Tired? One sentence is plenty. Or say it and your teacher will write it.' },
+      { kind:'exit', k:'c8', t:'How do you feel now?', strap:'This is the end of session 4. Tap a number for each line, then tell me two things.', rows:CC_ROWS }
+    ] };
+  /* catch-up notes to sit beside each session's recording, and a short note for the child's own school (no child's details: the
+     teacher sends it with their own cover note) */
+  CAROL.catchup = [
+    ['Session 1: Meet Scrooge', 'We met Ebenezer Scrooge, a mean, cold old man in Victorian London, from Charles Dickens’s own description. We learned three old words (counting-house, clerk, humbug) and wrote sentences describing Scrooge.', 'Watch the first part of the recording, read page 3 of the booklet with “Read it to me”, then write one sentence: “Scrooge is…”.'],
+    ['Session 2: The counting-house', 'On Christmas Eve, Scrooge’s nephew wished him a merry Christmas and Scrooge said “Bah! Humbug!”. We read it in two voices and wrote what Scrooge might be thinking.', 'Read page 7 with “Read it to me”, then try the “Say it like Scrooge” page.'],
+    ['Session 3: Two gentlemen and Bob Cratchit', 'Scrooge gave nothing to two gentlemen collecting for the poor, then grudgingly gave Bob Cratchit Christmas Day off. Bob ran home happily. We wrote a character profile of Scrooge with evidence.', 'Read the two short extracts, then write one fact about Scrooge and how you know.'],
+    ['Session 4: Marley’s warning', 'Scrooge’s old business partner, Jacob Marley, came back as a ghost wearing a chain made of cash-boxes and purses, to warn Scrooge to change. Three spirits will visit. We wrote predictions.', 'Read the extract (or ask a grown-up to tell this part), then write one prediction with “because”.']
+  ];
+  CAROL.school = 'This half term in English our Year 3/4 group is reading A Christmas Carol by Charles Dickens, in short extracts of Dickens’s own words. The unit covers drawing inferences about characters’ feelings and motives, justifying them with evidence from the text, predicting, discussing words and phrases that capture the reader’s interest, and reading aloud with intonation. In writing, children are describing a character, writing a character’s thoughts, a character profile and a prediction, working towards a longer outcome piece (a diary, a letter or a before-and-after poster). Sessions are short and recorded, with three levels of questions so each child can work at a level that suits them.';
+  CAROL2.unit = CAROL.unit; CAROL2.catchup = CAROL.catchup; CAROL2.school = CAROL.school;
+
+  /* ---------- Victorian Schools (Adventurers): the teacher's two-page history sheet, rebuilt as pages in the app ---------- */
+  const VSCHOOL = { id:'victorian-schools-app', t:'Victorian Schools: what was it like to go to school? (in the app)', short:'Victorian Schools', sub:'Topic', st:['lks2'], app:true, time:'About 25 minutes',
+    about:'History, two parts. A starter ranking six things from a Victorian school day, who went to school and when, then classroom facts with a same-or-different chart and sentences at three levels. Goes with the Victorians Explorer World, which has a same-but-different chart of a school day.',
+    notes:['The ranking has no right answer: it is for talk. “Talk about it” on page 2 is for you to lead.', 'The sentences at three levels are open: you read them under View task progress.'],
+    pages:[
+      { kind:'rank', t:'A Victorian school day', strap:'Tap them in order: the one you would enjoy least first, the one you would enjoy most last.', items:[['Slate writing', 'Copying letters and words with chalk on a small slate board.'], ['Washing clothes', 'Girls learned to wash clothes, while boys did woodwork or drawing.'], ['Nature drawing', 'Carefully drawing leaves, flowers and other things from nature.'], ['Arithmetic', 'Counting with an abacus and chanting times tables out loud.'], ['Drill', 'Strict exercises, standing in neat rows and moving all together.'], ['Poems and prayers', 'Learning poems and prayers off by heart, word for word.']] },
+      { kind:'read', t:'Who went to school?', strap:'Read how it changed during Queen Victoria’s time.', body:['Early Victorian times: only children from richer families could afford school. Many poor children worked instead.', 'Middle Victorian times: new laws helped more children learn. Ragged Schools were set up for poorer children.', '1880: a new law said all children aged 5 to 10 had to go to school.'],
+        lv:{ 'Find it':[ { q:'In 1880, who had to go to school?', opts:['all children aged 5 to 10', 'only rich children', 'only boys'], a:'all children aged 5 to 10', s:'History: finding facts' } ], 'Think about it':[ { q:'Why did many poor children not go to school in early Victorian times?', opts:['They had to work', 'They did not like school', 'There were no teachers'], a:'They had to work', s:'History: working things out' } ], 'Dig deeper':[ { q:'Talk about it: is anything here surprising? Which part would you find hardest?' } ] } },
+      { kind:'write', t:'In the Classroom: same or different?', strap:'Read the facts, then write or draw one thing in each box.', task:'Classes were big, sometimes more than 50 children. Children sat in long rows facing the teacher, practised writing on slates, and learned reading, writing and arithmetic. Teachers were very strict. Now write one thing in each box.', boxes:['Victorian school', 'Both', 'My school'], low:'Tired? Fill in just one box.' },
+      { kind:'read', t:'Finish the sentences', strap:'Choose your challenge. Every level is a good choice.', body:['Boys and girls were often taught some things separately. Teachers were very strict, and children had to sit still and stay quiet.'],
+        lv:{ 'Mild':[ { q:'One lesson Victorian children had was…' }, { q:'Classrooms were different because…' } ], 'Spicy':[ { q:'One lesson Victorian children had was…' }, { q:'Classrooms were different because…' }, { q:'Boys and girls did some things separately, such as…' } ], 'Hot':[ { q:'Would you rather go to a Victorian school or your school? Give two reasons using the facts.' } ] } }
+    ] };
+  const LIB = [Y34, Y56, CAROL, CAROL2, VSCHOOL,
     TOOLKIT,
     board('year4-challenge', 'Year 4 Challenge Booklet: maths and English', ['Maths', 'English'], ['lks2'], ['Page 2: Number Detective', 'Page 3: Multiplication Masters', 'Page 4: Fraction & Decimal Challenge', 'Page 5: Shape Investigator', 'Page 6: Logic Lab', 'Page 7: Dickens’ Foggy Street (reading)', 'Page 8: Reading Detective', 'Page 9: Grammar Workshop', 'Page 10: Writer’s Challenge'],
       'Every page starts with a Quick start, then a Challenge and a Stretch. Each box is a natural stopping point, and the maths ends with a planned break. Stretch boxes go beyond Year 4.'),
-    board('victorian-schools', 'Victorian Schools (Adventurers)', 'Topic', ['lks2'], ['Page 1: Victorian Schools (starter, who went to school?)', 'Page 2: In the Classroom (same or different, choose your challenge)'],
-      'History, two pages: rank the school day, who went to school, then Mild, Spicy or Hot sentences. Goes with the Victorians Explorer World.'),
     board('victorian-work', 'Victorian Children at Work (Pioneers)', 'Topic', ['uks2'], ['Page 1: Victorian Children at Work (rank the jobs)', 'Page 2: Things Begin to Change (new laws, then and now)'],
       'History, two pages: the jobs children did, the laws that changed things, and Dickens. Goes with the Victorians Explorer World.', 'This one is about hard lives and dangerous work for children. Choose it with care, and keep the ending on how things got better.'),
     board('rex-duck', 'Rex and the Duck: Weekly Reader 2', 'Phonics', ['eyfs', 'ks1'], ['First read', 'Second read', 'Third read, then the story questions'], 'A short decodable story to read three times across a session or a week, with a reading record for the teacher.'),
@@ -241,7 +325,7 @@
   /* ---------- answers: kept in the child's own viewer, under their Fab code ---------- */
   const KEY = (id, code) => 'fab-booklet-' + id + '-' + code;
   const read = (id, code) => { const v = CODE_RE.test(code) ? ls.json(KEY(id, code), null) : null; return v && typeof v === 'object' && v.a ? v : { a:{}, p:0, t:0 }; };
-  const S = { b:null, i:0, code:'', back:'screen-hub', teach:false, A:{}, lv:'', pad:{}, padOpen:false };
+  const S = { b:null, i:0, code:'', back:'screen-hub', teach:false, A:{}, lv:'', pad:{}, padOpen:false, part:0 };
   function save(){ if(S.b && CODE_RE.test(S.code)) ls.set(KEY(S.b.id, S.code), { a:S.A, p:S.i, t:Date.now(), n:S.b.pages.length }); }
   function known(code){ return all().filter(b => b.app).map(b => ({ b, d:read(b.id, code) })).filter(x => x.d.t); }
   function codes(){ const out = new Set(); try{ for(let i = 0; i < localStorage.length; i++){ const m = /^fab-booklet-.+-([a-z]{2,12}-\d{3})$/.exec(localStorage.key(i) || ''); if(m) out.add(m[1]); } }catch(e){} return [...out]; }
@@ -283,22 +367,30 @@
   /* ---------- a reading page: a short text, a word bank, then questions at up to three levels. The child chooses the level. ---------- */
   function readHTML(p, i){
     const L = Object.keys(p.lv || {}), lk = 'r' + i + '.lv', cur = S.A[lk] || '';
-    return `<div class="bk-card bk-text bk-read">${sayBtn((p.body || []).join(' '))}${(p.body || []).map(x => `<p>${h(x)}</p>`).join('')}${p.src ? `<p class="bk-src">${h(p.src)}</p>` : ''}${wordsHTML(p)}</div>
-      ${L.length ? `<p class="bk-soft bk-pick">Now choose your questions. Every level is a good choice.</p><div class="bk-levels">${L.map((k, n) => `<button type="button" class="bk-lv ${['mild', 'spicy', 'hot'][n] || ''} ${cur === k ? 'on' : ''}" data-k="${h(lk)}" data-v="${h(k)}" aria-pressed="${cur === k}">${h(k)}</button>`).join('')}</div>
-        ${cur && p.lv[cur] ? `<div class="bk-card bk-lvq bk-rq">${p.lv[cur].map((q, n) => itemHTML(q, 'r' + i + '.' + cur + '.' + n)).join('')}</div><p class="bk-soft">Want a change? Tap another level at any time.</p>` : ''}` : ''}`;
+    return `<div class="bk-card bk-text bk-read bk-seg">${sayBtn((p.body || []).join(' '))}${(p.body || []).map(x => `<p>${h(x)}</p>`).join('')}${p.src ? `<p class="bk-src">${h(p.src)}</p>` : ''}${wordsHTML(p)}</div>
+      ${L.length ? `<div class="bk-seg"><p class="bk-soft bk-pick">Now choose your questions. Every level is a good choice.</p><div class="bk-levels">${L.map((k, n) => `<button type="button" class="bk-lv ${['mild', 'spicy', 'hot'][n] || ''} ${cur === k ? 'on' : ''}" data-k="${h(lk)}" data-v="${h(k)}" aria-pressed="${cur === k}">${h(k)}</button>`).join('')}</div>
+        ${cur && p.lv[cur] ? `<div class="bk-card bk-lvq bk-rq">${p.lv[cur].map((q, n) => itemHTML(q, 'r' + i + '.' + cur + '.' + n)).join('')}</div><p class="bk-soft">Want a change? Tap another level at any time.</p>` : ''}</div>` : ''}`;
   }
   /* ---------- a writing page: a model to read first, the task, sentence starters and a word bank to tap in, a box to write in, and a
      checklist the child ticks for themselves. The writing is never marked by the app: the teacher reads it. ---------- */
   function writeHTML(p, i){
     const k = 'w' + i;
-    return `${(p.model || []).length ? `<div class="bk-card bk-part w"><h3>Read mine first</h3>${sayBtn(p.model.join(' '))}${p.model.map(x => `<p class="bk-model">${h(x)}</p>`).join('')}</div>` : ''}
-      <div class="bk-card bk-part m bk-write"><h3>${M}</h3><p class="bk-say">${h(p.task)}</p>
+    return `${(p.model || []).length ? `<div class="bk-card bk-part w bk-seg"><h3>Read mine first</h3>${sayBtn(p.model.join(' '))}${p.model.map(x => `<p class="bk-model">${h(x)}</p>`).join('')}</div>` : ''}
+      <div class="bk-card bk-part m bk-write bk-seg"><h3>${M}</h3><p class="bk-say">${h(p.task)}</p>
         ${(p.stems || []).length ? `<div class="bk-chips" role="group" aria-label="Sentence starters"><b>Sentence starters</b>${p.stems.map(s => `<button type="button" class="bk-chip" data-bkins="${h(s)}" data-for="bkW${i}">${h(s)}</button>`).join('')}</div>` : ''}
         ${(p.bank || []).length ? `<div class="bk-chips bank" role="group" aria-label="Word bank"><b>Word bank</b>${p.bank.map(s => `<button type="button" class="bk-chip" data-bkins="${h(s)}" data-for="bkW${i}">${h(s)}</button>`).join('')}</div>` : ''}
-        <label class="sr-only" for="bkW${i}">My writing</label><textarea id="bkW${i}" class="bk-ta" data-kt="${k}.text" rows="5" maxlength="700" placeholder="Write here. One sentence is enough to begin.">${h(S.A[k + '.text'] || '')}</textarea>
+        ${(p.boxes || []).length ? `<div class="bk-boxes">${p.boxes.map((bx, n) => `<label><span>${h(bx)}</span><textarea class="bk-ta small" data-kt="${k}.b${n}" rows="4" maxlength="300">${h(S.A[k + '.b' + n] || '')}</textarea></label>`).join('')}</div>`
+          : `<label class="sr-only" for="bkW${i}">My writing</label><textarea id="bkW${i}" class="bk-ta" data-kt="${k}.text" rows="5" maxlength="700" placeholder="Write here. One sentence is enough to begin.">${h(S.A[k + '.text'] || '')}</textarea>`}
         ${p.low ? `<p class="bk-soft">🌱 ${h(p.low)}</p>` : ''}</div>
-      ${(p.sc || []).length ? `<div class="bk-card bk-sc"><h3>Check my writing</h3><p class="bk-soft">Tick what you did. This is just for you and your teacher.</p>${p.sc.map((s, n) => { const kk = k + '.sc' + n, on = S.A[kk] === '1';
+      ${(p.sc || []).length ? `<div class="bk-card bk-sc bk-seg"><h3>Check my writing</h3><p class="bk-soft">Tick what you did. This is just for you and your teacher.</p>${p.sc.map((s, n) => { const kk = k + '.sc' + n, on = S.A[kk] === '1';
         return `<button type="button" class="bk-opt bk-tickb ${on ? 'on' : ''}" data-k="${kk}" data-v="1" aria-pressed="${on}"><b>${on ? '✓' : '○'}</b> ${h(s)}</button>`; }).join('')}</div>` : ''}`;
+  }
+  /* ---------- a ranking with no right answer: tap the cards in order; tap one again to take it out ---------- */
+  const rankOf = i => String(S.A['k' + i] || '').split(',').filter(x => x !== '').map(Number);
+  function rankHTML(p, i){
+    const R = rankOf(i);
+    return `<div class="bk-rank">${p.items.map((it, n) => { const at = R.indexOf(n); return `<button type="button" class="bk-rankc ${at >= 0 ? 'on' : ''}" data-bkrank="${n}" aria-pressed="${at >= 0}"><span class="bk-rankn">${at >= 0 ? at + 1 : ''}</span><b>${h(it[0])}</b><small>${h(it[1])}</small></button>`; }).join('')}</div>
+      <p class="bk-soft">${R.length === p.items.length ? 'All in order. There is no right answer: be ready to say why.' : R.length ? 'Keep going. Tap a card again to take it out.' : 'Tap the one you would enjoy least first.'}</p>`;
   }
   /* ---------- a space to work things out, beside the questions (maths pages). It is for the child and the teacher to see while the
      booklet is open; it is not kept afterwards. ---------- */
@@ -317,6 +409,21 @@
     cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); cv.addEventListener('pointerleave', up);
     box.querySelector('#bkPadClear').addEventListener('click', () => { ctx.clearRect(0, 0, cv.width, cv.height); delete S.pad[S.i]; snd('tick'); });
   }
+  /* catch-up notes to sit beside the recordings, and a short note for the child's own school */
+  function notesHTML(b){
+    if(!b || (!b.catchup && !b.school)) return '';
+    return `${b.catchup ? `<details class="bk-run bk-catch"><summary>Catch-up notes: one per session, to sit beside the recording</summary><div class="bk-printme" id="bkCatch-${h(b.id)}"><h3>${h(b.short)}: catch-up notes</h3>${b.catchup.map(c => `<div class="bk-cnote"><b>${h(c[0])}</b><p>${h(c[1])}</p><p><i>To catch up:</i> ${h(c[2])}</p></div>`).join('')}<p class="bk-soft">Sessions are recorded and kept for 90 days.</p></div>
+      <div class="st-row"><button type="button" class="btn small soft" data-bkprint="bkCatch-${h(b.id)}">🖨️ Print the catch-up notes</button></div></details>` : ''}
+      ${b.school ? `<details class="bk-run bk-school"><summary>A short note for the child’s own school</summary><p class="bk-schooltxt">${h(b.school)}</p><div class="st-row"><button type="button" class="btn small soft" data-bkcopy="${h(b.school)}">Copy the note</button></div><p class="hint">It names no child. Add your own cover note when you send it.</p></details>` : ''}`;
+  }
+  /* print one part of the page, or copy a note (wired wherever these notes appear) */
+  function notesWire(root){
+    (root || document).querySelectorAll('[data-bkprint]').forEach(b => { if(b._bk) return; b._bk = 1; b.addEventListener('click', () => { const el = document.getElementById(b.dataset.bkprint); if(!el) return;
+      el.classList.add('bk-print-on'); document.body.classList.add('bk-printing'); const done = () => { el.classList.remove('bk-print-on'); document.body.classList.remove('bk-printing'); window.removeEventListener('afterprint', done); }; window.addEventListener('afterprint', done); try{ window.print(); }catch(e){ done(); } setTimeout(done, 60000); }); });
+    (root || document).querySelectorAll('[data-bkcopy]').forEach(b => { if(b._bk) return; b._bk = 1; b.addEventListener('click', () => { const ok = () => { b.textContent = 'Copied'; }; try{ navigator.clipboard.writeText(b.dataset.bkcopy).then(ok, ok); }catch(e){ ok(); } }); });
+  }
+  /* a well done for this booklet, from the marks (Patrick's stress test: "nothing comes back to the child after handing in") */
+  const praiseBtn = (code, b) => `<div class="st-row"><button type="button" class="btn small leaf" data-bkpraise="${h(code)}|${h(b.short || b.t)}">⭐ Send a well done for this booklet</button></div>`;
   /* the unit a booklet belongs to, session by session, for the teacher */
   const unitHTML = b => b && b.unit ? `<details class="bk-run bk-unit"><summary>The whole unit: ${b.unit.rows.length} sessions</summary><div style="overflow-x:auto"><table class="st-table"><thead><tr>${b.unit.head.map(c => `<th>${h(c)}</th>`).join('')}</tr></thead><tbody>${b.unit.rows.map(r => `<tr>${r.map(c => `<td>${h(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${b.unit.note ? `<p>${h(b.unit.note)}</p>` : ''}<p class="hint">A draft for a teacher to check and adapt. The curriculum wording needs checking against the National Curriculum programme of study.</p></details>` : '';
   const EXTRA_CSS = `
@@ -329,7 +436,16 @@
 .bk-sc{display:grid;gap:8px}.bk-sc h3{margin:0}.bk-tickb{text-align:left}.bk-tickb b{display:inline-block;width:1.4em}
 .bk-pad{background:#FFFDF7;border:2.5px dashed #2F5458;border-radius:14px;padding:8px 12px;margin:12px 0}.bk-pad summary{font-weight:700;cursor:pointer}
 #bkPad{display:block;width:100%;height:auto;background:#fff;border:2.5px solid #2B1A12;border-radius:10px;margin:8px 0;touch-action:none;cursor:crosshair}
-.bk-unit td{font-size:.95rem;vertical-align:top}`;
+.bk-unit td{font-size:.95rem;vertical-align:top}
+.bk-rank{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.bk-rankc{position:relative;display:grid;gap:4px;text-align:left;font:inherit;background:#fff;border:3px solid #2F5458;border-radius:16px;padding:12px 14px 12px 58px;min-height:96px;cursor:pointer}
+.bk-rankc b{font-size:1.2rem}.bk-rankc small{font-size:1rem;line-height:1.35}.bk-rankc.on{background:#EAF4EC}
+.bk-rankn{position:absolute;left:10px;top:12px;width:36px;height:36px;border-radius:50%;border:3px solid #2B1A12;background:#fff;display:grid;place-items:center;font-weight:700;font-size:1.2rem}.bk-rankc.on .bk-rankn{background:#F0B913}
+.bk-boxes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:8px}.bk-boxes label{display:grid;gap:4px}.bk-boxes span{font-weight:700;text-align:center}.bk-ta.small{font-size:1.1rem;min-height:110px}
+@media (max-width:700px){.bk-boxes{grid-template-columns:1fr}}
+.bk-fin{background:#FFF1CF;border-color:#E8B64C}.bk-fin b{margin-right:4px}
+.bk-cnote{border-top:2px dashed #cbbfa8;padding-top:8px;margin-top:8px}.bk-cnote p{margin:4px 0}.bk-schooltxt{background:#fff;border-radius:10px;padding:10px 12px;line-height:1.5}
+body.bk-printing *{visibility:hidden!important}body.bk-printing .bk-print-on,body.bk-printing .bk-print-on *{visibility:visible!important}body.bk-printing .bk-print-on{position:absolute;left:0;top:0;width:100%}`;
   function pageHTML(p){
     if(p.kind === 'conf' || p.kind === 'exit') return confHTML(p);
     if(p.kind === 'quick') return `<div class="bk-grid2">${p.items.map(q => `<div class="bk-card bk-q"><b class="bk-letter">${h(q.id)}</b>${q.op ? opDot(q.op) : ''}<span class="bk-sum">${h(q.q)} =</span>${box('q.' + q.id, q.q)}</div>`).join('')}</div>`;
@@ -347,6 +463,7 @@
     if(p.kind === 'steps') return stepsHTML(p, S.i);
     if(p.kind === 'read') return readHTML(p, S.i);
     if(p.kind === 'write') return writeHTML(p, S.i);
+    if(p.kind === 'rank') return rankHTML(p, S.i);
     if(p.kind === 'text') return `<div class="bk-card bk-text">${sayBtn((p.body || []).join(' '))}${(p.body || []).map(x => `<p>${h(x)}</p>`).join('')}${(p.words || []).length ? `<div class="bk-words"><b>Word bank</b>${p.words.map(w => `<span><i>${h(w[0])}</i> ${h(w[1])}</span>`).join('')}</div>` : ''}</div>`;
     return '';
   }
@@ -363,34 +480,49 @@
     else if(p.kind === 'steps') extra = `<p>Answers: ${markItems({ pages:[p] }, {}).map(x => h(x.label === 'gap' ? '' : x.label + ' ') + '<b>' + h([].concat(x.a).join(' or ')) + '</b>').join(' · ') || 'nothing on this page is marked'}</p>${i === 0 && S.b.notes ? S.b.notes.map(x => `<p>${h(x)}</p>`).join('') : ''}`;
     else if(p.kind === 'read') extra = `<p>Answers: ${Object.keys(p.lv || {}).map(L => '<b>' + h(L) + '</b> ' + p.lv[L].map(q => q.a != null ? h(String(q.a)) : '(for you to read)').join(' · ')).join(' | ')}</p>`;
     else if(p.kind === 'write') extra = '<p>The writing and the ticked checklist are for you to read, under View task progress. The app does not mark writing.</p>';
-    if(i === 0) extra += (p.kind !== 'steps' && S.b.notes ? S.b.notes.map(x => `<p>${h(x)}</p>`).join('') : '') + unitHTML(S.b);
+    if(i === 0) extra += (p.kind !== 'steps' && S.b.notes ? S.b.notes.map(x => `<p>${h(x)}</p>`).join('') : '') + unitHTML(S.b) + notesHTML(S.b);
     return `<details class="bk-tnote"><summary>For the teacher: this page</summary>${row ? `<p>${row.slice(1).map((c, k) => `<b>${h(r.head[k + 1].replace(/…$/, ''))}:</b> ${h(c)}`).join(' · ')}</p>` : ''}${extra}<p>Nothing on these pages is marked in front of the child. Their answers are read in the Teachers’ area, under View task progress.</p></details>`;
   }
   function render(){
     const box = document.getElementById('bookletBody'); if(!box || !S.b) return;
     const N = S.b.pages.length; S.i = Math.max(0, Math.min(N, S.i));
     document.querySelector('#screen-booklet .screen-title').textContent = S.b.short;
-    if(S.i === N){ box.innerHTML = `<div class="bk-page"><div class="bk-band"><h2>All done!</h2></div><div class="fab-say"><span class="fab-char fab" role="img" aria-label="Fab"></span><div class="bubble"><b>Handed in. Brilliant thinking!</b>That is the whole booklet. Your teacher will look at it with you.</div></div>
+    if(S.i === N){ box.innerHTML = `<div class="bk-page"><div class="bk-band"><h2>All done!</h2></div><div class="fab-say"><span class="fab-char fab" role="img" aria-label="Fab"></span><div class="bubble"><b>Handed in. Brilliant thinking!</b>That is the whole booklet. Your teacher will look at it with you.</div></div>${S.b.fin ? `<div class="bk-card bk-fin"><b>⭐ If you finish</b> ${h(S.b.fin)}</div>` : ''}
       <div class="st-row bk-nav"><button type="button" class="btn soft" data-bkgo="${N - 1}">◀ Look back</button><button type="button" class="btn leaf" data-bkstop>${S.teach ? 'Back to the Teachers’ area' : 'Back to my Burrow'}</button></div></div>`; wire(box); return; }
     const p = S.b.pages[S.i];
     box.innerHTML = `<div class="bk-page" data-kind="${p.kind}"><div class="bk-band"><h2>${h(p.t)}</h2></div><p class="bk-strap">${h(p.strap)}</p>
       ${pageHTML(p)}
       ${wantsPad(p) ? padHTML() : ''}
+      ${p.fin ? `<div class="bk-card bk-fin"><b>⭐ If you finish</b> ${h(p.fin)}</div>` : ''}
       ${S.teach ? tnoteHTML(S.i) : ''}
       <div class="st-row bk-nav">${S.i ? `<button type="button" class="btn soft" data-bkgo="${S.i - 1}">◀ Back a page</button>` : ''}<span class="bk-count">Page ${S.i + 1} of ${N}</span><button type="button" class="btn leaf" data-bkgo="${S.i + 1}">${S.i === N - 1 ? 'Hand it in ⭐' : 'Next page ▶'}</button></div>
-      <p class="bk-rest"><button type="button" class="btn small soft" data-bkstop>Stop here for today</button> <span>It is fine to stop after any page. Your place is kept${CODE_RE.test(S.code) ? '' : ' only while this page is open'}.</span></p></div>`;
+      <p class="bk-rest"><button type="button" class="btn small soft" data-bkstop>Stop here for today</button> <button type="button" class="btn small soft" data-bkone aria-pressed="${oneOn()}">${oneOn() ? 'Show the whole page' : 'One part at a time'}</button> <span>It is fine to stop after any page. Your place is kept${CODE_RE.test(S.code) ? '' : ' only while this page is open'}.</span></p></div>`;
     wire(box);
   }
+  /* one part at a time: a long page in a small viewer shows one part, with "Next part" (stress test: "one part per screen") */
+  const oneOn = () => { const v = ls.json('fab-bk-one', null); return v == null ? (window.innerHeight < 720 || window.innerWidth < 900) : !!v; };
+  function oneApply(box){
+    const segs = [...box.querySelectorAll('.bk-seg')], nx = box.querySelector('.bk-nav [data-bkgo]:last-child'), bk = box.querySelector('.bk-nav [data-bkgo]:first-child');
+    if(!oneOn() || segs.length < 2){ S.part = 0; return; }
+    S.part = Math.max(0, Math.min(segs.length - 1, S.part || 0)); segs.forEach((el, n) => { el.hidden = n !== S.part; });
+    const cnt = box.querySelector('.bk-count'); if(cnt) cnt.textContent += ` · part ${S.part + 1} of ${segs.length}`;
+    if(nx && S.part < segs.length - 1){ nx.removeAttribute('data-bkgo'); nx.dataset.bkpart = S.part + 1; nx.textContent = 'Next part ▶'; }
+    if(bk && bk !== nx && S.part > 0){ bk.removeAttribute('data-bkgo'); bk.dataset.bkpart = S.part - 1; bk.textContent = '◀ Back a part'; }
+  }
   function wire(box){
+    oneApply(box);
+    box.querySelectorAll('[data-bkpart]').forEach(b => b.addEventListener('click', () => { S.part = Number(b.dataset.bkpart); snd('tick'); sayStop(); render(); try{ window.scrollTo(0, 0); }catch(e){} }));
+    box.querySelectorAll('[data-bkone]').forEach(b => b.addEventListener('click', () => { ls.set('fab-bk-one', !oneOn()); S.part = 0; snd('tick'); render(); }));
+    box.querySelectorAll('[data-bkrank]').forEach(b => b.addEventListener('click', () => { const R = rankOf(S.i), n = Number(b.dataset.bkrank), at = R.indexOf(n); if(at >= 0) R.splice(at, 1); else R.push(n); S.A['k' + S.i] = R.join(','); snd('tick'); save(); render(); }));
     box.querySelectorAll('textarea[data-kt]').forEach(el => el.addEventListener('input', () => { S.A[el.dataset.kt] = el.value.slice(0, 700); save(); }));
     box.querySelectorAll('[data-bkins]').forEach(b => b.addEventListener('click', () => { const el = document.getElementById(b.dataset.for); if(!el) return; const v = el.value;
       el.value = (v + (v && !/\s$/.test(v) ? ' ' : '') + b.dataset.bkins + ' ').slice(0, 700); S.A[el.dataset.kt] = el.value; save(); snd('tick'); try{ el.focus(); el.setSelectionRange(el.value.length, el.value.length); }catch(e){} }));
     box.querySelectorAll('[data-bksay]').forEach(b => b.addEventListener('click', () => { const t = b.dataset.bksay, was = saying === t; sayStop(); if(!was){ saying = t; try{ window.fabReadAloud(t); }catch(e){} }
       box.querySelectorAll('[data-bksay]').forEach(x => { x.textContent = saying && x.dataset.bksay === saying ? '⏹ Stop reading' : '🔊 Read it to me'; }); }));
-    padWire(box);
+    padWire(box); notesWire(box);
     box.querySelectorAll('input[data-k]').forEach(el => el.addEventListener('input', () => { S.A[el.dataset.k] = el.value.slice(0, 120); save(); }));
     box.querySelectorAll('button[data-k]').forEach(b => b.addEventListener('click', () => { const k = b.dataset.k; S.A[k] = S.A[k] === b.dataset.v && k !== 'lv' ? '' : b.dataset.v; snd('tick'); save(); render(); }));
-    box.querySelectorAll('[data-bkgo]').forEach(b => b.addEventListener('click', () => { const to = Number(b.dataset.bkgo), N = S.b.pages.length; S.i = to; save(); sayStop();
+    box.querySelectorAll('[data-bkgo]').forEach(b => b.addEventListener('click', () => { const to = Number(b.dataset.bkgo), N = S.b.pages.length; S.part = to < S.i ? 99 : 0; S.i = to; save(); sayStop();
       if(to === N){ snd('jingle'); if(!S.teach && CODE_RE.test(S.code)){ S.A.done = Date.now(); save(); try{ FabBurrow.actDone(S.code, 'bk:' + S.b.id); }catch(e){} } } else snd('tick');
       render(); try{ window.scrollTo(0, 0); }catch(e){} }));
     box.querySelectorAll('[data-bkstop]').forEach(b => b.addEventListener('click', () => { save(); snd('tick'); close(); }));
@@ -399,7 +531,7 @@
   /* open a booklet: for a child from their Burrow (answers kept), or for a teacher to look inside (nothing kept) */
   function open(id, page, opt){
     const b = byId(id); if(!b || !b.app) return false; opt = opt || {}; build();
-    S.pad = {}; S.padOpen = false; sayStop();
+    S.pad = {}; S.padOpen = false; S.part = 0; sayStop();
     S.b = b; S.teach = !!opt.teach; S.code = S.teach ? '' : String(opt.code || ''); S.back = opt.back || 'screen-hub';
     const d = read(b.id, S.code); S.A = S.teach ? {} : d.a;
     S.i = page != null && page !== '' && !isNaN(Number(page)) ? Number(page) - 1 : (d.p >= b.pages.length ? 0 : d.p || 0);
@@ -441,7 +573,7 @@
       <div class="bk-next"><b>Turning it into next steps</b> (drafts: you know the child)${R.steps.length ? `<ul>${R.steps.map(s => `<li><i>${h(s[1])}.</i> ${h(s[2])}</li>`).join('')}</ul>` : '<p class="bk-na">Nothing flagged yet. More answers will give a clearer picture.</p>'}</div>
       <details class="bk-run"><summary>How to run this booklet</summary><div style="overflow-x:auto"><table class="st-table"><thead><tr>${b.run.head.map(c => `<th>${h(c)}</th>`).join('')}</tr></thead><tbody>${b.run.rows.map(r => `<tr>${r.map(c => `<td>${h(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
         ${b.run.say ? `<p><b>Modelling for a child with low confidence</b></p><ul>${b.run.say.map(r => `<li>${h(r[0])}: ${h(r[1])}</li>`).join('')}</ul>` : ''}</details>
-      <p class="hint">The traffic light and next steps are worked out from the answers on this device only, as a starting point for your own judgement. Nothing here is shown to the child.</p></div>`;
+      ${praiseBtn(code, b)}<p class="hint">The traffic light and next steps are worked out from the answers on this device only, as a starting point for your own judgement. Nothing here is shown to the child.</p></div>`;
   }
 
   /* ---------- pages made of parts: Watch me, together, my turn (the shape a teacher-made booklet uses most) ---------- */
@@ -463,7 +595,7 @@
   const isSum = q => /^[\d.,]+ [+−×÷] [\d.,]+$/.test(q);
   function stepsHTML(p, i){
     let n = 0; const tone = hd => hd === W ? 'w' : hd === G ? 'g' : hd === M ? 'm' : '';
-    return (p.parts || []).map(pt => `<div class="bk-card bk-part ${tone(pt.h)}">${pt.h ? `<h3>${h(pt.h)}</h3>` : ''}${pt.say ? sayBtn(pt.say) + `<p class="bk-say">${h(pt.say)}</p>` : ''}${aidHTML(pt.aid)}
+    return (p.parts || []).map(pt => `<div class="bk-card bk-part bk-seg ${tone(pt.h)}">${pt.h ? `<h3>${h(pt.h)}</h3>` : ''}${pt.say ? sayBtn(pt.say) + `<p class="bk-say">${h(pt.say)}</p>` : ''}${aidHTML(pt.aid)}
       ${pt.seq ? `<div class="bk-seq">${pt.seq.map(x => typeof x === 'string' && x[0] === '_' ? box('p' + i + '.' + (n++), 'A missing number').replace('class="bk-in ', 'class="bk-in gap ') : `<span>${h(x)}</span>`).join('')}</div>` : ''}
       ${(pt.items || []).map(q => { const k = 'p' + i + '.' + (n++);
         if(q.opts) return `<div class="bk-item"><p>${h(q.q)}</p><div class="bk-opts many">${q.opts.map(o => { const on = S.A[k] === String(o); return `<button type="button" class="bk-opt ${on ? 'on' : ''}" data-k="${k}" data-v="${h(o)}" aria-pressed="${on}">${h(o)}</button>`; }).join('')}</div></div>`;
@@ -494,7 +626,8 @@
       if(p.kind === 'steps'){ let n = 0; (p.parts || []).forEach(pt => { (pt.seq || []).forEach(x => { if(typeof x === 'string' && x[0] === '_') n++; });
         (pt.items || []).forEach(q => { const k = 'p' + i + '.' + (n++); if(q.a == null && A[k]) out.push({ i, label:q.q, v:String(A[k]) }); }); }); }
       else if(p.kind === 'read'){ const L = A['r' + i + '.lv']; if(L && p.lv && p.lv[L]){ out.push({ i, label:p.t + ': chose the questions', v:L }); p.lv[L].forEach((q, n) => { const k = 'r' + i + '.' + L + '.' + n; if(q.a == null && A[k]) out.push({ i, label:q.q, v:String(A[k]) }); }); } }
-      else if(p.kind === 'write'){ const t = A['w' + i + '.text']; if(t) out.push({ i, label:p.t, v:String(t) }); const ticks = (p.sc || []).filter((x, n) => A['w' + i + '.sc' + n] === '1'); if(ticks.length) out.push({ i, label:'Ticked for themselves', v:ticks.join(' · ') }); }
+      else if(p.kind === 'rank'){ const R = String(A['k' + i] || '').split(',').filter(x => x !== '').map(Number); if(R.length) out.push({ i, label:p.t + ' (least to most enjoyable)', v:R.map(n => (p.items[n] || [])[0]).join(' → ') }); }
+      else if(p.kind === 'write'){ const t = A['w' + i + '.text']; if(t) out.push({ i, label:p.t, v:String(t) }); (p.boxes || []).forEach((bx, n) => { const v = A['w' + i + '.b' + n]; if(v) out.push({ i, label:bx, v:String(v) }); }); const ticks = (p.sc || []).filter((x, n) => A['w' + i + '.sc' + n] === '1'); if(ticks.length) out.push({ i, label:'Ticked for themselves', v:ticks.join(' · ') }); }
       else if((p.kind === 'conf' || p.kind === 'exit') && !b.afl){ const v = confRows(p, b).filter(r => A[r.k]).map(r => r.n + ' ' + A[r.k] + ' of 5'); if(v.length) out.push({ i, label:p.kind === 'conf' ? 'Confidence before' : 'Confidence after', v:v.join(' · ') });
         if(p.kind === 'exit'){ if(A['x.can']) out.push({ i, label:'One thing I can do now', v:String(A['x.can']) }); if(A['x.help']) out.push({ i, label:'One thing I’d like help with', v:String(A['x.help']) }); } } });
     return out;
@@ -516,7 +649,7 @@
       <div style="overflow-x:auto"><table class="st-table bk-atable"><thead><tr><th>Page</th><th>Marks</th><th>Answers (the child’s answer, then the right one where it differs)</th></tr></thead><tbody>
       ${b.pages.map((p, i) => { const P = m.pages[i], its = m.items.filter(x => x.i === i); return P ? `<tr><td>${i + 1}. ${h(p.t)}</td><td>${P.got} of ${P.tried}${P.tried < P.of ? ' <small>(' + (P.of - P.tried) + ' left)</small>' : ''}</td><td>${its.filter(x => x.ok != null).map(x => `<span class="bk-ans">${x.label === 'gap' ? '' : h(x.label) + ': '}<b>${h(x.v)}</b> ${x.ok ? '<b class="bk-yes">✓</b>' : '<b class="bk-no">✗</b> <small>(' + h([].concat(x.a).join(' or ')) + ')</small>'}</span>`).join(' ') || '<span class="bk-na">–</span>'}</td></tr>` : ''; }).join('')}</tbody></table></div>
       ${open.length ? `<div class="bk-next"><b>In the child’s own words and choices</b> (for you to read)<ul>${open.map(o => `<li>${h(o.label)} <b>${h(o.v)}</b></li>`).join('')}</ul></div>` : ''}
-      ${b.run ? `<details class="bk-run"><summary>How to run this booklet</summary><div style="overflow-x:auto"><table class="st-table"><thead><tr>${b.run.head.map(c => `<th>${h(c)}</th>`).join('')}</tr></thead><tbody>${b.run.rows.map(r => `<tr>${r.map(c => `<td>${h(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>` : ''}${unitHTML(b)}
+      ${b.run ? `<details class="bk-run"><summary>How to run this booklet</summary><div style="overflow-x:auto"><table class="st-table"><thead><tr>${b.run.head.map(c => `<th>${h(c)}</th>`).join('')}</tr></thead><tbody>${b.run.rows.map(r => `<tr>${r.map(c => `<td>${h(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>` : ''}${unitHTML(b)}${notesHTML(b)}${praiseBtn(code, b)}
       <p class="hint">Marks are worked out on this device from the answers kept in this viewer. Writing and open answers are never marked by the app.</p></div>`;
   }
   /* an assessment profile for one Fab code: every booklet on this device, strand by strand, with a draft next step */
@@ -542,7 +675,7 @@
   }
 
   /* ---------- booklets made by teachers with Claude: checked here before they are kept ---------- */
-  const IMPORT_KINDS = ['conf', 'exit', 'quick', 'hinge', 'levels', 'asn', 'steps', 'text', 'read', 'write'];
+  const IMPORT_KINDS = ['conf', 'exit', 'quick', 'hinge', 'levels', 'asn', 'steps', 'text', 'read', 'write', 'rank'];
   const calc = q => { const m = /^([\d.,]+) ([+−×÷]) ([\d.,]+)$/.exec(String(q || '')); if(!m) return null; const a = Number(m[1].replace(/,/g, '')), b = Number(m[3].replace(/,/g, '')); return Math.round((m[2] === '+' ? a + b : m[2] === '−' ? a - b : m[2] === '×' ? a * b : a / b) * 1000) / 1000; };
   function check(d){
     const E = [], str = (v, n) => typeof v === 'string' && v.trim().length > 0 && v.length <= n, arr = v => Array.isArray(v) ? v : [];
@@ -566,8 +699,10 @@
         L.forEach(k => { if(!/^[A-Za-z ]{1,16}$/.test(k) || !arr(p.lv[k]).length || p.lv[k].length > 5) E.push(`${at}: the level “${k}” needs a short name and 1 to 5 questions.`);
           arr(p.lv[k]).forEach((q, n) => { if(!q || !str(q.q, 160)){ E.push(`${at}, level ${k}, question ${n + 1} needs words ("q").`); return; }
             if(q.opts != null){ q.opts = arr(q.opts).map(String).slice(0, 4); if(q.opts.length < 2) E.push(`${at}, level ${k}, question ${n + 1}: choices need at least two options.`); else if(q.a != null && !q.opts.includes(String(q.a))) E.push(`${at}, level ${k}, question ${n + 1}: the answer must be one of the options.`); } }); }); }
-      if(p.kind === 'write'){ if(!str(p.task, 300)) E.push(at + ' needs the writing task ("task").'); const list = (f, n, len) => { p[f] = arr(p[f]).filter(x => str(x, len)).slice(0, n); };
-        list('model', 4, 600); list('stems', 8, 60); list('bank', 16, 30); list('sc', 6, 80); if(p.low != null && !str(p.low, 160)) delete p.low; }
+      if(p.kind === 'rank'){ p.items = arr(p.items).map(x => typeof x === 'string' ? [x, ''] : x).filter(x => Array.isArray(x) && str(x[0], 40)).map(x => [x[0], String(x[1] || '').slice(0, 140)]).slice(0, 8); if(p.items.length < 2) E.push(at + ' needs 2 to 8 things to put in order ("items").'); }
+      if(p.fin != null && !str(p.fin, 200)) delete p.fin;
+      if(p.kind === 'write'){ if(!str(p.task, 400)) E.push(at + ' needs the writing task ("task").'); const list = (f, n, len) => { p[f] = arr(p[f]).filter(x => str(x, len)).slice(0, n); };
+        list('model', 4, 600); list('stems', 8, 60); list('bank', 16, 30); list('sc', 6, 80); list('boxes', 3, 30); if(p.low != null && !str(p.low, 160)) delete p.low; }
       if(p.kind === 'text'){ if(!arr(p.body).length || !arr(p.body).every(x => str(x, 900))) E.push(at + ' needs one or more paragraphs ("body").'); p.words = arr(p.words).filter(w => Array.isArray(w) && str(w[0], 40) && str(w[1], 120)).slice(0, 14); }
       if(p.kind === 'steps'){ if(!arr(p.parts).length || p.parts.length > 8) E.push(at + ' needs 1 to 8 parts.'); arr(p.parts).forEach((pt, n) => { const w = `${at}, part ${n + 1}`;
         if(!pt || typeof pt !== 'object'){ E.push(w + ' is empty.'); return; }
@@ -616,6 +751,8 @@ Page kinds (each page has "kind", "t" (title) and "strap" (one line for the chil
 - "asn": { "items": [ { "q": "Multiplying makes a number bigger.", "a": "sometimes", "why": "not × 1 or × 0" } ] } always, sometimes or never.
 - "read": { "body": ["A short paragraph."], "src": "From … by …", "words": [["bleak", "cold and miserable"]], "lv": { "Find it": [ { "q": "What day is it?", "opts": ["Monday", "Friday"], "a": "Friday" } ], "Think about it": [ { "q": "…", "opts": ["…", "…"], "a": "…" } ], "Dig deeper": [ { "q": "An open question for the teacher to read." } ] } } a text with questions at up to three levels; the child chooses the level. Public-domain texts only.
 - "write": { "task": "What to write", "model": ["A model text to read first."], "stems": ["Scrooge is"], "bank": ["mean", "cold"], "sc": ["I checked my capital letters and full stops"], "low": "Tired? One sentence is plenty." } never marked by the app; the teacher reads it.
+- "rank": { "items": [["Slate writing", "Copying letters on a slate"], ["Drill", "Strict exercises in rows"]] } the child taps them in order; no right answer.
+- Any page may have "fin": "If you finish: …" for a child who finishes first. A "write" page may have "boxes": ["Then", "Both", "Now"] instead of one writing box.
 - "text": { "body": ["A paragraph to read."], "words": [["bleak", "cold, grey and miserable"]] } for reading; public-domain texts only.
 
 Write sums with spaces and these signs: + − × ÷. Give me the JSON only, in a code block, so I can save it as a .json file.`;
@@ -673,6 +810,6 @@ Write sums with spaces and these signs: + − × ÷. Give me the JSON only, in a
     document.head.appendChild(st); return true;
   }
   fromHash();
-  window.FabBooklets = { all, byId, act, open, read, known, codes, afl, teacherHTML, state:S, render, mark, profile, check, add, remove, mine, hashFor, brief:BRIEF, bands:BANDS, unitHTML, confRows, sayStop, started:(id, code) => { const d = read(id, code); return !!(d.t && !d.a.done && (d.p > 0 || Object.keys(d.a).length)); } };
+  window.FabBooklets = { all, byId, act, open, read, known, codes, afl, teacherHTML, state:S, render, mark, profile, check, add, remove, mine, hashFor, brief:BRIEF, bands:BANDS, unitHTML, confRows, sayStop, notesHTML, notesWire, started:(id, code) => { const d = read(id, code); return !!(d.t && !d.a.done && (d.p > 0 || Object.keys(d.a).length)); } };
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();
 })();

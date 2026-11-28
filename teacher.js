@@ -267,6 +267,24 @@
       ${T.plinks.length ? `<div class="cl-links">${T.plinks.map(x => `<div><b>${h(x.c)}</b><input readonly value="${h(x.l)}" aria-label="Week link for ${h(x.c)}"><button type="button" class="btn small soft" data-tpcopy="${h(x.c)}">Copy link</button></div>`).join('')}</div>` : ''}
       <p class="hint">The plan saves as you type, in this browser. <b>Paste each child’s link into their viewer once.</b> Each day they see that day’s main task and practice; “if you finish” appears when the main task is done; a main task from earlier in the week stays, marked “if you like”. Connect choices and your notes are for you and are not sent. Change the plan later? Make the links again: new work is added and nothing a child has done is lost.</p></div>`;
   }
+  /* ---------- the 15 minutes that matter most leave a trace (stress test T6): a tick for each part of the session, kept in this browser ---------- */
+  const CONNECT = [['hello', 'Today’s Hello'], ['energy', 'Energy check'], ['game', 'A game'], ['well', 'A wellbeing moment'], ['learn', 'The learning'], ['bye', 'Goodbye Circle']];
+  const connectLog = () => { try{ const v = JSON.parse(localStorage.getItem('fab-teach-connect') || '{}'); return v && typeof v === 'object' ? v : {}; }catch(e){ return {}; } };
+  function connectHTML(cn, day){ const L = connectLog(), n = CONNECT.filter(c => L[cn + '|' + day + '|' + c[0]]).length;
+    return `<div class="tt-connect"><b>Done today${n ? ' (' + n + ' of ' + CONNECT.length + ')' : ''}:</b> ${CONNECT.map(c => { const k = cn + '|' + day + '|' + c[0], on = !!L[k]; return `<button type="button" class="btn small ${on ? 'leaf' : 'soft'} tc-chip" data-ttc="${h(k)}" aria-pressed="${on}">${on ? '✓ ' : ''}${h(c[1])}</button>`; }).join('')}</div>`; }
+  /* a first-day guide for a teacher new to the model (stress test: "if I were to say to my staff tomorrow, go and plan... it would simply fail") */
+  function guideHTML(){
+    let hide = false; try{ hide = localStorage.getItem('fab-teach-guide') === 'hide'; }catch(e){}
+    if(hide) return `<div class="st-row"><button type="button" class="btn small soft" id="tcGuideShow">Show the first-day guide</button></div>`;
+    return `<div class="me-card tc-guide" id="tcGuide"><h2>${ic('compass', '🧭')} Your first day with the app</h2><ol class="tc-how">
+      <li><b>Before the session:</b> in <i>My classes</i>, add each class with its children’s Fab codes (never names). The list of who has which code stays on Beacon.</li>
+      <li><b>Plan the week once:</b> in <i>Plan a week</i>, choose each day’s main task, practice and “if you finish”, then copy one link per child into their Web Viewer. That one link carries the whole week.</li>
+      <li><b>On the day:</b> open this page. Each class shows its session: Connect first (a third of the session), then I do and we do on the carpet, you do in the child’s own viewer, practice, and Goodbye.</li>
+      <li><b>On the carpet:</b> use your own viewer link from <i>Today’s class in Pencil Spaces</i> (staff page) so the “Look here” pointer is on.</li>
+      <li><b>During:</b> tick each part as it happens. A child who finishes has “If you finish” in their Today. A tired child can stop after any page: their place is kept.</li>
+      <li><b>After:</b> read the marks and writing under <i>View task progress</i> on your own (never with the child watching), send a well done, and set next steps.</li></ol>
+      <div class="st-row"><button type="button" class="btn small soft" id="tcGuideHide">Hide this guide</button></div></div>`;
+  }
   function todayHTML(){
     const C = classes(), now = new Date(), wd = now.getDay(), wk = monday(), i = T.td >= 0 ? T.td : (wd >= 1 && wd <= 5 ? wd - 1 : 0);
     const order = ['eyfs', 'ks1', 'lks2', 'uks2'], L = C.map((c, k) => ({ c, k, st:usualStage(c.n) })).sort((a, b) => (order.indexOf(a.st) + 9) % 9 - (order.indexOf(b.st) + 9) % 9);
@@ -283,8 +301,8 @@
           ${row('Low energy; where to stop', h(d.low) || '<span class="bk-na">No note</span>')}
           ${row('Goodbye (' + mn[4] + ')', 'Goodbye Circle: one thing I can do now')}</tbody></table>
           <div class="st-row">${b && b.app ? `<button type="button" class="btn small leaf" data-ttlook="${h(b.id)}">Open the booklet to teach from</button>` : ''}<button type="button" class="btn small soft" data-ttplan="${x.k}">Change this plan</button></div>`
-          : `<p class="hint">Nothing planned for ${DAYS[i]}.</p><div class="st-row"><button type="button" class="btn small leaf" data-ttplan="${x.k}">Plan this week</button></div>`}</div>`; };
-    return `<div class="me-card" id="tcToday"><h2>${ic('sun', '☀️')} ${T.td < 0 && wd >= 1 && wd <= 5 ? 'Today' : DAYS[i]}: ${h(niceDay(addDays(wk, i)))}</h2>
+          : `<p class="hint">Nothing planned for ${DAYS[i]}.</p><div class="st-row"><button type="button" class="btn small leaf" data-ttplan="${x.k}">Plan this week</button></div>`}${connectHTML(x.c.n, addDays(wk, i))}</div>`; };
+    return `${guideHTML()}<div class="me-card" id="tcToday"><h2>${ic('sun', '☀️')} ${T.td < 0 && wd >= 1 && wd <= 5 ? 'Today' : DAYS[i]}: ${h(niceDay(addDays(wk, i)))}</h2>
       <div class="tc-chips" id="ttDays">${DAYS.map((n, k) => chip('data-ttday', k, n, k === i)).join('')}</div>
       <p class="hint">Every session: a third for connection, games and confidence, then the learning. Switch on <b>Look here</b> (Admin) to point on the carpet.</p></div>
       ${L.length ? L.map(card).join('') : '<div class="me-card"><p>Set up a class first.</p><div class="st-row"><button type="button" class="btn leaf" data-tcview="classes">Add a class</button></div></div>'}`;
@@ -299,7 +317,7 @@
       <div class="tc-filter"><span>Key stage</span><div class="tc-chips">${chip('data-tcst', 'all', 'All', st === 'all')}${STAGES.map(x => chip('data-tcst', x.k, x.n, st === x.k)).join('')}</div></div>
       ${L.length ? `<div class="tc-picks" id="tcLibPicks">${L.map(x => `<button type="button" class="tc-pick ${x.id === T.lib ? 'on' : ''}" data-tclib="${h(x.id)}" aria-pressed="${x.id === T.lib}"><span class="tc-pic" aria-hidden="true">${ic('books', '📚')}</span><b>${h(x.t)}</b><small>${h([[].concat(x.sub).filter(Boolean).join(' and '), x.st.map(stageName).join(', ')].filter(Boolean).join(' · '))}</small><i class="tc-tag ${x.app ? 'app' : ''}">${x.mine ? 'Made by a teacher' : x.app ? 'In the app' : 'On the board'}</i></button>`).join('')}</div>` : '<p class="hint">No booklet matches. Tap All.</p>'}
       ${b ? `<div class="tc-about" id="tcLibOne"><p><b>${h(b.t)}</b>${b.time ? ' · ' + h(b.time) : ''}. ${h(b.about)}</p>${b.care ? `<p><b>With care:</b> ${h(b.care)}</p>` : ''}
-        <ol class="tc-pages">${(b.app ? b.pages.map(p => p.t) : b.parts).map(x => `<li>${h(x)}</li>`).join('')}</ol>
+        <ol class="tc-pages">${(b.app ? b.pages.map(p => p.t) : b.parts).map(x => `<li>${h(x)}</li>`).join('')}</ol>${b.app && window.FabBooklets ? FabBooklets.unitHTML(b) + FabBooklets.notesHTML(b) : ''}
         <div class="st-row">${b.app ? '<button type="button" class="btn small soft" id="tcLibLook">Look inside</button>' : ''}<button type="button" class="btn small leaf" id="tcLibAssign">Assign this booklet</button>${b.mine ? `<button type="button" class="btn small soft" id="tcLibRm">${T.lrm === b.id ? 'Tap again to remove it' : 'Remove it from this browser'}</button>` : ''}</div></div>` : ''}</div>
       <div class="me-card" id="tcLibAdd"><h2>${ic('pencil', '✏️')} Add a booklet made with Claude</h2>
       <ol class="tc-how"><li><b>Copy the brief</b> and paste it into Claude (the Teaching Studio), with your year group, subject and goal. Describe the group, never a child.</li><li>Claude gives you a booklet file. <b>Paste it below</b>, or choose the saved .json file.</li><li>The app <b>checks it</b> (every sum is worked out again) and adds it to your library. Look inside, then assign it.</li></ol>
@@ -323,6 +341,17 @@
   }
 
   /* ---------- my classes ---------- */
+  const b64e = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const b64d = s0 => { try{ let x = String(s0).trim().replace(/^FAB1-/, '').replace(/-/g, '+').replace(/_/g, '/'); while(x.length % 4) x += '='; return JSON.parse(decodeURIComponent(escape(atob(x)))); }catch(e){ return null; } };
+  function moveCode(){ let pl = {}; try{ pl = JSON.parse(localStorage.getItem('fab-teach-plans') || '{}') || {}; }catch(e){} return 'FAB1-' + b64e({ c:classes(), p:pl }); }
+  function moveIn(t){
+    const o = b64d(t); if(!o || !Array.isArray(o.c)) return 'That code could not be read. Copy the whole code, starting FAB1-.';
+    const C = o.c.filter(c => c && typeof c.n === 'string').map(c => ({ n:c.n.replace(/[<>]/g, '').slice(0, 24), codes:(Array.isArray(c.codes) ? c.codes : []).map(String).filter(x => /^[a-z]{2,12}-\d{3}$/.test(x)).slice(0, 40) })).slice(0, 12);
+    const have = classes(), names = new Set(have.map(c => c.n)), added = C.filter(c => !names.has(c.n));
+    try{ localStorage.setItem('fab-teach-classes', JSON.stringify(have.concat(added))); }catch(e){}
+    let n = 0; if(o.p && typeof o.p === 'object'){ let pl = {}; try{ pl = JSON.parse(localStorage.getItem('fab-teach-plans') || '{}') || {}; }catch(e){} Object.keys(o.p).forEach(k => { if(/^[^|]{1,24}\|\d{4}-\d\d-\d\d$/.test(k) && !pl[k] && o.p[k] && Array.isArray(o.p[k].days)){ pl[k] = o.p[k]; n++; } }); try{ localStorage.setItem('fab-teach-plans', JSON.stringify(pl)); }catch(e){} }
+    return `Brought in ${added.length === 1 ? '1 class' : added.length + ' classes'} and ${n === 1 ? '1 week plan' : n + ' week plans'}.` + (C.length > added.length ? ' Classes with the same name were kept as they were.' : '');
+  }
   function classesHTML(){
     const C = classes();
     const form = () => `<div class="bw-row tc-edit"><label><span>Class name</span><input type="text" id="tcEn" maxlength="24" list="tcClsNames" value="${h(T.en)}" placeholder="Adventurers" autocomplete="off"></label>
@@ -335,6 +364,12 @@
       ${C.length ? `<ul class="tc-list">${C.map((c, i) => `<li><b>${h(c.n)}</b><span>${c.codes.length === 1 ? '1 child' : c.codes.length + ' children'}: ${c.codes.map(h).join(', ') || 'no codes yet'}${usualStage(c.n) ? ' · usually ' + stageName(usualStage(c.n)) : ''}</span>
         <button type="button" class="btn small soft" data-tcedit="${i}">Change</button><button type="button" class="btn small soft" data-tcrm="${i}">${T.rm === i ? 'Tap again to remove' : 'Remove'}</button></li>`).join('')}</ul>` : '<p class="hint">No classes yet.</p>'}
       ${T.edit == null ? `<div class="st-row"><button type="button" class="btn small leaf" id="tcNew">Add a class</button></div>` : form()}
+      <details class="tc-move" ${T.move || T.mmsg ? 'open' : ''}><summary>Move my classes and plans to another computer</summary>
+        <p>Make a code on this computer, copy it, and paste it here on the other one. The code carries class names, Fab codes and week plans only: no names, no marks.</p>
+        <div class="st-row"><button type="button" class="btn small leaf" id="tcMoveMake">Make a code</button>${T.move ? '<button type="button" class="btn small soft" id="tcMoveCopy">Copy the code</button>' : ''}</div>
+        ${T.move ? `<textarea readonly class="tc-movecode" aria-label="The code to move your classes and plans">${h(T.move)}</textarea>` : ''}
+        <label class="bw-note"><span>On the other computer: paste the code here</span><textarea id="tcMoveTxt" rows="2" autocapitalize="none" spellcheck="false"></textarea></label>
+        <div class="st-row"><button type="button" class="btn small soft" id="tcMoveIn">Bring them in</button></div>${T.mmsg ? `<p class="learn-msg" aria-live="polite">${h(T.mmsg)}</p>` : ''}</details>
       <p class="hint">Explorers are EYFS, Voyagers KS1, Adventurers lower KS2 and Pioneers upper KS2. That only sets which tasks are offered first: you can set any task for any class. Use a class name, never a child’s name. The list of which child has which code stays on Beacon.</p></div>`;
   }
 
@@ -488,6 +523,14 @@
     const $ = s => box.querySelector(s), on = (s, ev, f) => { const el = $(s); if(el) el.addEventListener(ev, f); };
     const all = (s, f) => box.querySelectorAll(s).forEach(el => el.addEventListener('click', () => f(el)));
     on('#tcSeeMarks', 'click', () => { T.seeMarks = true; snd('tick'); render(); });
+    try{ FabBooklets.notesWire(box); }catch(e){}
+    all('[data-bkpraise]', b => { const [cd, bk] = b.dataset.bkpraise.split('|'); T.cls = 'one'; T.one = cd; choose('k'); T.text = ('working so hard on ' + bk).slice(0, 60); render(); try{ window.scrollTo(0, 0); }catch(e){} });
+    all('[data-ttc]', b => { const L = connectLog(), k = b.dataset.ttc; L[k] = L[k] ? 0 : 1; if(!L[k]) delete L[k]; try{ localStorage.setItem('fab-teach-connect', JSON.stringify(L)); }catch(e){} snd('tick'); render(); });
+    on('#tcGuideHide', 'click', () => { try{ localStorage.setItem('fab-teach-guide', 'hide'); }catch(e){} render(); });
+    on('#tcGuideShow', 'click', () => { try{ localStorage.removeItem('fab-teach-guide'); }catch(e){} render(); });
+    on('#tcMoveMake', 'click', () => { T.move = moveCode(); T.mmsg = ''; render(); });
+    on('#tcMoveCopy', 'click', () => { const ok = () => { T.mmsg = 'Copied. Paste it into the Teachers’ area on the other computer.'; render(); }; try{ navigator.clipboard.writeText(T.move).then(ok, ok); }catch(e){ ok(); } });
+    on('#tcMoveIn', 'click', () => { const el = $('#tcMoveTxt'); T.mmsg = moveIn(el ? el.value : ''); render(); });
     all('[data-tcgo]', b => go(b.dataset.tcgo));
     const redraw = () => render(), stale = () => { T.links = []; };
     all('[data-tcview]', b => { snd('tick'); go(b.dataset.tcview); });
@@ -635,6 +678,7 @@
 @media (max-width:700px){.tp-grid{grid-template-columns:1fr}}
 .tt-table th{text-align:left;white-space:nowrap;vertical-align:top;width:13em}.tt-table td{text-align:left}
 .tc-pages{margin:6px 0;padding-left:1.4em;columns:2}.tc-how{padding-left:1.3em;display:grid;gap:4px}.tc-file{cursor:pointer}.tc-paste{display:grid;gap:4px;margin:8px 0}.tc-paste textarea{width:100%;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;border:2px solid #2B1A12;border-radius:12px;padding:8px 10px;background:#fff;box-sizing:border-box}
+.tt-connect{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}.tc-guide ol{margin:6px 0}.tc-move{margin:10px 0}.tc-move summary{font-weight:700;cursor:pointer}.tc-movecode{width:100%;box-sizing:border-box;font:12px/1.3 ui-monospace,Menlo,monospace;height:64px}
 .tc-errs{background:#FFF1EC;border:2px solid #D8402B;border-radius:12px;padding:8px 12px 8px 28px;margin:8px 0}.tc-ptable td{vertical-align:middle}
 .tc-tile .emoji svg,.tc-tile .emoji .fi{width:1.5em;height:1.5em}
 .tc-foot{max-width:820px;margin:18px auto 0;background:transparent;border:0;box-shadow:none;padding:0}.tc-foot .st-row{justify-content:center}
